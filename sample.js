@@ -1,6 +1,6 @@
 
 //import Layout from 'libs/layout'
-import Chart from './libs/chart'
+//import Chart from './libs/chart'
 // import Dashboard from './libs/index'
 
 //import Dashboard from './libs/dashboard.vue'
@@ -11,6 +11,7 @@ import RateLine from './libs/chart/rate-line.vue'
 
 import Store from './libs/store'
 
+// http://stackoverflow.com/questions/39488660/vue-js-2-0-not-rendering-anything
 import Vue from 'vue/dist/vue.js'
 
 // ---------------------------------------

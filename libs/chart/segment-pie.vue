@@ -7,7 +7,6 @@
 <script lang='js'>
 import Base from './_base'
 import Store from '../store'
-import {generateDomId} from '../utils'
 
 export default {
   props: Object.assign({}, Base.props, {

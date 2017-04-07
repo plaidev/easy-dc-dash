@@ -1,3 +1,4 @@
+import dc from 'dc'
 import Store from '../store'
 import {generateDomId} from '../utils'
 
