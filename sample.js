@@ -7,7 +7,7 @@
 import SegmentPie from './libs/chart/segment-pie.vue'
 import WeekRow from './libs/chart/week-row.vue'
 import RateLine from './libs/chart/rate-line.vue'
-
+import StackedLines from './libs/chart/stacked-lines.vue'
 
 import Store from './libs/store'
 
@@ -67,7 +67,8 @@ export function run() {
     components: {
       'segment-pie': SegmentPie,
       'week-row': WeekRow,
-      'rate-line': RateLine
+      'rate-line': RateLine,
+      'stacked-lines': StackedLines
     }
   });
 
