@@ -1,5 +1,5 @@
 <template>
-  <div class="krt-dc-segment-pie" :id="id">
+  <div class="krt-dc-week-row" :id="id">
     <a class="reset" style="display: none">reset</a>
   </div>
 </template>
@@ -13,27 +13,76 @@ import Store from '../store'
 
 
 const _weekFormat = d3.time.format("%w")
+const _ymdFormat = d3.time.format("%Y-%m-%d")
 
 export default {
-  props: Object.assign({}, Base.props, {
+  extends: Base,
+
+  props: {
     chartType: {
       type: String,
       default: 'rowChart'
     }
-  }),
-  computed: Object.assign({}, Base.computed, {
+  },
+
+  computed: {
     dimensionName: function() {
       return `week(${this.dimension})`
     },
     grouping: function() {
-      const getter = new Function('d', 'return ' + this.dimension);
+      const getter = this.getDimensionExtractor;
       const grouping = (d) => Number(_weekFormat(getter(d)))
       return Store.registerDimension(this.dimensionName, grouping)
+    },
+    reducer: function() {
+      const dim = Store.getDimension(this.dimensionName);
+      const getter = this.getDimensionExtractor;
+      const reducer = this.getReducerExtractor;
+      const date_cnt = {};
+
+      return dim.group().reduce(
+        (p, v) => {
+          const key = _ymdFormat(getter(v));
+          const value = reducer(v);
+          p.value += value;
+          if (!p.date_cnt[key]) p.date_cnt[key] = 0;
+          p.date_cnt[key]++;
+          return p;
+        },
+        (p, v) => {
+          const key = _ymdFormat(getter(v));
+          const value = reducer(v);
+          p.value -= value;
+          p.date_cnt[key]--;
+          if (p.date_cnt[key] == 0) delete p.date_cnt[key];
+          return p
+        },
+        () => {
+          return {
+            value: 0,
+            date_cnt: date_cnt // 複数のpでshared
+          }
+        }
+      );
+    },
+    accessor: function() {
+      const dim = this.grouping;
+      const dimExtractor = this.getDimensionExtractor;
+      const methodNames = [
+        'sundays', 'mondays', 'tuesdays', 'wednesdays', 'thursdays', 'fridays', 'saturdays'
+      ];
+      return (p) => {
+        const dates = Object.keys(p.value.date_cnt).sort();
+        const min = _ymdFormat.parse(dates[0]);
+        const max = d3.time.day.offset(_ymdFormat.parse(dates[dates.length-1]), 1);
+        const cnt = d3.time[methodNames[p.key]](min, max).length;
+        return cnt > 0 ? p.value.value / cnt: 0;
+      }
     }
-    // TODO: 週平均の方がいい
-  }),
+  },
+
   mounted: function() {
-    const chart = Base.mounted.apply(this)
+    const chart = this.chart;
 
     chart
       .width(240).height(200)
