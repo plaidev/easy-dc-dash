@@ -12,7 +12,7 @@ class DashboardStore {
 
     this._cf = {};
     this._charts = {};
-
+    this._volumeBind = {};
     this._dimensions = {
       default: {}
     };
@@ -56,9 +56,27 @@ class DashboardStore {
 
   registerChart(parent, name, chartType, binds={}) {
     const chart = new dc[chartType](parent);
-    // TODO: implement
-    // if (this._charts[binds.volume]) chart.rangeChart(this._charts[binds.volume])
+
+    // volumeとして参照するchartがあれば登録
+    if (binds.volume) {
+      if (!this._volumeBind[binds.volume])
+        this._volumeBind[binds.volume] = []
+      this._volumeBind[binds.volume].push(name)
+
+      if (this._charts[binds.volume]) {
+        chart.rangeChart(this._charts[binds.volume])
+      }
+    }
+
+    // このchartをvolumeとして参照するchartがあれば、bind
+    if (this._volumeBind[name]) {
+      this._volumeBind[name].forEach((refChart) => {
+        refChart.rangeChart(chart)
+      })
+    }
+
     this._charts[name] = chart;
+
     return chart;
   }
 

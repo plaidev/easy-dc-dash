@@ -5,6 +5,8 @@ import {generateDomId} from '../utils'
 
 export default {
 
+  template: `<div class="krt-dc-component" :id="id"></div>`,
+
   props: {
     dimension: {
       type: String
@@ -17,7 +19,8 @@ export default {
       default: generateDomId
     },
     chartType: {
-      type: String
+      type: String,
+      default: 'barChart'
     },
     volume: {
       type: String
@@ -56,7 +59,7 @@ export default {
       this.parent,
       this.id,
       this.chartType,
-      {volume: null}
+      {volume: this.volume}
     );
 
     if (this.grouping) chart.dimension(this.grouping);
