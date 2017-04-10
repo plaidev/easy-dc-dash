@@ -9,7 +9,9 @@ import Base from './_base'
 import Store from '../store'
 
 export default {
-  props: Object.assign({}, Base.props, {
+  extends: Base,
+
+  props: {
     dimension: {
       type: String,
       default: 'd.segments'
@@ -24,14 +26,15 @@ export default {
     labels: {
       type: Object
     }
-  }),
-  computed: Object.assign({}, Base.computed, {
+  },
+
+  computed: {
     dimensionName: function() {
       return `segments(${this.segments.join(',')})`
     },
     grouping: function() {
       const segments = this.segmentIds;
-      const getter = new Function('d', 'return ' + this.dimension);
+      const getter = this.getDimensionExtractor;
       const grouping = (d) => {
         const segs = getter(d).split(',');
         const idx = segments.findIndex((segment) => {
@@ -45,7 +48,8 @@ export default {
       if (this.segments instanceof Array) return this.segments;
       return this.segments.split(',')
     }
-  }),
+  },
+
   methods: {
     segmentLabel: function(segmentId) {
       // TODO: not implemented
@@ -56,14 +60,16 @@ export default {
       return segmentId in this.labels ? this.labels[segmentId]: segmentId;
     }
   },
+
   mounted: function() {
-    const chart = Base.mounted.apply(this)
+    const chart = this.chart; //Base.mounted.apply(this)
     chart
       .width(240).height(200)
       .label((d) => this.segmentLabel(d.key))
       .render()
     return chart
   },
+
   destroyed: function() {
     Store.unregisterDimension(this.dimension)
   }

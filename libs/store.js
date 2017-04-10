@@ -11,6 +11,7 @@ class DashboardStore {
     //};
 
     this._cf = {};
+    this._charts = {};
 
     this._dimensions = {
       default: {}
@@ -51,6 +52,20 @@ class DashboardStore {
 
   getDimension(name, cf_name='default') {
     return this._dimensions[cf_name][name];
+  }
+
+  registerChart(parent, name, chartType, binds={}) {
+    console.log(parent, name, chartType)
+    const chart = new dc[chartType](parent);
+    // TODO: implement
+    // if (this._charts[binds.volume]) chart.rangeChart(this._charts[binds.volume])
+    this._charts[name] = chart;
+    return chart;
+  }
+
+  unregisterChart(name, chart) {
+    // TODO: implement
+    // this._charts[name] = chart;
   }
 
 }

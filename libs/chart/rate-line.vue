@@ -7,23 +7,24 @@
 <script lang='js'>
 
 import d3 from "d3"
-import dc from 'dc'
-
 import Base from './_base'
 import Store from '../store'
 
 
 export default {
-  props: Object.assign({}, Base.props, {
+  extends: Base,
+
+  props: {
     chartType: {
       type: String,
       default: 'lineChart'
     }
-  }),
-  computed: Object.assign({}, Base.computed, {
+  },
+
+  computed: {
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName);
-      const reducer = new Function('d', 'return ' + this.reduce);
+      const reducer = this.getReducerExtractor;
 
       return dim.group().reduce(
         (p, v) => {
@@ -51,15 +52,16 @@ export default {
         return p.value.count > 0 ? p.value.total / p.value.count : 0;
       }
     }
-  }),
+  },
+
   mounted: function() {
     const dim = this.grouping;
-    const reducer = new Function('d', 'return ' + this.dimension);
+    const dimExtractor = this.getDimensionExtractor;
 
-    const min = reducer(dim.bottom(1)[0]);
-    const max = reducer(dim.top(1)[0]);
+    const min = dimExtractor(dim.bottom(1)[0]);
+    const max = dimExtractor(dim.top(1)[0]);
 
-    return Base.mounted.apply(this)
+    return this.chart
       .x(d3.time.scale().domain([min, max]))
       .render()
   }
