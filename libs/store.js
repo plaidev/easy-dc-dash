@@ -55,7 +55,6 @@ class DashboardStore {
   }
 
   registerChart(parent, name, chartType, binds={}) {
-    console.log(parent, name, chartType)
     const chart = new dc[chartType](parent);
     // TODO: implement
     // if (this._charts[binds.volume]) chart.rangeChart(this._charts[binds.volume])
