@@ -71,7 +71,7 @@ class DashboardStore {
     // このchartをvolumeとして参照するchartがあれば、bind
     if (this._volumeBind[name]) {
       this._volumeBind[name].forEach((refChart) => {
-        refChart.rangeChart(chart)
+        this._charts[refChart].rangeChart(chart)
       })
     }
 
