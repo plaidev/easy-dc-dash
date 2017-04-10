@@ -9,6 +9,7 @@ import WeekRow from './libs/chart/week-row.vue'
 import RateLine from './libs/chart/rate-line.vue'
 import StackedLines from './libs/chart/stacked-lines.vue'
 import {compose} from './libs/chart/_composite'
+import Base from './libs/chart/_base'
 
 import Store from './libs/store'
 
@@ -70,7 +71,36 @@ export function run() {
       'week-row': WeekRow,
       'rate-line': RateLine,
       'stacked-lines': StackedLines,
-      'stack-and-rate': compose(StackedLines, RateLine)
+      'stack-and-rate': compose(StackedLines, RateLine),
+      'volume-chart': {
+        extends: Base,
+        mounted: function() {
+          const dim = this.grouping;
+          const dimExtractor = this.getDimensionExtractor;
+          const min = dimExtractor(dim.bottom(1)[0]);
+          const max = dimExtractor(dim.top(1)[0]);
+          this.chart
+            .width(240*4)
+            .height(60)
+            .margins({
+              top: 0,
+              right: 50,
+              bottom: 20,
+              left: 40
+            })
+            .centerBar(true)
+            .gap(1)
+            .x(d3.time.scale().domain([min, max]))
+            .elasticY(true)
+            .round(d3.time.day.round)
+            //.round(time.week.round)
+            .alwaysUseRounding(true)
+            .xUnits(d3.time.days)
+            .yAxis().ticks(0)
+
+          this.chart.render()
+        }
+      }
     }
   });
 
