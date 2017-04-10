@@ -52,17 +52,12 @@ export default {
 
   methods: {
     segmentLabel: function(segmentId) {
-      // TODO: not implemented
-      //{
-      //   const idx = this.segments.indexOf(d.key);
-      //  return idx < 0 ? d.key: this.labels[idx]; 
-      //} 
       return segmentId in this.labels ? this.labels[segmentId]: segmentId;
     }
   },
 
   mounted: function() {
-    const chart = this.chart; //Base.mounted.apply(this)
+    const chart = this.chart;
     chart
       .width(240).height(200)
       .label((d) => this.segmentLabel(d.key))

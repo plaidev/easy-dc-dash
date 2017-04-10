@@ -17,6 +17,7 @@ export default {
 
   // 直接実行可能な形式
   format: 'iife',
+  moduleName: 'KrtDashboard',
 
   plugins: [
     // vueがprocessを求める時があるので無理やり設定
