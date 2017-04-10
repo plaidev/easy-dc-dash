@@ -1,16 +1,4 @@
-
-//import Layout from 'libs/layout'
-//import Chart from './libs/chart'
-// import Dashboard from './libs/index'
-
-//import Dashboard from './libs/dashboard.vue'
-import SegmentPie from './libs/chart/segment-pie.vue'
-import WeekRow from './libs/chart/week-row.vue'
-import RateLine from './libs/chart/rate-line.vue'
-import StackedLines from './libs/chart/stacked-lines.vue'
-import {compose} from './libs/chart/_composite'
-import Base from './libs/chart/_base'
-
+import Chart from './libs/chart'
 import Store from './libs/store'
 
 // http://stackoverflow.com/questions/39488660/vue-js-2-0-not-rendering-anything
@@ -67,13 +55,13 @@ export function run() {
       repeatSegmentLabels: segmentSets[2].labels
     },
     components: {
-      'segment-pie': SegmentPie,
-      'week-row': WeekRow,
-      'rate-line': RateLine,
-      'stacked-lines': StackedLines,
-      'stack-and-rate': compose(StackedLines, RateLine),
+      'segment-pie': Chart.SegmentPie,
+      'week-row': Chart.WeekRow,
+      'rate-line': Chart.RateLine,
+      'stacked-lines': Chart.StackedLines,
+      'stack-and-rate': Chart.compose(Chart.StackedLines, Chart.RateLine),
       'volume-chart': {
-        extends: Base,
+        extends: Chart.Base,
         mounted: function() {
           const dim = this.grouping;
           const dimExtractor = this.getDimensionExtractor;
@@ -104,59 +92,4 @@ export function run() {
     }
   });
 
-  /*
-
-  const DashboardApp = Vue.extend(Dashboard);
-
-  const app = new DashboardApp({
-    el: '#krt-dc-dashboard',
-    data: {
-      elName: '#krt-dc-dashboard',
-      data: datasets[0].content,
-      dateFormat: "%Y-%m-%d",
-      dateFields: ['session_end_date']
-    }
-  })
-
-
-  app
-    .addChart('PV-Bounce-session', new Chart.DateVolumedComposite({
-      getter: (d) => d.session_end_date,
-      reducer: (d) => d.pv,
-      left: new Chart.StackedLines({
-        groups: [
-          {
-            label: 'PV', // not bounce PV
-            reducer: (d) => d.pv - d.bounce_cnt
-          },
-          {
-            label: 'bounce PV',
-            reducer: (d) => d.bounce_cnt
-          }
-        ]
-      }),
-      right: new Chart.RateLine({
-        reducer: (d) => Object.create({count: d.session_cnt, value: d.bounce_cnt})
-      })
-    }))
-    .addChart('Week-PV', new Chart.WeekRow({
-      getter: (d) => d.session_end_date,
-      reducer: (d) => d.pv
-    }))
-
-
-  segmentSets.forEach((segmentSet) => {
-    app
-      .addChart(segmentSet.title, new Chart.SegmentPie({
-        name: segmentSet.title,
-        segments: segmentSet.segments,
-        labels: segmentSet.labels,
-        getter: (d) => d.segments.split(','),
-        reducer: (d) => d.session_cnt
-      }))
-  })
-
-  setTimeout(app.render, 10*1000);
-  */
 }
-
