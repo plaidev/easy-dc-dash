@@ -36,7 +36,7 @@ export default {
   format: build,
 
   // iifeでは必須
-  moduleName: 'EasyDashboard',
+  moduleName: 'EasyDC',
 
   plugins: [
     // vueがprocessを求める時があるので無理やり設定

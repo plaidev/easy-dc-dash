@@ -33,7 +33,7 @@
 // デザインをカスタマイズしたコンポーネント
 
 const DateVolumeChart = {
-  extends: KrtDashboard.Chart.Base,
+  extends: EasyDC.Chart.Base,
   mounted: function() {
     const dim = this.grouping;
     const dimExtractor = this.getDimensionExtractor;
@@ -101,7 +101,7 @@ const segmentSets = [
 
 function run(content) {
 
-  KrtDashboard.Store.registerData(content);
+  EasyDC.Store.registerData(content);
 
   const DashboardApp = new Vue({
     el: '#krt-dc-dashboard',
