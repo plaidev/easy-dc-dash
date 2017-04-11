@@ -6,18 +6,37 @@ import vue          from 'rollup-plugin-vue'
 import replace      from 'rollup-plugin-replace'
 import sourcemaps   from 'rollup-plugin-sourcemaps'
 
+const build = process.env.BUILD || 'iife';
+
+const buildTypes = {
+  'cjs': {
+    entry: 'index.js',
+    dest: 'dist/bundle.js'
+  },
+  'es': {
+    entry: 'index.js',
+    dest: 'dist/bundle.es.js'
+  },
+  'iife': {
+    entry: 'index.js',
+    dest: 'dist/bundle.browser.js'
+  }
+}
+
 
 export default {
 
   // entry
-  entry: 'index.js',
+  entry: buildTypes[build].entry,
 
   // output
-  dest: 'dist/bundle.js',
+  dest: buildTypes[build].dest,
 
   // 直接実行可能な形式
-  format: 'iife',
-  moduleName: 'KrtDashboard',
+  format: build,
+
+  // iifeでは必須
+  moduleName: 'EasyDashboard',
 
   plugins: [
     // vueがprocessを求める時があるので無理やり設定

@@ -1,9 +1,12 @@
 {
-  "name": "krt-dashboard",
-  "version": "1.0.0",
+  "name": "easy-dashboard",
+  "version": "0.1.0",
   "main": "index.js",
   "author": "Naoto Kato <naoto.kato@plaid.co.jp>",
   "license": "MIT",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.es.js",
+  "jsnext:main": "dist/bundle.es.js",
   "devDependencies": {
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-es2015": "^6.24.0",
@@ -23,8 +26,12 @@
     "vue": "^2.2.6"
   },
   "scripts": {
-    "build": "rollup -c -m",
+    "build": "rollup -c -m && rollup -c -m --environment BUILD:cjs && rollup -c -m --environment BUILD:es",
     "watch": "rollup -c -m -w",
     "http-server": "http-server -i"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }
