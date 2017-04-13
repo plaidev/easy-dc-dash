@@ -4,6 +4,7 @@ import SegmentPie from './segment-pie.vue'
 import WeekRow from './week-row.vue'
 import RateLine from './rate-line.vue'
 import StackedLines from './stacked-lines.vue'
+import GeoJP from './geo-jp.vue'
 
 export default {
   Base: Base,
@@ -11,5 +12,6 @@ export default {
   StackedLines: StackedLines,
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
+  GeoJP: GeoJP,
   compose: compose
 }
