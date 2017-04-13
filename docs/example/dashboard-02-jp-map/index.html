@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0/dc.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+
+  </head>
+
+  <body>
+
+<div id="krt-dc-dashboard">
+  <div style="position: absolute">
+    <stacked-lines scale='time' dimension='d.sync_date' reduce='[d.bounce_count, d.session_pv - d.bounce_count]'></stacked-lines>
+  </div>
+
+  <div>
+    <geo-jp dimension='d.prefCode' reduce='d.session_count'></geo-jp>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+
+
+//-------------------
+// メイン
+
+function run(content) {
+
+  EasyDC.Store.registerData(content, {
+    dateFields: ['sync_date']
+  });
+
+  const DashboardApp = new Vue({
+    el: '#krt-dc-dashboard',
+  });
+}
+
+
+
+//-------------------
+// データ読み込み
+d3.csv(
+  './dataset.csv',
+  function(d) {
+
+    (['session_count', 'session_pv', 'bounce_count']).forEach((field) => {
+      let i = parseInt(d[field]);
+      if (Number.isNaN(i)) i = 0;
+      d[field] = i;
+    });
+
+    (['bounce_rate']).forEach((field) => {
+      let i  = parseFloat(d[field])
+      if (Number.isNaN(i)) i = 0;
+      d[field] = i;
+    });
+
+    return d
+  },
+  run);
+
+    </script>
+  </body>
+</html>
