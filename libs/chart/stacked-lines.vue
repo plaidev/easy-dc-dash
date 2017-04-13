@@ -34,9 +34,9 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
-    const dim = this.grouping;
 
     // 超手抜き
+    const dim = this.grouping;
     const _reducer = this.getReducerExtractor;
     const lineNum = _reducer(dim.top(1)[0]).length;
 
