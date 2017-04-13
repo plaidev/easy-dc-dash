@@ -1,3 +1,4 @@
+import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
 import {generateDomId} from '../utils'
@@ -23,6 +24,9 @@ export default {
       default: 'barChart'
     },
     volume: {
+      type: String
+    },
+    scale: {
       type: String
     }
   },
@@ -51,6 +55,26 @@ export default {
     },
     accessor: function() {
       return null;
+    },
+    min: function() {
+      const dim = this.grouping;
+      const dimExtractor = this.getDimensionExtractor;
+      return dimExtractor(dim.bottom(1)[0]);
+    },
+    max: function() {
+      const dim = this.grouping;
+      const dimExtractor = this.getDimensionExtractor;
+      return dimExtractor(dim.top(1)[0]);
+    },
+    xScale: function() {
+      let scale;
+      if (!this.scale) return null;
+
+      if (this.scale === 'time') scale = d3.time.scale;
+      else scale = d3.scale[this.scale];
+
+      if (!scale) return null;
+      return scale().domain([this.min, this.max])
     }
   },
 
@@ -65,6 +89,7 @@ export default {
     if (this.grouping) chart.dimension(this.grouping);
     if (this.reducer) chart.group(this.reducer);
     if (this.accessor) chart.valueAccessor(this.accessor);
+    if (this.xScale) chart.x(this.xScale);
 
     this.chart = chart;
 

@@ -55,14 +55,7 @@ export default {
   },
 
   mounted: function() {
-    const dim = this.grouping;
-    const dimExtractor = this.getDimensionExtractor;
-
-    const min = dimExtractor(dim.bottom(1)[0]);
-    const max = dimExtractor(dim.top(1)[0]);
-
     return this.chart
-      .x(d3.time.scale().domain([min, max]))
       .render()
   }
 }
