@@ -34,14 +34,9 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
-    const dim = this.grouping;
-
-    const _getter = this.getDimensionExtractor;
-    const min = _getter(dim.bottom(1)[0]);
-    const max = _getter(dim.top(1)[0]);
-    chart.x(d3.time.scale().domain([min, max]))
 
     // 超手抜き
+    const dim = this.grouping;
     const _reducer = this.getReducerExtractor;
     const lineNum = _reducer(dim.top(1)[0]).length;
 

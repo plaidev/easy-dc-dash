@@ -35,7 +35,8 @@ export function compose(Left, Right) {
           }
         },
         propsData: {
-          dimension: this.dimension
+          dimension: this.dimension,
+          scale: this.scale
         }
       })
 
@@ -53,7 +54,8 @@ export function compose(Left, Right) {
           }
         },
         propsData: {
-          dimension: this.dimension
+          dimension: this.dimension,
+          scale: this.scale
         }
       })
 
@@ -61,10 +63,6 @@ export function compose(Left, Right) {
       Base.mounted.apply(rightInstance)
 
       const dim = this.grouping;
-      const _getter = this.getDimensionExtractor;
-      const min = _getter(dim.bottom(1)[0]);
-      const max = _getter(dim.top(1)[0]);
-
       const composite = this.chart;
 
       composite
@@ -76,7 +74,6 @@ export function compose(Left, Right) {
         })
         .width(240*4).height(240)
         .dimension(dim)
-        .x(d3.time.scale().domain([min, max]))
         .compose([
           Left.mounted.apply(leftInstance),
           Right.mounted.apply(rightInstance).useRightYAxis(true),
