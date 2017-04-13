@@ -22,8 +22,8 @@
   </div>
 
   <div>
-    <stack-and-rate dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
-    <volume-chart dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
+    <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
+    <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
 </div>
 
@@ -35,10 +35,6 @@
 const DateVolumeChart = {
   extends: EasyDC.Chart.Base,
   mounted: function() {
-    const dim = this.grouping;
-    const dimExtractor = this.getDimensionExtractor;
-    const min = dimExtractor(dim.bottom(1)[0]);
-    const max = dimExtractor(dim.top(1)[0]);
     this.chart
       .width(240*4)
       .height(60)
@@ -50,7 +46,6 @@ const DateVolumeChart = {
       })
       .centerBar(true)
       .gap(1)
-      .x(d3.time.scale().domain([min, max]))
       .elasticY(true)
       .round(d3.time.day.round)
       //.round(time.week.round)

@@ -8,6 +8,7 @@ function install(Vue, options) {
       'week-row': Chart.WeekRow,
       'rate-line': Chart.RateLine,
       'stacked-lines': Chart.StackedLines,
+      'geo-jp': Chart.GeoJP,
       'stack-and-rate': Chart.compose(Chart.StackedLines, Chart.RateLine)
     }
   })

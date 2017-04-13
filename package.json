@@ -1,10 +1,9 @@
 {
   "name": "easy-dc-dash",
   "version": "0.1.0",
-  "main": "index.js",
+  "main": "dist/bundle.js",
   "author": "Naoto Kato <naoto.kato@plaid.co.jp>",
   "license": "MIT",
-  "main": "dist/bundle.js",
   "module": "dist/bundle.es.js",
   "jsnext:main": "dist/bundle.es.js",
   "devDependencies": {
@@ -23,6 +22,7 @@
   "dependencies": {
     "crossfilter": "^1.3.12",
     "dc": "^2.0.2",
+    "topojson": "^3.0.0",
     "vue": "^2.2.6"
   },
   "scripts": {
