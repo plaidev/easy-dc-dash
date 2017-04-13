@@ -24340,17 +24340,12 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    
+    //# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$2;
 var index$1 = dc$1;
-
-//-------------------------------------
-
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -24500,6 +24495,9 @@ var Base = {
     },
     volume: {
       type: String
+    },
+    scale: {
+      type: String
     }
   },
 
@@ -24527,6 +24525,25 @@ var Base = {
     },
     accessor: function accessor() {
       return null;
+    },
+    min: function min() {
+      var dim = this.grouping;
+      var dimExtractor = this.getDimensionExtractor;
+      return dimExtractor(dim.bottom(1)[0]);
+    },
+    max: function max() {
+      var dim = this.grouping;
+      var dimExtractor = this.getDimensionExtractor;
+      return dimExtractor(dim.top(1)[0]);
+    },
+    xScale: function xScale() {
+      var scale = void 0;
+      if (!this.scale) return null;
+
+      if (this.scale === 'time') scale = d3$1.time.scale;else scale = d3$1.scale[this.scale];
+
+      if (!scale) return null;
+      return scale().domain([this.min, this.max]);
     }
   },
 
@@ -24536,6 +24553,7 @@ var Base = {
     if (this.grouping) chart.dimension(this.grouping);
     if (this.reducer) chart.group(this.reducer);
     if (this.accessor) chart.valueAccessor(this.accessor);
+    if (this.xScale) chart.x(this.xScale);
 
     this.chart = chart;
 
@@ -33152,7 +33170,8 @@ function compose(Left, Right) {
           }
         },
         propsData: {
-          dimension: this.dimension
+          dimension: this.dimension,
+          scale: this.scale
         }
       });
 
@@ -33170,7 +33189,8 @@ function compose(Left, Right) {
           }
         },
         propsData: {
-          dimension: this.dimension
+          dimension: this.dimension,
+          scale: this.scale
         }
       });
 
@@ -33178,10 +33198,6 @@ function compose(Left, Right) {
       Base.mounted.apply(rightInstance);
 
       var dim = this.grouping;
-      var _getter = this.getDimensionExtractor;
-      var min = _getter(dim.bottom(1)[0]);
-      var max = _getter(dim.top(1)[0]);
-
       var composite = this.chart;
 
       composite.margins({
@@ -33189,7 +33205,7 @@ function compose(Left, Right) {
         right: 50,
         bottom: 25,
         left: 40
-      }).width(240 * 4).height(240).dimension(dim).x(d3$1.time.scale().domain([min, max])).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
+      }).width(240 * 4).height(240).dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
       //.rightY(scale.linear().domain([0, 1]))
       .elasticY(true);
 
@@ -33407,13 +33423,7 @@ var RateLine = { render: function render() {
   },
 
   mounted: function mounted() {
-    var dim = this.grouping;
-    var dimExtractor = this.getDimensionExtractor;
-
-    var min = dimExtractor(dim.bottom(1)[0]);
-    var max = dimExtractor(dim.top(1)[0]);
-
-    return this.chart.x(d3$1.time.scale().domain([min, max])).render();
+    return this.chart.render();
   }
 };
 
@@ -33447,14 +33457,9 @@ var StackedLines = { render: function render() {
 
   mounted: function mounted() {
     var chart = this.chart;
-    var dim = this.grouping;
-
-    var _getter = this.getDimensionExtractor;
-    var min = _getter(dim.bottom(1)[0]);
-    var max = _getter(dim.top(1)[0]);
-    chart.x(d3$1.time.scale().domain([min, max]));
 
     // 超手抜き
+    var dim = this.grouping;
     var _reducer = this.getReducerExtractor;
     var lineNum = _reducer(dim.top(1)[0]).length;
 
@@ -33468,12 +33473,452 @@ var StackedLines = { render: function render() {
   }
 };
 
+var identity = function (x) {
+  return x;
+};
+
+var transform = function (transform) {
+  if (transform == null) return identity;
+  var x0,
+      y0,
+      kx = transform.scale[0],
+      ky = transform.scale[1],
+      dx = transform.translate[0],
+      dy = transform.translate[1];
+  return function (input, i) {
+    if (!i) x0 = y0 = 0;
+    var j = 2,
+        n = input.length,
+        output = new Array(n);
+    output[0] = (x0 += input[0]) * kx + dx;
+    output[1] = (y0 += input[1]) * ky + dy;
+    while (j < n) {
+      output[j] = input[j], ++j;
+    }return output;
+  };
+};
+
+var reverse = function (array, n) {
+  var t,
+      j = array.length,
+      i = j - n;
+  while (i < --j) {
+    t = array[i], array[i++] = array[j], array[j] = t;
+  }
+};
+
+var feature = function (topology, o) {
+  return o.type === "GeometryCollection" ? { type: "FeatureCollection", features: o.geometries.map(function (o) {
+      return feature$1(topology, o);
+    }) } : feature$1(topology, o);
+};
+
+function feature$1(topology, o) {
+  var id = o.id,
+      bbox = o.bbox,
+      properties = o.properties == null ? {} : o.properties,
+      geometry = object(topology, o);
+  return id == null && bbox == null ? { type: "Feature", properties: properties, geometry: geometry } : bbox == null ? { type: "Feature", id: id, properties: properties, geometry: geometry } : { type: "Feature", id: id, bbox: bbox, properties: properties, geometry: geometry };
+}
+
+function object(topology, o) {
+  var transformPoint = transform(topology.transform),
+      arcs = topology.arcs;
+
+  function arc(i, points) {
+    if (points.length) points.pop();
+    for (var a = arcs[i < 0 ? ~i : i], k = 0, n = a.length; k < n; ++k) {
+      points.push(transformPoint(a[k], k));
+    }
+    if (i < 0) reverse(points, n);
+  }
+
+  function point(p) {
+    return transformPoint(p);
+  }
+
+  function line(arcs) {
+    var points = [];
+    for (var i = 0, n = arcs.length; i < n; ++i) {
+      arc(arcs[i], points);
+    }if (points.length < 2) points.push(points[0]); // This should never happen per the specification.
+    return points;
+  }
+
+  function ring(arcs) {
+    var points = line(arcs);
+    while (points.length < 4) {
+      points.push(points[0]);
+    } // This may happen if an arc has only two points.
+    return points;
+  }
+
+  function polygon(arcs) {
+    return arcs.map(ring);
+  }
+
+  function geometry(o) {
+    var type = o.type,
+        coordinates;
+    switch (type) {
+      case "GeometryCollection":
+        return { type: type, geometries: o.geometries.map(geometry) };
+      case "Point":
+        coordinates = point(o.coordinates);break;
+      case "MultiPoint":
+        coordinates = o.coordinates.map(point);break;
+      case "LineString":
+        coordinates = line(o.arcs);break;
+      case "MultiLineString":
+        coordinates = o.arcs.map(line);break;
+      case "Polygon":
+        coordinates = polygon(o.arcs);break;
+      case "MultiPolygon":
+        coordinates = o.arcs.map(polygon);break;
+      default:
+        return null;
+    }
+    return { type: type, coordinates: coordinates };
+  }
+
+  return geometry(o);
+}
+
+var bisect = function (a, x) {
+  var lo = 0,
+      hi = a.length;
+  while (lo < hi) {
+    var mid = lo + hi >>> 1;
+    if (a[mid] < x) lo = mid + 1;else hi = mid;
+  }
+  return lo;
+};
+
+// Computes the bounding box of the specified hash of GeoJSON objects.
+
+var hashset = function (size, hash, equal, type, empty) {
+  if (arguments.length === 3) {
+    type = Array;
+    empty = null;
+  }
+
+  var store = new type(size = 1 << Math.max(4, Math.ceil(Math.log(size) / Math.LN2))),
+      mask = size - 1;
+
+  for (var i = 0; i < size; ++i) {
+    store[i] = empty;
+  }
+
+  function add(value) {
+    var index = hash(value) & mask,
+        match = store[index],
+        collisions = 0;
+    while (match != empty) {
+      if (equal(match, value)) return true;
+      if (++collisions >= size) throw new Error("full hashset");
+      match = store[index = index + 1 & mask];
+    }
+    store[index] = value;
+    return true;
+  }
+
+  function has(value) {
+    var index = hash(value) & mask,
+        match = store[index],
+        collisions = 0;
+    while (match != empty) {
+      if (equal(match, value)) return true;
+      if (++collisions >= size) break;
+      match = store[index = index + 1 & mask];
+    }
+    return false;
+  }
+
+  function values() {
+    var values = [];
+    for (var i = 0, n = store.length; i < n; ++i) {
+      var match = store[i];
+      if (match != empty) values.push(match);
+    }
+    return values;
+  }
+
+  return {
+    add: add,
+    has: has,
+    values: values
+  };
+};
+
+var hashmap = function (size, hash, equal, keyType, keyEmpty, valueType) {
+  if (arguments.length === 3) {
+    keyType = valueType = Array;
+    keyEmpty = null;
+  }
+
+  var keystore = new keyType(size = 1 << Math.max(4, Math.ceil(Math.log(size) / Math.LN2))),
+      valstore = new valueType(size),
+      mask = size - 1;
+
+  for (var i = 0; i < size; ++i) {
+    keystore[i] = keyEmpty;
+  }
+
+  function set(key, value) {
+    var index = hash(key) & mask,
+        matchKey = keystore[index],
+        collisions = 0;
+    while (matchKey != keyEmpty) {
+      if (equal(matchKey, key)) return valstore[index] = value;
+      if (++collisions >= size) throw new Error("full hashmap");
+      matchKey = keystore[index = index + 1 & mask];
+    }
+    keystore[index] = key;
+    valstore[index] = value;
+    return value;
+  }
+
+  function maybeSet(key, value) {
+    var index = hash(key) & mask,
+        matchKey = keystore[index],
+        collisions = 0;
+    while (matchKey != keyEmpty) {
+      if (equal(matchKey, key)) return valstore[index];
+      if (++collisions >= size) throw new Error("full hashmap");
+      matchKey = keystore[index = index + 1 & mask];
+    }
+    keystore[index] = key;
+    valstore[index] = value;
+    return value;
+  }
+
+  function get(key, missingValue) {
+    var index = hash(key) & mask,
+        matchKey = keystore[index],
+        collisions = 0;
+    while (matchKey != keyEmpty) {
+      if (equal(matchKey, key)) return valstore[index];
+      if (++collisions >= size) break;
+      matchKey = keystore[index = index + 1 & mask];
+    }
+    return missingValue;
+  }
+
+  function keys() {
+    var keys = [];
+    for (var i = 0, n = keystore.length; i < n; ++i) {
+      var matchKey = keystore[i];
+      if (matchKey != keyEmpty) keys.push(matchKey);
+    }
+    return keys;
+  }
+
+  return {
+    set: set,
+    maybeSet: maybeSet, // set if unset
+    get: get,
+    keys: keys
+  };
+};
+
+var equalPoint = function (pointA, pointB) {
+  return pointA[0] === pointB[0] && pointA[1] === pointB[1];
+};
+
+// TODO if quantized, use simpler Int32 hashing?
+
+var buffer = new ArrayBuffer(16);
+var floats = new Float64Array(buffer);
+var uints = new Uint32Array(buffer);
+
+var hashPoint = function (point) {
+  floats[0] = point[0];
+  floats[1] = point[1];
+  var hash = uints[0] ^ uints[1];
+  hash = hash << 5 ^ hash >> 7 ^ uints[2] ^ uints[3];
+  return hash & 0x7fffffff;
+};
+
+var join = function (topology) {
+  var coordinates = topology.coordinates,
+      lines = topology.lines,
+      rings = topology.rings,
+      indexes = index(),
+      visitedByIndex = new Int32Array(coordinates.length),
+      leftByIndex = new Int32Array(coordinates.length),
+      rightByIndex = new Int32Array(coordinates.length),
+      junctionByIndex = new Int8Array(coordinates.length),
+      junctionCount = 0,
+      // upper bound on number of junctions
+  i,
+      n,
+      previousIndex,
+      currentIndex,
+      nextIndex;
+
+  for (i = 0, n = coordinates.length; i < n; ++i) {
+    visitedByIndex[i] = leftByIndex[i] = rightByIndex[i] = -1;
+  }
+
+  for (i = 0, n = lines.length; i < n; ++i) {
+    var line = lines[i],
+        lineStart = line[0],
+        lineEnd = line[1];
+    currentIndex = indexes[lineStart];
+    nextIndex = indexes[++lineStart];
+    ++junctionCount, junctionByIndex[currentIndex] = 1; // start
+    while (++lineStart <= lineEnd) {
+      sequence(i, previousIndex = currentIndex, currentIndex = nextIndex, nextIndex = indexes[lineStart]);
+    }
+    ++junctionCount, junctionByIndex[nextIndex] = 1; // end
+  }
+
+  for (i = 0, n = coordinates.length; i < n; ++i) {
+    visitedByIndex[i] = -1;
+  }
+
+  for (i = 0, n = rings.length; i < n; ++i) {
+    var ring = rings[i],
+        ringStart = ring[0] + 1,
+        ringEnd = ring[1];
+    previousIndex = indexes[ringEnd - 1];
+    currentIndex = indexes[ringStart - 1];
+    nextIndex = indexes[ringStart];
+    sequence(i, previousIndex, currentIndex, nextIndex);
+    while (++ringStart <= ringEnd) {
+      sequence(i, previousIndex = currentIndex, currentIndex = nextIndex, nextIndex = indexes[ringStart]);
+    }
+  }
+
+  function sequence(i, previousIndex, currentIndex, nextIndex) {
+    if (visitedByIndex[currentIndex] === i) return; // ignore self-intersection
+    visitedByIndex[currentIndex] = i;
+    var leftIndex = leftByIndex[currentIndex];
+    if (leftIndex >= 0) {
+      var rightIndex = rightByIndex[currentIndex];
+      if ((leftIndex !== previousIndex || rightIndex !== nextIndex) && (leftIndex !== nextIndex || rightIndex !== previousIndex)) {
+        ++junctionCount, junctionByIndex[currentIndex] = 1;
+      }
+    } else {
+      leftByIndex[currentIndex] = previousIndex;
+      rightByIndex[currentIndex] = nextIndex;
+    }
+  }
+
+  function index() {
+    var indexByPoint = hashmap(coordinates.length * 1.4, hashIndex, equalIndex, Int32Array, -1, Int32Array),
+        indexes = new Int32Array(coordinates.length);
+
+    for (var i = 0, n = coordinates.length; i < n; ++i) {
+      indexes[i] = indexByPoint.maybeSet(i, i);
+    }
+
+    return indexes;
+  }
+
+  function hashIndex(i) {
+    return hashPoint(coordinates[i]);
+  }
+
+  function equalIndex(i, j) {
+    return equalPoint(coordinates[i], coordinates[j]);
+  }
+
+  visitedByIndex = leftByIndex = rightByIndex = null;
+
+  var junctionByPoint = hashset(junctionCount * 1.4, hashPoint, equalPoint),
+      j;
+
+  // Convert back to a standard hashset by point for caller convenience.
+  for (i = 0, n = coordinates.length; i < n; ++i) {
+    if (junctionByIndex[j = indexes[i]]) {
+      junctionByPoint.add(coordinates[j]);
+    }
+  }
+
+  return junctionByPoint;
+};
+
+function rotateArray(array, start, end, offset) {
+  reverse$1(array, start, end);
+  reverse$1(array, start, start + offset);
+  reverse$1(array, start + offset, end);
+}
+
+function reverse$1(array, start, end) {
+  for (var mid = start + (end-- - start >> 1), t; start < mid; ++start, --end) {
+    t = array[start], array[start] = array[end], array[end] = t;
+  }
+}
+
+// Given an array of arcs in absolute (but already quantized!) coordinates,
+// converts to fixed-point delta encoding.
+// This is a destructive operation that modifies the given arcs!
+
+// Extracts the lines and rings from the specified hash of geometry objects.
+//
+// Returns an object with three properties:
+//
+// * coordinates - shared buffer of [x, y] coordinates
+// * lines - lines extracted from the hash, of the form [start, end]
+// * rings - rings extracted from the hash, of the form [start, end]
+//
+// For each ring or line, start and end represent inclusive indexes into the
+// coordinates buffer. For rings (and closed lines), coordinates[start] equals
+// coordinates[end].
+//
+// For each line or polygon geometry in the input hash, including nested
+// geometries as in geometry collections, the `coordinates` array is replaced
+// with an equivalent `arcs` array that, for each line (for line string
+// geometries) or ring (for polygon geometries), points to one of the above
+// lines or rings.
+
+// Given a hash of GeoJSON objects, returns a hash of GeoJSON geometry objects.
+// Any null input geometry objects are represented as {type: null} in the output.
+// Any feature.{id,properties,bbox} are transferred to the output geometry object.
+// Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+var TOPO_JP_URL = "https://raw.githubusercontent.com/dataofjapan/land/master/japan.topojson";
+
+var GeoJP = {
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'geoChoroplethChart'
+    }
+  },
+
+  mounted: function mounted() {
+    var chart = this.chart;
+
+    d3$1.json(TOPO_JP_URL, function (error, japan) {
+      var geo_features = feature(japan, japan.objects.japan).features;
+      chart.overlayGeoJson(geo_features, "pref", function (d) {
+        return ('0' + d.properties.id).slice(-2);
+      }).render();
+    });
+
+    var width = 1000;
+    var height = 1000;
+    var max = this.reducer.top(1)[0].value;
+
+    this.chart.width(width).height(height).projection(d3$1.geo.mercator().center([136, 35.5]).scale(2000).translate([width / 2, height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).title(function (d) {
+      return d.key;
+    });
+
+    return this.chart;
+  }
+};
+
 var Chart = {
   Base: Base,
   RateLine: RateLine,
   StackedLines: StackedLines,
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
+  GeoJP: GeoJP,
   compose: compose
 };
 
@@ -33484,6 +33929,7 @@ function install(Vue, options) {
       'week-row': Chart.WeekRow,
       'rate-line': Chart.RateLine,
       'stacked-lines': Chart.StackedLines,
+      'geo-jp': Chart.GeoJP,
       'stack-and-rate': Chart.compose(Chart.StackedLines, Chart.RateLine)
     }
   });
