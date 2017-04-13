@@ -24340,12 +24340,17 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$2;
 var index$1 = dc$1;
+
+//-------------------------------------
+
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -33739,6 +33744,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -33839,6 +33858,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -33850,6 +33872,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -33877,6 +33901,10 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
 
 var TOPO_JP_URL = "https://raw.githubusercontent.com/dataofjapan/land/master/japan.topojson";
 
