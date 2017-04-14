@@ -57,7 +57,7 @@ function start() {
 function _run() {
   Chart.install(Vue)
   load()
-    .then(start)
+    .then(() => setTimeout(start, 0))
     .catch(() => console.log('dataset setting not found. disable autorun.'))
 }
 
