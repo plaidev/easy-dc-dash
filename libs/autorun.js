@@ -49,7 +49,7 @@ function start() {
   const tags = Object.keys(Chart.installedComponents);
   tags.forEach((tag) => {
     document.querySelectorAll(tag).forEach((el) => {
-      new Vue({el})
+      new Vue({el, data: Store.state.binds})
     });
   })
 }
