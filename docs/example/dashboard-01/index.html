@@ -2,15 +2,16 @@
 <html lang="ja">
 
   <head>
-    <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
     <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0/dc.min.css" rel="stylesheet" type="text/css" />
 
+    <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
 
   </head>
 
   <body>
+  <easy-dc-dataset csv='./dataset.csv' date-fields="session_end_date" date-format="%Y-%m-%dT%H:%M:%S.%LZ"></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
   <div>
@@ -95,23 +96,10 @@ const segmentSets = [
 
 function run(content) {
 
-  EasyDC.Store.registerData(content);
-
-  const bindData = {
-    deviceSegments: Object.keys(segmentSets[0].segments),
-    referrerSegments: Object.keys(segmentSets[1].segments),
-    repeatSegments: Object.keys(segmentSets[2].segments),
-    deviceSegmentLabels: segmentSets[0].segments,
-    referrerSegmentLabels: segmentSets[1].segments,
-    repeatSegmentLabels: segmentSets[2].segments
-  }
-
-  for (let k in bindData) {
-    EasyDC.Store.setBindData(k, bindData[k])
-  }
+  // EasyDC.Store.registerData(content);
 
   const DashboardApp = new Vue({
-    el: '#krt-dc-dashboard',
+    el: '#date-volume-chart',
     data: EasyDC.Store.state.binds,
     components: {
       'volume-chart': DateVolumeChart // 追加のコンポーネント
@@ -119,29 +107,20 @@ function run(content) {
   });
 }
 
+const bindData = {
+  deviceSegments: Object.keys(segmentSets[0].segments),
+  referrerSegments: Object.keys(segmentSets[1].segments),
+  repeatSegments: Object.keys(segmentSets[2].segments),
+  deviceSegmentLabels: segmentSets[0].segments,
+  referrerSegmentLabels: segmentSets[1].segments,
+  repeatSegmentLabels: segmentSets[2].segments
+}
 
+for (let k in bindData) {
+  EasyDC.Store.setBindData(k, bindData[k])
+}
 
-//-------------------
-// データ読み込み
-d3.csv(
-  './dataset.csv',
-  function(d) {
-
-    (['pv', 'uu', 'bounce_cnt', 'session_cnt', 'cv_cnt']).forEach((field) => {
-      d[field] = parseInt(d[field])
-    });
-
-    (['avg_session_view_count', 'avg_session_spend_time']).forEach((field) => {
-      d[field] = parseFloat(d[field])
-    });
-
-    var isoFormat = d3.time.format.utc('%Y-%m-%dT%H:%M:%S.%LZ');
-    (['session_end_date']).forEach((field) => {
-      d[field] = isoFormat.parse(d[field])
-    })
-    return d
-  },
-  run);
+EasyDC.run(true, run)
 
     </script>
   </body>
