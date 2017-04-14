@@ -97,16 +97,22 @@ function run(content) {
 
   EasyDC.Store.registerData(content);
 
+  const bindData = {
+    deviceSegments: Object.keys(segmentSets[0].segments),
+    referrerSegments: Object.keys(segmentSets[1].segments),
+    repeatSegments: Object.keys(segmentSets[2].segments),
+    deviceSegmentLabels: segmentSets[0].segments,
+    referrerSegmentLabels: segmentSets[1].segments,
+    repeatSegmentLabels: segmentSets[2].segments
+  }
+
+  for (let k in bindData) {
+    EasyDC.Store.setBindData(k, bindData[k])
+  }
+
   const DashboardApp = new Vue({
     el: '#krt-dc-dashboard',
-    data: {
-      deviceSegments: Object.keys(segmentSets[0].segments),
-      referrerSegments: Object.keys(segmentSets[1].segments),
-      repeatSegments: Object.keys(segmentSets[2].segments),
-      deviceSegmentLabels: segmentSets[0].segments,
-      referrerSegmentLabels: segmentSets[1].segments,
-      repeatSegmentLabels: segmentSets[2].segments
-    },
+    data: EasyDC.Store.state.binds,
     components: {
       'volume-chart': DateVolumeChart // 追加のコンポーネント
     }

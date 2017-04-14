@@ -7,8 +7,9 @@ import dc from 'dc'
 
 class DashboardStore {
   constructor() {
-    //this.state = {
-    //};
+    this.state = {
+      binds: {}
+    };
 
     this._cf = {};
     this._charts = {};
@@ -16,6 +17,10 @@ class DashboardStore {
     this._dimensions = {
       default: {}
     };
+  }
+
+  setBindData(name, data) {
+    this.state.binds[name] = data;
   }
 
   registerData(data=[], options={}) {
