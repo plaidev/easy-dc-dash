@@ -4,11 +4,13 @@ import Store from './store'
 import Chart from './chart'
 
 
-function load() {
+let initPromise;
+
+function autoLoad() {
 
   const elms = document.querySelectorAll('easy-dc-dataset');
 
-  if (elms.length <= 0) return Promise.reject();
+  if (elms.length <= 0) return Promise.resolve();
 
   const promises = Array.prototype.map.call(elms, (el) => {
     const name = el.getAttribute('dataset') || undefined;
@@ -54,22 +56,25 @@ function start() {
   })
 }
 
-function _run() {
-  Chart.install(Vue)
-  load()
-    .then(() => setTimeout(start, 0))
-    .catch(() => console.log('dataset setting not found. disable autorun.'))
+export function init() {
+
+  initPromise = new Promise((resolve) => {
+    if (['complete', 'interactive'].includes(document.readyState)) {
+      resolve(autoLoad())
+    }
+    else {
+      document.addEventListener("DOMContentLoaded",function(){
+        resolve(autoLoad());
+      }, false);
+    }
+  })
+
 }
 
-export function run() {
-
-  if (['complete', 'interactive'].includes(document.readyState)) {
-    _run();
-  }
-  else {
-    document.addEventListener("DOMContentLoaded",function(){
-      _run();
-    }, false);
-  }
+export function run(auto=true, cb=null) {
+  Chart.install(Vue)
+  let p = initPromise;
+  if (auto) p = p.then(start);
+  if (cb) p = p.then(cb);
 }
 
