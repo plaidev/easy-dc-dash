@@ -26,7 +26,7 @@
     "vue": "^2.2.6"
   },
   "scripts": {
-    "build": "rollup -c -m && rollup -c -m --environment BUILD:cjs && rollup -c -m --environment BUILD:es",
+    "build": "rollup -c -m",
     "watch": "rollup -c -m -w",
     "http-server": "http-server -i"
   },
