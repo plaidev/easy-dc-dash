@@ -42,11 +42,11 @@ export function loadCSV(csvFile, options) {
 
 
 export function loadMode(queryName, options) {
-  if (!window.datasets) return cb([]);
+  if (!window.datasets) return Promise.resolve([]);
 
   const data = window.datasets.filter((d) => { if (d) { return d.queryName == queryName;}; })[0];
   const content = data && data.content;
-  if (!content) return cb([]);
+  if (!content) return Promise.resolve([]);
 
   content.forEach((d) => convert(d, options));
 
