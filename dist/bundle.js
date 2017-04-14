@@ -34078,11 +34078,13 @@ function loadMode(queryName, options) {
   return Promise.resolve(content);
 }
 
-function load() {
+var initPromise = void 0;
+
+function autoLoad() {
 
   var elms = document.querySelectorAll('easy-dc-dataset');
 
-  if (elms.length <= 0) return Promise.reject();
+  if (elms.length <= 0) return Promise.resolve();
 
   var promises = Array.prototype.map.call(elms, function (el) {
     var name = el.getAttribute('dataset') || undefined;
@@ -34128,37 +34130,41 @@ function start() {
   });
 }
 
-function _run() {
-  Chart.install(vue);
-  load().then(function () {
-    return setTimeout(start, 0);
-  }).catch(function () {
-    return console.log('dataset setting not found. disable autorun.');
+function init() {
+
+  initPromise = new Promise(function (resolve) {
+    if (['complete', 'interactive'].includes(document.readyState)) {
+      resolve(autoLoad());
+    } else {
+      document.addEventListener("DOMContentLoaded", function () {
+        resolve(autoLoad());
+      }, false);
+    }
   });
 }
 
 function run() {
+  var auto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+  var cb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-  if (['complete', 'interactive'].includes(document.readyState)) {
-    _run();
-  } else {
-    document.addEventListener("DOMContentLoaded", function () {
-      _run();
-    }, false);
-  }
+  Chart.install(vue);
+  var p = initPromise;
+  if (auto) p = p.then(start);
+  if (cb) p = p.then(cb);
 }
+
+init();
 
 // auto install in dist mode
 if (typeof window !== 'undefined' && window.Vue) {
   Chart.install(window.Vue);
-} else {
-  run();
 }
 
 var index = {
   Chart: Chart,
   Store: Store,
-  install: Chart.install
+  install: Chart.install,
+  run: run
 };
 
 module.exports = index;
