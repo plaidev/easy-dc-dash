@@ -29,11 +29,11 @@ function load() {
 
     if (mode) {
       p = loadMode(mode, options)
-        .then((data) => Store.registerData(data, options))
+        .then((data) => Store.registerData(data, {name}))
     }
     else if (csv) {
       p = loadCSV(csv, options)
-        .then((data) => Store.registerData(data, options))
+        .then((data) => Store.registerData(data, {name}))
     }
     else {
       p = Promise.resolve()
@@ -58,14 +58,12 @@ function _run() {
   Chart.install(Vue)
   load()
     .then(start)
-    .catch(() => {
-      console.log('dataset setting not found. disable autorun.')
-    })
+    .catch(() => console.log('dataset setting not found. disable autorun.'))
 }
 
 export function run() {
 
-  if (['compolete', 'interactive'].includes(document.readyState)) {
+  if (['complete', 'interactive'].includes(document.readyState)) {
     _run();
   }
   else {
