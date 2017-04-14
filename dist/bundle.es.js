@@ -24355,8 +24355,9 @@ var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
 
-    //this.state = {
-    //};
+    this.state = {
+      binds: {}
+    };
 
     this._cf = {};
     this._charts = {};
@@ -24367,6 +24368,11 @@ var DashboardStore = function () {
   }
 
   createClass(DashboardStore, [{
+    key: 'setBindData',
+    value: function setBindData(name, data) {
+      this.state.binds[name] = data;
+    }
+  }, {
     key: 'registerData',
     value: function registerData() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
@@ -34055,7 +34061,7 @@ function loadCSV(csvFile, options) {
 }
 
 function loadMode(queryName, options) {
-  if (!window.datasets) return cb([]);
+  if (!window.datasets) return Promise.resolve([]);
 
   var data = window.datasets.filter(function (d) {
     if (d) {
@@ -34063,7 +34069,7 @@ function loadMode(queryName, options) {
     }
   })[0];
   var content = data && data.content;
-  if (!content) return cb([]);
+  if (!content) return Promise.resolve([]);
 
   content.forEach(function (d) {
     return convert(d, options);
@@ -34097,11 +34103,11 @@ function load() {
 
     if (mode) {
       p = loadMode(mode, options).then(function (data) {
-        return Store.registerData(data, options);
+        return Store.registerData(data, { name: name });
       });
     } else if (csv) {
       p = loadCSV(csv, options).then(function (data) {
-        return Store.registerData(data, options);
+        return Store.registerData(data, { name: name });
       });
     } else {
       p = Promise.resolve();
@@ -34117,7 +34123,7 @@ function start() {
   var tags = Object.keys(Chart.installedComponents);
   tags.forEach(function (tag) {
     document.querySelectorAll(tag).forEach(function (el) {
-      new vue({ el: el });
+      new vue({ el: el, data: Store.state.binds });
     });
   });
 }
@@ -34125,13 +34131,13 @@ function start() {
 function _run() {
   Chart.install(vue);
   load().then(start).catch(function () {
-    console.log('dataset setting not found. disable autorun.');
+    return console.log('dataset setting not found. disable autorun.');
   });
 }
 
 function run() {
 
-  if (['compolete', 'interactive'].includes(document.readyState)) {
+  if (['complete', 'interactive'].includes(document.readyState)) {
     _run();
   } else {
     document.addEventListener("DOMContentLoaded", function () {
