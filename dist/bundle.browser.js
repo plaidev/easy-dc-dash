@@ -12660,7 +12660,7 @@ var crossfilter$2 = createCommonjsModule(function (module, exports) {
   })('object' !== 'undefined' && exports || commonjsGlobal);
 });
 
-var index$2 = crossfilter$2.crossfilter;
+var index$1 = crossfilter$2.crossfilter;
 
 var crossfilter$4 = createCommonjsModule(function (module, exports) {
   (function (exports) {
@@ -24346,8 +24346,8 @@ var dc$1 = createCommonjsModule(function (module) {
 // Import DC and dependencies
 
 d3 = d3$1;
-crossfilter = index$2;
-var index$1 = dc$1;
+crossfilter = index$1;
+var index$2 = dc$1;
 
 //-------------------------------------
 
@@ -24373,28 +24373,11 @@ var DashboardStore = function () {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var _options$name = options.name,
-          name = _options$name === undefined ? 'default' : _options$name,
-          _options$dateFields = options.dateFields,
-          dateFields = _options$dateFields === undefined ? [] : _options$dateFields,
-          _options$dateFormat = options.dateFormat,
-          dateFormat = _options$dateFormat === undefined ? "%Y-%m-%d" : _options$dateFormat,
-          _options$dateUTC = options.dateUTC,
-          dateUTC = _options$dateUTC === undefined ? false : _options$dateUTC;
-
-      // 日付のフォーマット。dataが整形済みなら不要
-
-      var _format = d3$1.time.format;
-      if (dateUTC) _format = _format.utc;
-      var ymdFormat = _format(dateFormat);
-
-      dateFields.forEach(function (field) {
-        data.forEach(function (d) {
-          d[field] = ymdFormat.parse(d[field]);
-        });
-      });
+          name = _options$name === undefined ? 'default' : _options$name;
 
       // crossfilterのインスタンス作成
-      this._cf[name] = index$2(data);
+
+      this._cf[name] = index$1(data);
     }
   }, {
     key: 'registerDimension',
@@ -24432,7 +24415,7 @@ var DashboardStore = function () {
 
       var binds = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-      var chart = new index$1[chartType](parent);
+      var chart = new index$2[chartType](parent);
 
       // volumeとして参照するchartがあれば登録
       if (binds.volume) {
@@ -33226,6 +33209,18 @@ function compose(Left, Right) {
   return ComponentObject;
 }
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " a.reset { display: block; position: absolute; width: 5em; right: 0; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
 var SegmentPie = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
@@ -33292,6 +33287,18 @@ var SegmentPie = { render: function render() {
     Store.unregisterDimension(this.dimension);
   }
 };
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
 
 var _weekFormat = d3$1.time.format("%w");
 var _ymdFormat = d3$1.time.format("%Y-%m-%d");
@@ -33380,6 +33387,18 @@ var WeekRow = { render: function render() {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
 var RateLine = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
@@ -33431,6 +33450,18 @@ var RateLine = { render: function render() {
     return this.chart.render();
   }
 };
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
 
 function _generateReducer() {
   var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -33906,6 +33937,18 @@ function reverse$1(array, start, end) {
 // Each object in the specified hash must be a GeoJSON object,
 // meaning FeatureCollection, a Feature or a geometry object.
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
 var TOPO_JP_URL = "https://raw.githubusercontent.com/dataofjapan/land/master/japan.topojson";
 
 var GeoJP = {
@@ -33940,6 +33983,21 @@ var GeoJP = {
   }
 };
 
+var components = {
+  'segment-pie': SegmentPie,
+  'week-row': WeekRow,
+  'rate-line': RateLine,
+  'stacked-lines': StackedLines,
+  'geo-jp': GeoJP,
+  'stack-and-rate': compose(StackedLines, RateLine)
+};
+
+function install(Vue, options) {
+  Vue.mixin({
+    components: components
+  });
+}
+
 var Chart = {
   Base: Base,
   RateLine: RateLine,
@@ -33947,31 +34005,153 @@ var Chart = {
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
   GeoJP: GeoJP,
-  compose: compose
+  compose: compose,
+  install: install,
+  installedComponents: components
 };
 
-function install(Vue, options) {
-  Vue.mixin({
-    components: {
-      'segment-pie': Chart.SegmentPie,
-      'week-row': Chart.WeekRow,
-      'rate-line': Chart.RateLine,
-      'stacked-lines': Chart.StackedLines,
-      'geo-jp': Chart.GeoJP,
-      'stack-and-rate': Chart.compose(Chart.StackedLines, Chart.RateLine)
-    }
+function convert(d) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var _options$intFields = options.intFields,
+      intFields = _options$intFields === undefined ? [] : _options$intFields,
+      _options$floatFields = options.floatFields,
+      floatFields = _options$floatFields === undefined ? [] : _options$floatFields,
+      _options$dateFields = options.dateFields,
+      dateFields = _options$dateFields === undefined ? [] : _options$dateFields,
+      _options$dateFormat = options.dateFormat,
+      dateFormat = _options$dateFormat === undefined ? '%Y-%m-%dT%H:%M:%S.%LZ' : _options$dateFormat,
+      _options$isUTC = options.isUTC,
+      isUTC = _options$isUTC === undefined ? true : _options$isUTC;
+
+
+  intFields.forEach(function (field) {
+    var i = parseInt(d[field]);
+    if (Number.isNaN(i)) i = 0;
+    d[field] = i;
   });
+
+  floatFields.forEach(function (field) {
+    var i = parseFloat(d[field]);
+    if (Number.isNaN(i)) i = 0;
+    d[field] = i;
+  });
+
+  var _format = d3$1.time.format;
+  if (isUTC) _format = _format.utc;
+  var format = _format(dateFormat);
+
+  dateFields.forEach(function (field) {
+    d[field] = format.parse(d[field]);
+  });
+
+  return d;
+}
+
+function loadCSV(csvFile, options) {
+  return new Promise(function (resolve) {
+    d3$1.csv('./dataset.csv', function (d) {
+      return convert(d, options);
+    }, resolve);
+  });
+}
+
+function loadMode(queryName, options) {
+  if (!window.datasets) return cb([]);
+
+  var data = window.datasets.filter(function (d) {
+    if (d) {
+      return d.queryName == queryName;
+    }
+  })[0];
+  var content = data && data.content;
+  if (!content) return cb([]);
+
+  content.forEach(function (d) {
+    return convert(d, options);
+  });
+
+  return Promise.resolve(content);
+}
+
+function load() {
+
+  var elms = document.querySelectorAll('easy-dc-dataset');
+
+  if (elms.length <= 0) return Promise.reject();
+
+  var promises = Array.prototype.map.call(elms, function (el) {
+    var name = el.getAttribute('dataset') || undefined;
+    var mode = el.getAttribute('mode');
+    var csv = el.getAttribute('csv');
+
+    var dateFields = el.getAttribute('date-fields');
+    var dateFormat = el.getAttribute('date-format');
+    var isUTC = el.getAttribute('date-is-utc');
+
+    var options = {
+      dateFields: dateFields ? dateFields.split(',') : undefined,
+      dateFormat: dateFormat,
+      isUTC: isUTC
+    };
+
+    var p = void 0;
+
+    if (mode) {
+      p = loadMode(mode, options).then(function (data) {
+        return Store.registerData(data, options);
+      });
+    } else if (csv) {
+      p = loadCSV(csv, options).then(function (data) {
+        return Store.registerData(data, options);
+      });
+    } else {
+      p = Promise.resolve();
+    }
+
+    return p;
+  });
+
+  return Promise.all(promises);
+}
+
+function start() {
+  var tags = Object.keys(Chart.installedComponents);
+  tags.forEach(function (tag) {
+    document.querySelectorAll(tag).forEach(function (el) {
+      new vue({ el: el });
+    });
+  });
+}
+
+function _run() {
+  Chart.install(vue);
+  load().then(start).catch(function () {
+    console.log('dataset setting not found. disable autorun.');
+  });
+}
+
+function run() {
+
+  if (['compolete', 'interactive'].includes(document.readyState)) {
+    _run();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      _run();
+    }, false);
+  }
 }
 
 // auto install in dist mode
 if (typeof window !== 'undefined' && window.Vue) {
-  install(window.Vue);
+  Chart.install(window.Vue);
+} else {
+  run();
 }
 
 var index = {
   Chart: Chart,
   Store: Store,
-  install: install
+  install: Chart.install
 };
 
 return index;
