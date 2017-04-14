@@ -6,6 +6,21 @@ import RateLine from './rate-line.vue'
 import StackedLines from './stacked-lines.vue'
 import GeoJP from './geo-jp.vue'
 
+const components = {
+  'segment-pie': SegmentPie,
+  'week-row': WeekRow,
+  'rate-line': RateLine,
+  'stacked-lines': StackedLines,
+  'geo-jp': GeoJP,
+  'stack-and-rate': compose(StackedLines, RateLine)
+}
+
+function install(Vue, options) {
+  Vue.mixin({
+    components: components
+  })
+}
+
 export default {
   Base: Base,
   RateLine: RateLine,
@@ -13,5 +28,7 @@ export default {
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
   GeoJP: GeoJP,
-  compose: compose
+  compose: compose,
+  install: install,
+  installedComponents: components
 }
