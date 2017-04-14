@@ -34130,7 +34130,9 @@ function start() {
 
 function _run() {
   Chart.install(vue);
-  load().then(start).catch(function () {
+  load().then(function () {
+    return setTimeout(start, 0);
+  }).catch(function () {
     return console.log('dataset setting not found. disable autorun.');
   });
 }
