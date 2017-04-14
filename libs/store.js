@@ -20,20 +20,9 @@ class DashboardStore {
 
   registerData(data=[], options={}) {
     const {
-      name = 'default',
-      dateFields = [],
-      dateFormat = "%Y-%m-%d",
-      dateUTC = false
+      name = 'default'
     } = options;
 
-    // 日付のフォーマット。dataが整形済みなら不要
-    let _format = d3.time.format;
-    if (dateUTC) _format = _format.utc;
-    const ymdFormat = _format(dateFormat);
-
-    dateFields.forEach((field) => {
-      data.forEach((d) => { d[field] = ymdFormat.parse(d[field]) });
-    })
 
     // crossfilterのインスタンス作成
     this._cf[name] = crossfilter(data);
