@@ -65,7 +65,6 @@ export function loadMode(queryName, options={}) {
 
   if (labels) {
     const l = labels.split(',')
-    const _labels = {}
     let idx = 0
     data.columns.forEach((column) => {
       _labels[column.name] = l[idx++]
