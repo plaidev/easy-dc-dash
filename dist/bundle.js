@@ -24348,6 +24348,79 @@ d3 = d3$1;
 crossfilter = index$1;
 var index$2 = dc$1;
 
+function findDataFromDatasets(name) {
+  if (!window.datasets || window.datasets instanceof Array) return [];
+  var data = window.datasets.find(function (dataset) {
+    return dataset.queryName === name;
+  });
+  return data.content || [];
+}
+
+function convertArrayOfObjectsToCSV(args) {
+  var result = void 0,
+      ctr = void 0,
+      keys = void 0,
+      columnDelimiter = void 0,
+      lineDelimiter = void 0;
+
+  var _ref = args || {},
+      data = _ref.data,
+      _ref$labels = _ref.labels,
+      labels = _ref$labels === undefined ? {} : _ref$labels;
+
+  if (data == null || !data.length) {
+    return null;
+  }
+
+  columnDelimiter = args.columnDelimiter || ',';
+  lineDelimiter = args.lineDelimiter || '\n';
+  keys = Object.keys(data[0]);
+  result = '';
+  result += keys.map(function (k) {
+    return labels[k] || k;
+  }).join(columnDelimiter);
+  result += lineDelimiter;
+
+  data.forEach(function (item) {
+    ctr = 0;
+    keys.forEach(function (key) {
+      if (ctr > 0) result += columnDelimiter;
+      var v = item[key];
+      if (item[key] instanceof Date) {
+        v = item[key].toISOString();
+      }
+      result += '"' + String(v).replace('"', '\\"') + '"';
+      ctr++;
+    });
+    result += lineDelimiter;
+  });
+  return result;
+}
+
+function downloadCSV(name_or_data, filename, labels) {
+
+  var dat = void 0;
+  if (name_or_data instanceof Array) data = name_or_data;else data = findDataFromDatasets(name_or_data);
+
+  var csvContent = convertArrayOfObjectsToCSV({ data: data, labels: labels });
+
+  if (!csvContent) {
+    console.log('dataset not found', name);
+    return;
+  }
+
+  var blob = new Blob([csvContent], {
+    type: 'text/csv;charset=utf-8;'
+  });
+
+  var url = URL.createObjectURL(blob);
+
+  var pom = document.createElement('a');
+  pom.href = url;
+  pom.setAttribute('download', filename);
+  pom.click();
+}
+
 //-------------------------------------
 
 
@@ -24365,6 +24438,7 @@ var DashboardStore = function () {
     this._dimensions = {
       default: {}
     };
+    this._labels = {};
   }
 
   createClass(DashboardStore, [{
@@ -24378,40 +24452,49 @@ var DashboardStore = function () {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var _options$name = options.name,
-          name = _options$name === undefined ? 'default' : _options$name;
+          name = _options$name === undefined ? 'default' : _options$name,
+          _options$labels = options.labels,
+          labels = _options$labels === undefined ? {} : _options$labels;
 
       // crossfilterのインスタンス作成
 
       this._cf[name] = index$1(data);
+      this._labels[name] = labels;
     }
   }, {
     key: 'registerDimension',
     value: function registerDimension(name, method) {
-      var cf_name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'default';
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var _options$dataset = options.dataset,
+          dataset = _options$dataset === undefined ? 'default' : _options$dataset;
 
-      if (!(cf_name in this._dimensions)) {
-        this._dimensions[cf_name] = {};
+
+      if (!(dataset in this._dimensions)) {
+        this._dimensions[dataset] = {};
       }
 
       // TODO: dimension作成数のlimit管理
-      if (!(name in this._dimensions[cf_name])) {
-        this._dimensions[cf_name][name] = this._cf[cf_name].dimension(method);
+      if (!(name in this._dimensions[dataset])) {
+        this._dimensions[dataset][name] = this._cf[dataset].dimension(method);
       }
-      return this._dimensions[cf_name][name];
+      return this._dimensions[dataset][name];
     }
   }, {
     key: 'unregisterDimension',
-    value: function unregisterDimension(name) {
+    value: function unregisterDimension(name, _ref) {
       // TODO: implement
 
-      var cf_name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'default';
+      var _ref$dataset = _ref.dataset,
+          dataset = _ref$dataset === undefined ? 'default' : _ref$dataset;
     }
   }, {
     key: 'getDimension',
     value: function getDimension(name) {
-      var cf_name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'default';
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset2 = options.dataset,
+          dataset = _options$dataset2 === undefined ? 'default' : _options$dataset2;
 
-      return this._dimensions[cf_name][name];
+      return this._dimensions[dataset][name];
     }
   }, {
     key: 'registerChart',
@@ -24449,6 +24532,41 @@ var DashboardStore = function () {
       // TODO: implement
       // this._charts[name] = chart;
     }
+  }, {
+    key: 'setLabels',
+    value: function setLabels(labels) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset3 = options.dataset,
+          dataset = _options$dataset3 === undefined ? 'default' : _options$dataset3;
+
+      if (!this._labels[dataset]) this._labels[dataset] = {};
+      Object.assign(this._labels[dataset], labels);
+    }
+  }, {
+    key: 'downloadCSV',
+    value: function downloadCSV$$1(filename) {
+      var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var _options$dataset4 = options.dataset,
+          dataset = _options$dataset4 === undefined ? 'default' : _options$dataset4,
+          _options$labels2 = options.labels,
+          labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
+
+
+      if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
+        var idx = 0;
+        this.registerDimension('_all', function (d) {
+          return idx++;
+        }, { dataset: dataset });
+      } else if (!this._dimensions[dataset][dimensionName]) {
+        console.log('dimension not registered');
+        return;
+      }
+
+      downloadCSV(this._dimensions[dataset][dimensionName].top(Infinity), filename, labels);
+
+      console.log(this._dimensions[dataset][dimensionName].top(Infinity));
+    }
   }]);
   return DashboardStore;
 }();
@@ -24472,6 +24590,10 @@ var Base = {
   template: '<div class="krt-dc-component" :id="id"></div>',
 
   props: {
+    dataset: {
+      type: String,
+      default: 'default'
+    },
     dimension: {
       type: String
     },
@@ -24509,10 +24631,10 @@ var Base = {
     },
     grouping: function grouping() {
       var grouping = this.getDimensionExtractor;
-      return Store.registerDimension(this.dimensionName, grouping);
+      return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     reducer: function reducer() {
-      var dim = Store.getDimension(this.dimensionName);
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var reducer = this.getReducerExtractor;
       return dim.group().reduceSum(reducer);
     },
@@ -24555,7 +24677,7 @@ var Base = {
 
   destroyed: function destroyed() {
     Store.unregisterChart(this.id);
-    Store.unregisterDimension(this.dimensionName);
+    Store.unregisterDimension(this.dimensionName, { dataset: this.dataset });
   }
 };
 
@@ -34052,15 +34174,32 @@ function convert(d) {
   return d;
 }
 
-function loadCSV(csvFile, options) {
+function loadCSV(csvFile) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var labels = options.labels;
+
+  var l = labels.split(',');
   return new Promise(function (resolve) {
     d3$1.csv('./dataset.csv', function (d) {
       return convert(d, options);
-    }, resolve);
+    }, function (content) {
+      var _labels = {};
+      if (labels) {
+        var idx = 0;
+        Object.keys(content[0]).forEach(function (key) {
+          _labels[key] = l[idx++];
+        });
+      }
+      resolve({ content: content, labels: _labels });
+    });
   });
 }
 
-function loadMode(queryName, options) {
+function loadMode(queryName) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var labels = options.labels;
+
+  var _labels = {};
   if (!window.datasets) return Promise.resolve([]);
 
   var data = window.datasets.filter(function (d) {
@@ -34075,7 +34214,16 @@ function loadMode(queryName, options) {
     return convert(d, options);
   });
 
-  return Promise.resolve(content);
+  if (labels) {
+    var l = labels.split(',');
+    var _labels2 = {};
+    var idx = 0;
+    data.columns.forEach(function (column) {
+      _labels2[column.name] = l[idx++];
+    });
+  }
+
+  return Promise.resolve({ content: content, labels: _labels });
 }
 
 var initPromise = void 0;
@@ -34091,11 +34239,14 @@ function autoLoad() {
     var mode = el.getAttribute('mode');
     var csv = el.getAttribute('csv');
 
+    var labels = el.getAttribute('labels');
     var dateFields = el.getAttribute('date-fields');
     var dateFormat = el.getAttribute('date-format');
     var isUTC = el.getAttribute('date-is-utc');
+    if (isUTC === undefined || isUTC === null) isUTC = true;else isUTC = isUTC == 'true';
 
     var options = {
+      labels: labels,
       dateFields: dateFields ? dateFields.split(',') : undefined,
       dateFormat: dateFormat,
       isUTC: isUTC
@@ -34104,12 +34255,16 @@ function autoLoad() {
     var p = void 0;
 
     if (mode) {
-      p = loadMode(mode, options).then(function (data) {
-        return Store.registerData(data, { name: name });
+      p = loadMode(mode, options).then(function (_ref) {
+        var content = _ref.content,
+            labels = _ref.labels;
+        return Store.registerData(content, { name: name, labels: labels });
       });
     } else if (csv) {
-      p = loadCSV(csv, options).then(function (data) {
-        return Store.registerData(data, { name: name });
+      p = loadCSV(csv, options).then(function (_ref2) {
+        var content = _ref2.content,
+            labels = _ref2.labels;
+        return Store.registerData(content, { name: name, labels: labels });
       });
     } else {
       p = Promise.resolve();
