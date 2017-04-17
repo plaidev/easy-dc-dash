@@ -20,7 +20,9 @@ function autoLoad() {
     const labels = el.getAttribute('labels')
     const dateFields = el.getAttribute('date-fields')
     const dateFormat = el.getAttribute('date-format')
-    const isUTC = el.getAttribute('date-is-utc')
+    let isUTC = el.getAttribute('date-is-utc')
+    if (isUTC === undefined || isUTC === null) isUTC = true;
+    else isUTC = (isUTC == 'true');
 
     const options = {
       labels,
