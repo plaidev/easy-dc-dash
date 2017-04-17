@@ -122,8 +122,6 @@ class DashboardStore {
       filename,
       labels
     )
-
-    console.log(this._dimensions[dataset][dimensionName].top(Infinity))
   }
 
 }
