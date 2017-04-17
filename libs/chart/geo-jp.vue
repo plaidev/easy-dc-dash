@@ -54,3 +54,13 @@ export default {
 }
 
 </script>
+
+
+<style scoped>
+
+.pref {
+  fill: #fff;
+  stroke: #aaa;
+}
+
+</style>
