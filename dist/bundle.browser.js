@@ -24565,8 +24565,6 @@ var DashboardStore = function () {
       }
 
       downloadCSV(this._dimensions[dataset][dimensionName].top(Infinity), filename, labels);
-
-      console.log(this._dimensions[dataset][dimensionName].top(Infinity));
     }
   }]);
   return DashboardStore;
@@ -34069,7 +34067,7 @@ function reverse$1(array, start, end) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .pref { fill: #fff; stroke: #aaa; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34179,7 +34177,7 @@ function loadCSV(csvFile) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var labels = options.labels;
 
-  var l = labels.split(',');
+  var l = labels ? labels.split(',') : [];
   return new Promise(function (resolve) {
     d3$1.csv('./dataset.csv', function (d) {
       return convert(d, options);
@@ -34216,7 +34214,7 @@ function loadMode(queryName) {
   });
 
   if (labels) {
-    var l = labels.split(',');
+    var l = labels ? labels.split(',') : [];
     var idx = 0;
     data.columns.forEach(function (column) {
       _labels[column.name] = l[idx++];
