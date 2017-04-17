@@ -102,6 +102,30 @@ class DashboardStore {
     Object.assign(this._labels[dataset], labels);
   }
 
+  downloadCSV(filename, dimensionName='_all', options={}) {
+    const {
+      dataset = 'default',
+      labels = this._labels[dataset] || {},
+    } = options;
+
+    if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
+      let idx = 0;
+      this.registerDimension('_all', (d) => idx++, {dataset})
+    }
+    else if (!this._dimensions[dataset][dimensionName]) {
+      console.log('dimension not registered')
+      return;
+    }
+
+    downloadCSV(
+      this._dimensions[dataset][dimensionName].top(Infinity),
+      filename,
+      labels
+    )
+
+    console.log(this._dimensions[dataset][dimensionName].top(Infinity))
+  }
+
 }
 
 
