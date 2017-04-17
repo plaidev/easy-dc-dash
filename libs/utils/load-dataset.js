@@ -36,7 +36,7 @@ function convert(d, options={}) {
 
 export function loadCSV(csvFile, options={}) {
   const {labels} = options;
-  const l = labels.split(',')
+  const l = labels ? labels.split(','): [];
   return new Promise((resolve) => {
     d3.csv('./dataset.csv', (d) => convert(d, options), (content) => {
       const _labels = {};
@@ -64,7 +64,7 @@ export function loadMode(queryName, options={}) {
   content.forEach((d) => convert(d, options));
 
   if (labels) {
-    const l = labels.split(',')
+    const l = labels ? labels.split(','): [];
     let idx = 0
     data.columns.forEach((column) => {
       _labels[column.name] = l[idx++]
