@@ -34216,10 +34216,9 @@ function loadMode(queryName) {
 
   if (labels) {
     var l = labels.split(',');
-    var _labels2 = {};
     var idx = 0;
     data.columns.forEach(function (column) {
-      _labels2[column.name] = l[idx++];
+      _labels[column.name] = l[idx++];
     });
   }
 
