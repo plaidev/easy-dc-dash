@@ -17,11 +17,13 @@ function autoLoad() {
     const mode = el.getAttribute('mode');
     const csv = el.getAttribute('csv');
 
+    const labels = el.getAttribute('labels')
     const dateFields = el.getAttribute('date-fields')
     const dateFormat = el.getAttribute('date-format')
     const isUTC = el.getAttribute('date-is-utc')
 
     const options = {
+      labels,
       dateFields: dateFields ? dateFields.split(','): undefined,
       dateFormat,
       isUTC
@@ -31,11 +33,11 @@ function autoLoad() {
 
     if (mode) {
       p = loadMode(mode, options)
-        .then((data) => Store.registerData(data, {name}))
+        .then(({content, labels}) => Store.registerData(content, {name, labels}))
     }
     else if (csv) {
       p = loadCSV(csv, options)
-        .then((data) => Store.registerData(data, {name}))
+        .then(({content, labels}) => Store.registerData(content, {name, labels}))
     }
     else {
       p = Promise.resolve()

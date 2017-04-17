@@ -34,14 +34,27 @@ function convert(d, options={}) {
 }
 
 
-export function loadCSV(csvFile, options) {
+export function loadCSV(csvFile, options={}) {
+  const {labels} = options;
+  const l = labels.split(',')
   return new Promise((resolve) => {
-    d3.csv('./dataset.csv', (d) => convert(d, options), resolve)
+    d3.csv('./dataset.csv', (d) => convert(d, options), (content) => {
+      const _labels = {};
+      if (labels) {
+        let idx = 0;
+        Object.keys(content[0]).forEach((key) => {
+          _labels[key] = l[idx++];
+        })
+      }
+      resolve({content, labels: _labels})
+    })
   })
 }
 
 
-export function loadMode(queryName, options) {
+export function loadMode(queryName, options={}) {
+  const {labels} = options;
+  const _labels = {};
   if (!window.datasets) return Promise.resolve([]);
 
   const data = window.datasets.filter((d) => { if (d) { return d.queryName == queryName;}; })[0];
@@ -50,6 +63,15 @@ export function loadMode(queryName, options) {
 
   content.forEach((d) => convert(d, options));
 
-  return Promise.resolve(content)
+  if (labels) {
+    const l = labels.split(',')
+    const _labels = {}
+    let idx = 0
+    data.columns.forEach((column) => {
+      _labels[column.name] = l[idx++]
+    })
+  }
+
+  return Promise.resolve({content, labels: _labels})
 }
 
