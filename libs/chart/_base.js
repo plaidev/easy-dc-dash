@@ -9,6 +9,10 @@ export default {
   template: `<div class="krt-dc-component" :id="id"></div>`,
 
   props: {
+    dataset: {
+      type: String,
+      default: 'default'
+    },
     dimension: {
       type: String
     },
@@ -46,10 +50,10 @@ export default {
     },
     grouping: function() {
       const grouping = this.getDimensionExtractor;
-      return Store.registerDimension(this.dimensionName, grouping)
+      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName);
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const reducer = this.getReducerExtractor;
       return dim.group().reduceSum(reducer)
     },
@@ -98,6 +102,6 @@ export default {
 
   destroyed: function() {
     Store.unregisterChart(this.id);
-    Store.unregisterDimension(this.dimensionName)
+    Store.unregisterDimension(this.dimensionName, {dataset: this.dataset})
   }
 }

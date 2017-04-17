@@ -1,6 +1,7 @@
 import d3 from 'd3'
 import crossfilter from 'crossfilter'
 import dc from 'dc'
+import {downloadCSV} from './utils/blob-csv'
 
 //-------------------------------------
 
@@ -17,6 +18,7 @@ class DashboardStore {
     this._dimensions = {
       default: {}
     };
+    this._labels = {};
   }
 
   setBindData(name, data) {
@@ -25,32 +27,40 @@ class DashboardStore {
 
   registerData(data=[], options={}) {
     const {
-      name = 'default'
+      name = 'default',
+      labels = {}
     } = options;
-
 
     // crossfilterのインスタンス作成
     this._cf[name] = crossfilter(data);
+    this._labels[name] = labels;
   }
 
-  registerDimension(name, method, cf_name='default') {
-    if (!(cf_name in this._dimensions)) {
-      this._dimensions[cf_name] = {};
+  registerDimension(name, method, options={}) {
+    const {
+      dataset = 'default'
+    } = options;
+
+    if (!(dataset in this._dimensions)) {
+      this._dimensions[dataset] = {};
     }
 
     // TODO: dimension作成数のlimit管理
-    if (!(name in this._dimensions[cf_name])) {
-      this._dimensions[cf_name][name] = this._cf[cf_name].dimension(method)
+    if (!(name in this._dimensions[dataset])) {
+      this._dimensions[dataset][name] = this._cf[dataset].dimension(method)
     }
-    return this._dimensions[cf_name][name];
+    return this._dimensions[dataset][name];
   }
 
-  unregisterDimension(name, cf_name='default') {
+  unregisterDimension(name, {dataset='default'}) {
     // TODO: implement
   }
 
-  getDimension(name, cf_name='default') {
-    return this._dimensions[cf_name][name];
+  getDimension(name, options={}) {
+    const {
+      dataset = 'default'
+    } = options;
+    return this._dimensions[dataset][name];
   }
 
   registerChart(parent, name, chartType, binds={}) {
@@ -82,6 +92,14 @@ class DashboardStore {
   unregisterChart(name, chart) {
     // TODO: implement
     // this._charts[name] = chart;
+  }
+
+  setLabels(labels, options={}) {
+    const {
+      dataset = 'default'
+    } = options;
+    if (!this._labels[dataset]) this._labels[dataset] = {};
+    Object.assign(this._labels[dataset], labels);
   }
 
 }
