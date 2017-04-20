@@ -49,6 +49,25 @@ var createClass = function () {
   };
 }();
 
+
+
+
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
 var d3$1 = createCommonjsModule(function (module) {
   !function () {
     var d3 = {
@@ -24340,10 +24359,8 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    
+    //# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24498,6 +24515,15 @@ var DashboardStore = function () {
       return this._dimensions[dataset][name];
     }
   }, {
+    key: 'getCfSize',
+    value: function getCfSize() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _options$name2 = options.name,
+          name = _options$name2 === undefined ? 'default' : _options$name2;
+
+      return this._cf[name].size();
+    }
+  }, {
     key: 'registerChart',
     value: function registerChart(parent, name, chartType) {
       var _this = this;
@@ -24612,6 +24638,12 @@ var Base = {
     },
     scale: {
       type: String
+    },
+    width: {
+      type: Number
+    },
+    height: {
+      type: Number
     }
   },
 
@@ -24668,6 +24700,8 @@ var Base = {
     if (this.reducer) chart.group(this.reducer);
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
+    if (this.width) chart.width(this.width);
+    if (this.height) chart.width(this.height);
 
     this.chart = chart;
 
@@ -33901,20 +33935,6 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34015,9 +34035,6 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
-// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
-// point sequences are identified. The topology can then be subsequently deduped
-// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34029,8 +34046,6 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
-
-// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -34058,10 +34073,6 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
-
-// Constructs the TopoJSON Topology for the specified hash of features.
-// Each object in the specified hash must be a GeoJSON object,
-// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -34109,12 +34120,203 @@ var GeoJP = {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .container { display: flex; flex-direction: column; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var DataTable = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" of "), _c('span', [_vm._v(_vm._s(this.cfSize))]), _vm._v(". "), _c('button', _vm._b({ on: { "click": function click($event) {
+          _vm.prevPage();
+        } } }, 'button', { disabled: _vm.isFirstPage }), [_vm._v("Prev")]), _vm._v(" "), _c('button', _vm._b({ on: { "click": function click($event) {
+          _vm.nextPage();
+        } } }, 'button', { disabled: _vm.isLastPage }), [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id } })]);
+  }, staticRenderFns: [],
+  extends: Base,
+  props: {
+    dimension: {
+      type: String,
+      default: 'd.site_name'
+    },
+    chartType: {
+      type: String,
+      default: 'dataTable'
+    },
+    columns: {
+      type: Object
+    },
+    // row order
+    sortBy: {
+      type: String,
+      default: 'site_name'
+    },
+    order: {
+      type: String,
+      default: 'd3.descending'
+    },
+    // chart style
+    width: {
+      type: Number,
+      default: 1000
+    },
+    height: {
+      type: Number,
+      default: 1000
+    },
+    // paging
+    useTablePaging: {
+      type: Boolean,
+      default: true
+    },
+    offset: {
+      type: Number,
+      default: 0
+    },
+    rowsPerPage: {
+      type: Number,
+      default: 10
+    }
+  },
+  data: function data() {
+    return {
+      ofs: this.offset,
+      pag: this.rowsPerPage,
+      cfSize: Store.getCfSize(),
+      columnSettings: []
+    };
+  },
+
+  computed: {
+    beginRow: function beginRow() {
+      return this.ofs;
+    },
+    endRow: function endRow() {
+      return this.ofs + this.pag - 1;
+    },
+    firstRow: function firstRow() {
+      return this.grouping.top(1)[0];
+    },
+    cols: function cols() {
+      return Object.keys(this.getRow(this.firstRow));
+    },
+    isFirstPage: function isFirstPage() {
+      return this.ofs - this.pag < 0 ? 'true' : null;
+    },
+    isLastPage: function isLastPage() {
+      return this.ofs + this.pag >= this.cfSize ? 'true' : null;
+    }
+  },
+  methods: {
+    extractDimensionName: function extractDimensionName(name) {
+      return name.replace(/d\./, '');
+    },
+    registerDimension: function registerDimension() {
+      var getter = this.getDimensionExtractor;
+      var grouping = getter(this.dimension);
+      return Store.registerDimension(this.dimension, grouping);
+    },
+    getRow: function getRow(v) {
+      var _this = this;
+
+      var columns = Object.keys(this.columns);
+      var rows = {};
+      columns.forEach(function (k) {
+        if (_this.columns[k].count) {
+          Object.assign(rows, defineProperty({}, k, {
+            count: v[_this.columns[k].count],
+            value: v[_this.columns[k].value]
+          }));
+        } else if (v[k]) {
+          Object.assign(rows, defineProperty({}, k, v[k]));
+        }
+      });
+      return rows;
+    },
+    setColumnSettings: function setColumnSettings() {
+      var _this2 = this;
+
+      this.cols.forEach(function (k) {
+        _this2.columnSettings.push({ label: k, format: function format(d) {
+            return d.value[k];
+          } });
+      });
+    },
+    updateTable: function updateTable() {
+      this.chart.beginSlice(this.ofs);
+      this.chart.endSlice(this.ofs + this.pag);
+    },
+    nextPage: function nextPage() {
+      this.ofs += this.pag;
+      this.updateTable();
+      this.chart.redraw();
+    },
+    prevPage: function prevPage() {
+      this.ofs -= this.pag;
+      this.updateTable();
+      this.chart.redraw();
+    }
+  },
+  mounted: function mounted() {
+    var _this3 = this;
+
+    var chart = this.chart;
+    var dim = Store.getDimension(this.dimension);
+    var dimensionName = this.extractDimensionName(this.dimension);
+    this.registerDimension();
+    this.setColumnSettings();
+
+    chart.group(function (d) {
+      return d.value[dimensionName];
+    }).dimension(dim.group().reduce(function (p, v) {
+      var vals = _this3.getRow(v);
+      _this3.cols.forEach(function (k) {
+        if (k === dimensionName) {
+          p[k] = vals[k];
+        } else if (vals[k].count) {
+          p[k] = vals[k].count === 0 ? 0 : vals[k].value / vals[k].count;
+        } else p[k] += vals[k];
+      });
+      return p;
+    }, function (p, v) {
+      var vals = _this3.getRow(v);
+      _this3.cols.forEach(function (k) {
+        if (k === dimensionName) {
+          p[k] = vals[k];
+        } else if (vals[k].count) {
+          p[k] = vals[k].count === 0 ? 0 : vals[k].value / vals[k].count;
+        } else p[k] -= vals[k];
+      });
+      return p;
+    }, function () {
+      return {
+        site_name: '',
+        pv: 0,
+        session_cnt: 0,
+        bounce_cnt: 0,
+        bounce_rate: { count: 0, value: 0 }
+      };
+    })).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
+      return d[_this3.sortBy];
+    }).order(d3$1[this.order]);
+    this.updateTable();
+    return chart.render();
+  }
+};
+
 var components = {
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'geo-jp': GeoJP,
+  'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
 };
 
@@ -34131,6 +34333,7 @@ var Chart = {
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
   GeoJP: GeoJP,
+  DataTable: DataTable,
   compose: compose,
   install: install,
   installedComponents: components
