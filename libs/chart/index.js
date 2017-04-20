@@ -5,6 +5,7 @@ import WeekRow from './week-row.vue'
 import RateLine from './rate-line.vue'
 import StackedLines from './stacked-lines.vue'
 import GeoJP from './geo-jp.vue'
+import DataTable from './data-table.vue'
 
 const components = {
   'segment-pie': SegmentPie,
@@ -12,6 +13,7 @@ const components = {
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'geo-jp': GeoJP,
+  'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
 }
 
@@ -28,6 +30,7 @@ export default {
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
   GeoJP: GeoJP,
+  DataTable: DataTable,
   compose: compose,
   install: install,
   installedComponents: components

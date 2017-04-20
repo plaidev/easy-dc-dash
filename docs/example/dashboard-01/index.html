@@ -4,6 +4,7 @@
   <head>
     <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0/dc.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
@@ -26,6 +27,20 @@
   <div>
     <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
+  </div>
+  <div>
+    <data-table
+      dimension="d.site_name"
+      :columns="tableColumns"
+      sort-by="site_name"
+      order="descending"
+      :width=1000
+      :height=1000
+      :use-table-paging=true
+      :offset=0
+      :rows-per-page=3
+      >
+    </data-table>
   </div>
 </div>
 
@@ -92,6 +107,16 @@ const segmentSets = [
   }
 ];
 
+const tableColumns = {
+  site_name: 'd.site_name',
+  pv: 'd.pv',
+  session_cnt: 'd.session_cnt',
+  bounce_cnt: 'd.bounce_cnt',
+  bounce_rate: {
+      count: 'session_cnt',
+      value: 'bounce_cnt'
+  }
+}
 
 //-------------------
 // メイン
@@ -115,7 +140,8 @@ const bindData = {
   repeatSegments: Object.keys(segmentSets[2].segments),
   deviceSegmentLabels: segmentSets[0].segments,
   referrerSegmentLabels: segmentSets[1].segments,
-  repeatSegmentLabels: segmentSets[2].segments
+  repeatSegmentLabels: segmentSets[2].segments,
+  tableColumns: tableColumns
 }
 
 for (let k in bindData) {
