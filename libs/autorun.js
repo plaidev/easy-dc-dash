@@ -18,6 +18,8 @@ function autoLoad() {
     const csv = el.getAttribute('csv');
 
     const labels = el.getAttribute('labels')
+    const intFields = el.getAttribute('int-fields')
+    const floatFields = el.getAttribute('float-fields')
     const dateFields = el.getAttribute('date-fields')
     const dateFormat = el.getAttribute('date-format')
     let isUTC = el.getAttribute('date-is-utc')
@@ -26,6 +28,8 @@ function autoLoad() {
 
     const options = {
       labels,
+      intFields: intFields ? intFields.split(','): undefined,
+      floatFields: floatFields ? floatFields.split(','): undefined,
       dateFields: dateFields ? dateFields.split(','): undefined,
       dateFormat,
       isUTC
