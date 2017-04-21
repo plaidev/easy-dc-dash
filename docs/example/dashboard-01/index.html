@@ -30,9 +30,9 @@
   </div>
   <div>
     <data-table
-      dimension="d.site_name"
-      :columns="tableColumns"
-      sort-by="site_name"
+      dimension="d.name"
+      columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+      sort-by="name"
       order="descending"
       :width=1000
       :height=1000
@@ -107,16 +107,6 @@ const segmentSets = [
   }
 ];
 
-const tableColumns = {
-  site_name: 'd.site_name',
-  pv: 'd.pv',
-  session_cnt: 'd.session_cnt',
-  bounce_cnt: 'd.bounce_cnt',
-  bounce_rate: {
-      count: 'session_cnt',
-      value: 'bounce_cnt'
-  }
-}
 
 //-------------------
 // メイン
@@ -141,7 +131,6 @@ const bindData = {
   deviceSegmentLabels: segmentSets[0].segments,
   referrerSegmentLabels: segmentSets[1].segments,
   repeatSegmentLabels: segmentSets[2].segments,
-  tableColumns: tableColumns
 }
 
 for (let k in bindData) {
