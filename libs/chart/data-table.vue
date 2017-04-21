@@ -140,7 +140,7 @@ export default {
     },
     // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
     // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
-    reversibleGroup(group) {
+    reversibleGroup: function(group) {
       return {
         top: function(N) {
           return group.top(N);
