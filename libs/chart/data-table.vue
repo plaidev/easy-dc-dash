@@ -1,7 +1,9 @@
 <template>
   <div class="container">
     <div class="table-paging" v-if="this.useTablePaging">
-      Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span> of <span>{{this.cfSize}}</span>.
+      <span>{{this.filteredSize}} selected out of {{this.cfSize}} records</span>
+      <br>
+      Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
       <button :disabled="isFirstPage" @click="prevPage()">Prev</button>
       <button :disabled="isLastPage" @click="nextPage()">Next</button>
     </div>
@@ -62,7 +64,7 @@ export default {
       pag: this.rowsPerPage,
       cfSize: Store.getCfSize(),
       columnSettings: [],
-      _sortBy: this.sortBy
+      filteredSize: 0
     }
   },
   computed: {
@@ -88,7 +90,7 @@ export default {
       return ((this.ofs - this.pag) < 0) ? 'true' : null
     },
     isLastPage: function() {
-      return ((this.ofs + this.pag) >= this.cfSize) ? 'true' : null
+      return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
     }
   },
   methods: {
@@ -118,7 +120,7 @@ export default {
     },
     setColumnSettings: function() {
       this.colsKeys.forEach((k) => {
-        this.columnSettings.push({label: k, format: (d) => d.value[k].per || d.value[k]})
+        this.columnSettings.push({label: k, format: (d) => d.value[k].per !== undefined ? d.value[k].per : d.value[k]})
       })
     },
     // paging
@@ -135,6 +137,18 @@ export default {
       this.ofs -= this.pag;
       this.updateTable();
       this.chart.redraw();
+    },
+    // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
+    // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
+    reversibleGroup(group) {
+      return {
+        top: function(N) {
+          return group.top(N);
+        },
+        bottom: function(N) {
+          return group.top(Infinity).slice(-N).reverse();
+        }
+      }
     }
   },
   mounted: function() {
@@ -143,11 +157,11 @@ export default {
     const dimensionName = this.extractDimensionName(this.dimension);
     this._registerDimension()
     this.setColumnSettings()
-    if(!this.sortBy) this._sortBy = this.colsKeys[0]
+
+    const sortBy = this.sortBy || this.colsKeys[0]
 
     chart
-      .group((d) => d.value[dimensionName])
-      .dimension(dim.group().reduce(
+      .dimension(this.reversibleGroup(dim.group().reduce(
         (p, v) => {
           const vals = this.getColsExtractor(v);
           this.colsKeys.forEach((k) => {
@@ -181,12 +195,14 @@ export default {
         () => {
           return this.getSchema()
         }
-      ))
+      )))
+      .group((d) => d.value[sortBy])
       .size(Infinity)
       .showGroups(false)
       .columns(this.columnSettings)
-      .sortBy((d) => d[this._sortBy])
+      .sortBy((d) => d.value[sortBy])
       .order(d3[this.order])
+      .on('renderlet', () => this.filteredSize = dim.groupAll().value())
     this.updateTable()
     return chart.render();
   }
