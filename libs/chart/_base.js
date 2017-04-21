@@ -1,7 +1,7 @@
 import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
-import {generateDomId} from '../utils'
+import {generateDomId, generateExtractor} from '../utils'
 
 
 export default {
@@ -14,10 +14,8 @@ export default {
       default: 'default'
     },
     dimension: {
-      type: String
     },
     reduce: {
-      type: String
     },
     id: {
       type: String,
@@ -49,10 +47,10 @@ export default {
       return this.dimension;
     },
     getDimensionExtractor: function() {
-      return new Function('d', 'return ' + this.dimension)
+      return generateExtractor(this.dimension)
     },
     getReducerExtractor: function() {
-      return new Function('d', 'return ' + this.reduce)
+      return generateExtractor(this.reduce)
     },
     grouping: function() {
       const grouping = this.getDimensionExtractor;

@@ -1,7 +1,7 @@
 import Vue from 'vue/dist/vue.js'
 import d3 from 'd3'
 import Base from './_base'
-
+import {generateExtractor} from '../utils'
 
 export function compose(Left, Right) {
 
@@ -29,7 +29,7 @@ export function compose(Left, Right) {
           },
           getReducerExtractor: () => {
             return (d) => {
-              const _reducer = new Function('d', 'return ' + this.reduce);
+              const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[0];
             }
           }
@@ -48,7 +48,7 @@ export function compose(Left, Right) {
           },
           getReducerExtractor: () => {
             return (d) => {
-              const _reducer = new Function('d', 'return ' + this.reduce);
+              const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[1];
             }
           }
