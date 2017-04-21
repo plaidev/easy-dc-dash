@@ -24606,6 +24606,36 @@ function generateDomId() {
   return 'id-' + generateUUID();
 }
 
+// String(js): <data-table columns="{key: d.key}"></data-table>
+// Object: <data-table :columns="{key: "key"}"></data-table>
+// Array: <data-table :columns="["key"]"></data-table>
+// Function: <data-table :columns="customParser"></data-table>
+function generateExtractor(rule) {
+  if (typeof rule === 'function' || rule instanceof Function) {
+    return rule;
+  } else if (typeof rule === "string" || rule instanceof String) {
+    return new Function('d', 'return ' + rule);
+  } else if (rule instanceof Array) {
+    return function (d) {
+      row = {};
+      rule.forEach(function (k) {
+        row[k] = d[rule[k]];
+      });
+      return row;
+    };
+  } else if (rule instanceof Object) {
+    return function (d) {
+      row = {};
+      Object.keys(rule).forEach(function (k) {
+        row[k] = d[rule[k]];
+      });
+      return row;
+    };
+  }
+
+  return; // else
+}
+
 var Base = {
 
   template: '<div class="krt-dc-component" :id="id"></div>',
@@ -24615,12 +24645,8 @@ var Base = {
       type: String,
       default: 'default'
     },
-    dimension: {
-      type: String
-    },
-    reduce: {
-      type: String
-    },
+    dimension: {},
+    reduce: {},
     id: {
       type: String,
       default: generateDomId
@@ -24651,10 +24677,10 @@ var Base = {
       return this.dimension;
     },
     getDimensionExtractor: function getDimensionExtractor() {
-      return new Function('d', 'return ' + this.dimension);
+      return generateExtractor(this.dimension);
     },
     getReducerExtractor: function getReducerExtractor() {
-      return new Function('d', 'return ' + this.reduce);
+      return generateExtractor(this.reduce);
     },
     grouping: function grouping() {
       var grouping = this.getDimensionExtractor;
@@ -33308,7 +33334,7 @@ function compose(Left, Right) {
           },
           getReducerExtractor: function getReducerExtractor() {
             return function (d) {
-              var _reducer = new Function('d', 'return ' + _this.reduce);
+              var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[0];
             };
           }
@@ -33327,7 +33353,7 @@ function compose(Left, Right) {
           },
           getReducerExtractor: function getReducerExtractor() {
             return function (d) {
-              var _reducer = new Function('d', 'return ' + _this.reduce);
+              var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[1];
             };
           }
@@ -34187,7 +34213,7 @@ var DataTable = { render: function render() {
 
   computed: {
     getColsExtractor: function getColsExtractor() {
-      return new Function('d', 'return ' + this.columns);
+      return generateExtractor(this.columns);
     },
     cols: function cols() {
       return this.getColsExtractor(this.firstRow);
