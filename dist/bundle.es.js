@@ -24438,9 +24438,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
-//-------------------------------------
-
-
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -34132,33 +34129,28 @@ var GeoJP = {
 })();
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" of "), _c('span', [_vm._v(_vm._s(this.cfSize))]), _vm._v(". "), _c('button', _vm._b({ on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" of "), _c('span', [_vm._v(_vm._s(this.cfSize))]), _vm._v(". "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
-        } } }, 'button', { disabled: _vm.isFirstPage }), [_vm._v("Prev")]), _vm._v(" "), _c('button', _vm._b({ on: { "click": function click($event) {
+        } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
-        } } }, 'button', { disabled: _vm.isLastPage }), [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id } })]);
+        } } }, [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
-    dimension: {
-      type: String,
-      default: 'd.site_name'
-    },
     chartType: {
       type: String,
       default: 'dataTable'
     },
     columns: {
-      type: Object
+      type: String
     },
     // row order
     sortBy: {
-      type: String,
-      default: 'site_name'
+      type: String
     },
     order: {
       type: String,
-      default: 'd3.descending'
+      default: 'descending'
     },
     // chart style
     width: {
@@ -34188,11 +34180,21 @@ var DataTable = { render: function render() {
       ofs: this.offset,
       pag: this.rowsPerPage,
       cfSize: Store.getCfSize(),
-      columnSettings: []
+      columnSettings: [],
+      _sortBy: this.sortBy
     };
   },
 
   computed: {
+    getColsExtractor: function getColsExtractor() {
+      return new Function('d', 'return ' + this.columns);
+    },
+    cols: function cols() {
+      return this.getColsExtractor(this.firstRow);
+    },
+    colsKeys: function colsKeys() {
+      return this.getKeys(this.cols);
+    },
     beginRow: function beginRow() {
       return this.ofs;
     },
@@ -34201,9 +34203,6 @@ var DataTable = { render: function render() {
     },
     firstRow: function firstRow() {
       return this.grouping.top(1)[0];
-    },
-    cols: function cols() {
-      return Object.keys(this.getRow(this.firstRow));
     },
     isFirstPage: function isFirstPage() {
       return this.ofs - this.pag < 0 ? 'true' : null;
@@ -34216,37 +34215,37 @@ var DataTable = { render: function render() {
     extractDimensionName: function extractDimensionName(name) {
       return name.replace(/d\./, '');
     },
-    registerDimension: function registerDimension() {
+    _registerDimension: function _registerDimension() {
       var getter = this.getDimensionExtractor;
       var grouping = getter(this.dimension);
       return Store.registerDimension(this.dimension, grouping);
     },
-    getRow: function getRow(v) {
+    getKeys: function getKeys(v) {
+      return Object.keys(this.getColsExtractor(v));
+    },
+    getSchema: function getSchema() {
       var _this = this;
 
-      var columns = Object.keys(this.columns);
-      var rows = {};
-      columns.forEach(function (k) {
-        if (_this.columns[k].count) {
-          Object.assign(rows, defineProperty({}, k, {
-            count: v[_this.columns[k].count],
-            value: v[_this.columns[k].value]
-          }));
-        } else if (v[k]) {
-          Object.assign(rows, defineProperty({}, k, v[k]));
+      var schema = {};
+      this.colsKeys.forEach(function (k) {
+        val = _this.cols[k];
+        if (val instanceof String || typeof val === 'string') val = '';else if (val instanceof Number || typeof val === 'number') val = 0;else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          val = { count: 0, value: 0, per: 0 };
         }
+        Object.assign(schema, defineProperty({}, k, val));
       });
-      return rows;
+      return schema;
     },
     setColumnSettings: function setColumnSettings() {
       var _this2 = this;
 
-      this.cols.forEach(function (k) {
+      this.colsKeys.forEach(function (k) {
         _this2.columnSettings.push({ label: k, format: function format(d) {
-            return d.value[k];
+            return d.value[k].per || d.value[k];
           } });
       });
     },
+    // paging
     updateTable: function updateTable() {
       this.chart.beginSlice(this.ofs);
       this.chart.endSlice(this.ofs + this.pag);
@@ -34268,41 +34267,40 @@ var DataTable = { render: function render() {
     var chart = this.chart;
     var dim = Store.getDimension(this.dimension);
     var dimensionName = this.extractDimensionName(this.dimension);
-    this.registerDimension();
+    this._registerDimension();
     this.setColumnSettings();
+    if (!this.sortBy) this._sortBy = this.colsKeys[0];
 
     chart.group(function (d) {
       return d.value[dimensionName];
     }).dimension(dim.group().reduce(function (p, v) {
-      var vals = _this3.getRow(v);
-      _this3.cols.forEach(function (k) {
+      var vals = _this3.getColsExtractor(v);
+      _this3.colsKeys.forEach(function (k) {
         if (k === dimensionName) {
           p[k] = vals[k];
         } else if (vals[k].count) {
-          p[k] = vals[k].count === 0 ? 0 : vals[k].value / vals[k].count;
+          p[k].count += vals[k].count;
+          p[k].value += vals[k].value;
+          p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
         } else p[k] += vals[k];
       });
       return p;
     }, function (p, v) {
-      var vals = _this3.getRow(v);
-      _this3.cols.forEach(function (k) {
+      var vals = _this3.getColsExtractor(v);
+      _this3.colsKeys.forEach(function (k) {
         if (k === dimensionName) {
           p[k] = vals[k];
         } else if (vals[k].count) {
-          p[k] = vals[k].count === 0 ? 0 : vals[k].value / vals[k].count;
+          p[k].count -= vals[k].count;
+          p[k].value -= vals[k].value;
+          p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
         } else p[k] -= vals[k];
       });
       return p;
     }, function () {
-      return {
-        site_name: '',
-        pv: 0,
-        session_cnt: 0,
-        bounce_cnt: 0,
-        bounce_rate: { count: 0, value: 0 }
-      };
+      return _this3.getSchema();
     })).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
-      return d[_this3.sortBy];
+      return d[_this3._sortBy];
     }).order(d3$1[this.order]);
     this.updateTable();
     return chart.render();
@@ -34441,6 +34439,8 @@ function autoLoad() {
 
     var labels = el.getAttribute('labels');
     var dateFields = el.getAttribute('date-fields');
+    var intFields = el.getAttribute('int-fields');
+    var floatFields = el.getAttribute('float-fields');
     var dateFormat = el.getAttribute('date-format');
     var isUTC = el.getAttribute('date-is-utc');
     if (isUTC === undefined || isUTC === null) isUTC = true;else isUTC = isUTC == 'true';
@@ -34448,6 +34448,8 @@ function autoLoad() {
     var options = {
       labels: labels,
       dateFields: dateFields ? dateFields.split(',') : undefined,
+      intFields: intFields ? intFields.split(',') : undefined,
+      floateFields: floatFields ? floatFields.split(',') : undefined,
       dateFormat: dateFormat,
       isUTC: isUTC
     };
