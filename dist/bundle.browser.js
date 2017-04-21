@@ -34156,7 +34156,7 @@ var GeoJP = {
 })();
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" of "), _c('span', [_vm._v(_vm._s(this.cfSize))]), _vm._v(". "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_c('span', [_vm._v(_vm._s(this.filteredSize) + " selected out of " + _vm._s(this.cfSize) + " records")]), _c('br'), _vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
@@ -34208,7 +34208,7 @@ var DataTable = { render: function render() {
       pag: this.rowsPerPage,
       cfSize: Store.getCfSize(),
       columnSettings: [],
-      _sortBy: this.sortBy
+      filteredSize: 0
     };
   },
 
@@ -34235,7 +34235,7 @@ var DataTable = { render: function render() {
       return this.ofs - this.pag < 0 ? 'true' : null;
     },
     isLastPage: function isLastPage() {
-      return this.ofs + this.pag >= this.cfSize ? 'true' : null;
+      return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
     }
   },
   methods: {
@@ -34268,7 +34268,7 @@ var DataTable = { render: function render() {
 
       this.colsKeys.forEach(function (k) {
         _this2.columnSettings.push({ label: k, format: function format(d) {
-            return d.value[k].per || d.value[k];
+            return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
           } });
       });
     },
@@ -34286,6 +34286,18 @@ var DataTable = { render: function render() {
       this.ofs -= this.pag;
       this.updateTable();
       this.chart.redraw();
+    },
+    // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
+    // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
+    reversibleGroup: function reversibleGroup(group) {
+      return {
+        top: function top(N) {
+          return group.top(N);
+        },
+        bottom: function bottom(N) {
+          return group.top(Infinity).slice(-N).reverse();
+        }
+      };
     }
   },
   mounted: function mounted() {
@@ -34296,11 +34308,10 @@ var DataTable = { render: function render() {
     var dimensionName = this.extractDimensionName(this.dimension);
     this._registerDimension();
     this.setColumnSettings();
-    if (!this.sortBy) this._sortBy = this.colsKeys[0];
 
-    chart.group(function (d) {
-      return d.value[dimensionName];
-    }).dimension(dim.group().reduce(function (p, v) {
+    var sortBy = this.sortBy || this.colsKeys[0];
+
+    chart.dimension(this.reversibleGroup(dim.group().reduce(function (p, v) {
       var vals = _this3.getColsExtractor(v);
       _this3.colsKeys.forEach(function (k) {
         if (k === dimensionName) {
@@ -34326,9 +34337,13 @@ var DataTable = { render: function render() {
       return p;
     }, function () {
       return _this3.getSchema();
-    })).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
-      return d[_this3._sortBy];
-    }).order(d3$1[this.order]);
+    }))).group(function (d) {
+      return d.value[sortBy];
+    }).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
+      return d.value[sortBy];
+    }).order(d3$1[this.order]).on('renderlet', function () {
+      return _this3.filteredSize = dim.groupAll().value();
+    });
     this.updateTable();
     return chart.render();
   }
