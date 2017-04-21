@@ -13,6 +13,7 @@
 import d3 from 'd3'
 import Base from './_base'
 import Store from '../store'
+import {generateExtractor} from '../utils'
 
 export default {
   extends: Base,
@@ -66,7 +67,7 @@ export default {
   },
   computed: {
     getColsExtractor: function() {
-      return new Function('d', 'return ' + this.columns)
+      return generateExtractor(this.columns)
     },
     cols: function() {
       return this.getColsExtractor((this.firstRow))
