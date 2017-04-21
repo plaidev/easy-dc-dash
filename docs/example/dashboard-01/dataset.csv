@@ -1,4 +1,4 @@
-segments,pv,uu,session_cnt,avg_session_view_count,avg_session_spend_time,bounce_cnt,cv_cnt,session_end_date,site_name
+segments,pv,uu,session_cnt,avg_session_view_count,avg_session_spend_time,bounce_cnt,cv_cnt,session_end_date,name
 "all","117","90","90","1.3","127.67777777777778","68","0","2017-01-01T15:00:00.000Z","a"
 "all","118","91","91","1.4","128.67777777777778","69","1","2017-01-02T15:00:00.000Z","b"
 "all","119","92","92","1.5","129.67777777777778","70","2","2017-01-03T15:00:00.000Z","c"

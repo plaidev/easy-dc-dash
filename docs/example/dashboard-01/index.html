@@ -12,7 +12,7 @@
   </head>
 
   <body>
-  <easy-dc-dataset csv='./dataset.csv' date-fields="session_end_date" date-format="%Y-%m-%dT%H:%M:%S.%LZ" labels="セグメント,PV,UU,セッション数,セッション毎平均PV数,セッション毎平均時間,離脱数,コンバーション数,最終PV時間"></easy-dc-dataset>
+  <easy-dc-dataset csv='./dataset.csv' date-fields="session_end_date" int-fields="pv, bounce_cnt, session_cnt"date-format="%Y-%m-%dT%H:%M:%S.%LZ" labels="セグメント,PV,UU,セッション数,セッション毎平均PV数,セッション毎平均時間,離脱数,コンバーション数,最終PV時間"></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
   <a onclick="EasyDC.Store.downloadCSV('data')">csv download</a>

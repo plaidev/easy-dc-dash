@@ -19,6 +19,8 @@ function autoLoad() {
 
     const labels = el.getAttribute('labels')
     const dateFields = el.getAttribute('date-fields')
+    const intFields = el.getAttribute('int-fields')
+    const floatFields = el.getAttribute('float-fields')
     const dateFormat = el.getAttribute('date-format')
     let isUTC = el.getAttribute('date-is-utc')
     if (isUTC === undefined || isUTC === null) isUTC = true;
@@ -27,6 +29,8 @@ function autoLoad() {
     const options = {
       labels,
       dateFields: dateFields ? dateFields.split(','): undefined,
+      intFields: intFields ? intFields.split(','): undefined,
+      floateFields: floatFields ? floatFields.split(','): undefined,
       dateFormat,
       isUTC
     }
