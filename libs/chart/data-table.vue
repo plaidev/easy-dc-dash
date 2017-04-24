@@ -199,9 +199,14 @@ export default {
   methods: {
     onclick: function(ev) {
       if (ev && ev.target.classList.contains('dc-table-head')) {
-        const sortKey = Store.getKeyByLabel(ev.target.textContent);
-        if (sortKey) {
-          this.sortKey = sortKey;
+        let sortKey = Store.getKeyByLabel(ev.target.textContent) || ev.target.textContent
+        if (sortKey in this.colsKeys) {
+          if (sortKey === this.sortKey) {
+            this.sortOrder = (this.sortOrder === 'descending')? 'ascending': 'descending'
+          }
+          else {
+            this.sortKey = sortKey;
+          }
         }
       }
     },
