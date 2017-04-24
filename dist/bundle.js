@@ -24358,8 +24358,10 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24437,6 +24439,9 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.setAttribute('download', filename);
   pom.click();
 }
+
+//-------------------------------------
+
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -33479,7 +33484,7 @@ var SegmentPie = { render: function render() {
         });
         return idx >= 0 ? segments[idx] : 'none';
       };
-      return Store.registerDimension(this.dimensionName, grouping);
+      return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     segmentIds: function segmentIds() {
       if (this.segments instanceof Array) {
@@ -33519,7 +33524,7 @@ var SegmentPie = { render: function render() {
   },
 
   destroyed: function destroyed() {
-    Store.unregisterDimension(this.dimension);
+    Store.unregisterDimension(this.dimension, { dataset: this.dataset });
   }
 };
 
@@ -33559,7 +33564,7 @@ var WeekRow = { render: function render() {
       var grouping = function grouping(d) {
         return Number(_weekFormat(getter(d)));
       };
-      return Store.registerDimension(this.dimensionName, grouping);
+      return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName);
@@ -33618,6 +33623,76 @@ var WeekRow = { render: function render() {
 
     //.y(d3.scale.linear().domain([500, 5000]))
 
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var ListRow = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'rowChart'
+    },
+    barHeight: {
+      type: Number,
+      default: 30
+    },
+    gap: {
+      type: Number,
+      default: 5
+    },
+    labelOffsetX: {
+      type: Number,
+      default: 10
+    },
+    labeloffsetY: {
+      type: Number,
+      default: 15
+    },
+    titleLabelOffsetX: {
+      type: Number,
+      default: 2
+    },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    renderTitleLabel: {
+      type: Boolean,
+      default: true
+    }
+  },
+  data: function data() {
+    return {
+      cfSize: Store.getCfSize()
+    };
+  },
+
+  mounted: function mounted() {
+    var chart = this.chart;
+    // const count = top(N)
+    chart.width(this.width).height(this.cfSize * this.barHeight).x(d3$1.scale.linear().domain([0, this.cfSize])).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).elasticX(this.elasticX).renderTitleLabel(this.renderTitleLabel).titleLabelOffsetX(this.titleLabelOffsetX)
+    // .gap(this.gap)
+    // .fixedBarHeight(this.height - (count + 1) * this.gap - this.barHeight / count)
+    .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
+      return -d.value;
+    });
     return chart.render();
   }
 };
@@ -34149,6 +34224,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34249,6 +34338,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34260,6 +34352,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -34287,6 +34381,10 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -34483,7 +34581,7 @@ var DataTable = { render: function render() {
       return Math.min(end, this.filteredSize);
     },
     firstRow: function firstRow() {
-      var dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      var dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
       return dim.top(1)[0];
     },
     isFirstPage: function isFirstPage() {
@@ -34495,7 +34593,7 @@ var DataTable = { render: function render() {
     grouping: function grouping() {
       var _this = this;
 
-      var dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      var dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
       var dimensionKey = this.extractDimensionName(this.dimension);
       var grouping = dim.group().reduce(function (p, v) {
         var vals = _this.getColsExtractor(v);
@@ -34622,6 +34720,7 @@ var DataTable = { render: function render() {
 var components = {
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
+  'list-row': ListRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'ordinal-bar': OrdinalBar,
@@ -34642,6 +34741,7 @@ var Chart = {
   RateLine: RateLine,
   StackedLines: StackedLines,
   WeekRow: WeekRow,
+  ListRow: ListRow,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
   StackedBar: StackedBar,
@@ -34678,13 +34778,15 @@ function convert(d) {
     d[field] = i;
   });
 
-  var _format = d3$1.time.format;
-  if (isUTC) _format = _format.utc;
-  var format = _format(dateFormat);
+  if (dateFormat && dateFields.length) {
+    var _format = d3$1.time.format;
+    if (isUTC) _format = _format.utc;
+    var format = _format(dateFormat);
 
-  dateFields.forEach(function (field) {
-    d[field] = format.parse(d[field]);
-  });
+    dateFields.forEach(function (field) {
+      d[field] = format.parse(d[field]);
+    });
+  }
 
   return d;
 }
