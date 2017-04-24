@@ -23,7 +23,7 @@ export default {
 
   computed: {
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName);
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const reducer = this.getReducerExtractor;
 
       return dim.group().reduce(

@@ -49,7 +49,7 @@ export default {
   },
   data () {
     return {
-      cfSize: Store.getCfSize()
+      cfSize: Store.getCfSize({dataset: this.dataset})
     }
   },
   mounted: function() {
