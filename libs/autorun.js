@@ -21,8 +21,6 @@ function autoLoad() {
     const intFields = el.getAttribute('int-fields')
     const floatFields = el.getAttribute('float-fields')
     const dateFields = el.getAttribute('date-fields')
-    const intFields = el.getAttribute('int-fields')
-    const floatFields = el.getAttribute('float-fields')
     const dateFormat = el.getAttribute('date-format')
     let isUTC = el.getAttribute('date-is-utc')
     if (isUTC === undefined || isUTC === null) isUTC = true;
