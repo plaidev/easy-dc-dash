@@ -22,13 +22,15 @@ function convert(d, options={}) {
     d[field] = i;
   });
 
-  let _format = d3.time.format;
-  if (isUTC) _format = _format.utc;
-  const format = _format(dateFormat);
+  if (dateFormat && dateFields.length) {
+    let _format = d3.time.format;
+    if (isUTC) _format = _format.utc;
+    const format = _format(dateFormat);
 
-  dateFields.forEach((field) => {
-    d[field] = format.parse(d[field])
-  });
+    dateFields.forEach((field) => {
+      d[field] = format.parse(d[field])
+    });
+  }
 
   return d
 }
