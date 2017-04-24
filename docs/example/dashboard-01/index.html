@@ -34,6 +34,11 @@
     <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
+
+  <div>
+    <list-row dimension='d.name' reduce='d.pv' :width=768 :bar-height=30></list-row>
+  </div>
+
   <div>
     <data-table
       dimension="d.name"
