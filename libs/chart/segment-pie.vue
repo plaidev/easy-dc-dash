@@ -38,7 +38,7 @@ export default {
 
   computed: {
     dimensionName: function() {
-      return `segments(${this.segments.join(',')})`
+      return `segments(${this.segmentIds.join(',')})`
     },
     grouping: function() {
       const segments = this.segmentIds;
@@ -53,14 +53,32 @@ export default {
       return Store.registerDimension(this.dimensionName, grouping);
     },
     segmentIds: function() {
-      if (this.segments instanceof Array) return this.segments;
-      return this.segments.split(',')
+      if (this.segments instanceof Array) {
+        return this.segments;
+      }
+      if (typeof this.segments === 'string' || this.segments instanceof String) {
+        return this.segments.split(',')
+      }
+      else if (this.segments instanceof Object) {
+        return Object.keys(this.segments)
+      }
+      return []
     }
   },
 
   methods: {
     segmentLabel: function(segmentId) {
-      return segmentId in this.labels ? this.labels[segmentId]: segmentId;
+      let label = segmentId;
+      if (this.labels && segmentId in this.labels) {
+        label = this.labels[segmentId]
+      }
+      else if (this.segments instanceof Object && this.segments[segmentId]) {
+        label = this.segments[segmentId]
+      }
+      else {
+        label = Store.getLabel(segmentId)
+      }
+      return label;
     }
   },
 

@@ -5,6 +5,8 @@ import WeekRow from './week-row.vue'
 import ListRow from './list-row.vue'
 import RateLine from './rate-line.vue'
 import StackedLines from './stacked-lines.vue'
+import OrdinalBar from './ordinal-bar.vue'
+import StackedBar from './stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
 
@@ -14,6 +16,8 @@ const components = {
   'list-row': ListRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
+  'ordinal-bar': OrdinalBar,
+  'stacked-bar': StackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
@@ -32,6 +36,8 @@ export default {
   WeekRow: WeekRow,
   ListRow: ListRow,
   SegmentPie: SegmentPie,
+  OrdinalBar: OrdinalBar,
+  StackedBar: StackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,

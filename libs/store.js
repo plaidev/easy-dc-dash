@@ -117,6 +117,16 @@ class DashboardStore {
     return (this._labels[dataset][k] !== undefined) ? this._labels[dataset][k]: k;
   }
 
+  getKeyByLabel(label, options={}) {
+    const {
+      dataset = 'default'
+    } = options;
+    for (let k in this._labels[dataset]) {
+      if (this._labels[dataset][k] === label) return k
+    }
+    return null
+  }
+
   downloadCSV(filename, dimensionName='_all', options={}) {
     const {
       dataset = 'default',

@@ -24439,9 +24439,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
-//-------------------------------------
-
-
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -24580,12 +24577,24 @@ var DashboardStore = function () {
       return this._labels[dataset][k] !== undefined ? this._labels[dataset][k] : k;
     }
   }, {
+    key: 'getKeyByLabel',
+    value: function getKeyByLabel(label) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset6 = options.dataset,
+          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6;
+
+      for (var k in this._labels[dataset]) {
+        if (this._labels[dataset][k] === label) return k;
+      }
+      return null;
+    }
+  }, {
     key: 'downloadCSV',
     value: function downloadCSV$$1(filename) {
       var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var _options$dataset6 = options.dataset,
-          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
+      var _options$dataset7 = options.dataset,
+          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7,
           _options$labels2 = options.labels,
           labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
 
@@ -33392,7 +33401,7 @@ function compose(Left, Right) {
       var dim = this.grouping;
       var composite = this.chart;
 
-      composite.margins({
+      composite.width(this.width).height(this.height).margins({
         top: 30,
         right: 50,
         bottom: 25,
@@ -33457,7 +33466,7 @@ var SegmentPie = { render: function render() {
 
   computed: {
     dimensionName: function dimensionName() {
-      return 'segments(' + this.segments.join(',') + ')';
+      return 'segments(' + this.segmentIds.join(',') + ')';
     },
     grouping: function grouping() {
       var segments = this.segmentIds;
@@ -33474,14 +33483,29 @@ var SegmentPie = { render: function render() {
       return Store.registerDimension(this.dimensionName, grouping);
     },
     segmentIds: function segmentIds() {
-      if (this.segments instanceof Array) return this.segments;
-      return this.segments.split(',');
+      if (this.segments instanceof Array) {
+        return this.segments;
+      }
+      if (typeof this.segments === 'string' || this.segments instanceof String) {
+        return this.segments.split(',');
+      } else if (this.segments instanceof Object) {
+        return Object.keys(this.segments);
+      }
+      return [];
     }
   },
 
   methods: {
     segmentLabel: function segmentLabel(segmentId) {
-      return segmentId in this.labels ? this.labels[segmentId] : segmentId;
+      var label = segmentId;
+      if (this.labels && segmentId in this.labels) {
+        label = this.labels[segmentId];
+      } else if (this.segments instanceof Object && this.segments[segmentId]) {
+        label = this.segments[segmentId];
+      } else {
+        label = Store.getLabel(segmentId);
+      }
+      return label;
     }
   },
 
@@ -33716,6 +33740,145 @@ var StackedLines = { render: function render() {
     for (var i = 1; i < lineNum; i++) {
       chart.stack(_generateReducer(i).apply(this));
     }
+
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var OrdinalBar = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'barChart'
+    },
+    xAxisLabel: {
+      type: String,
+      default: 'xAxisLabel'
+    },
+    yAxisLabel: {
+      type: String,
+      default: 'yAxisLabel'
+    },
+    barPadding: {
+      type: Number,
+      default: 0
+    },
+    outerPadding: {
+      type: Number,
+      default: 0.5
+    }
+  },
+  mounted: function mounted() {
+    var chart = this.chart;
+
+    chart.x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding);
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+function _generateReducer$1() {
+  var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+  return function () {
+    var dim = Store.getDimension(this.dimensionName);
+    var _reducer = this.getReducerExtractor;
+    dim.group().reduceSum(function (d) {
+      console.log(_reducer(d)[idx]);
+    });
+    return dim.group().reduceSum(function (d) {
+      return _reducer(d)[idx];
+    });
+  };
+}
+
+var StackedBar = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'barChart'
+    },
+    labels: {
+      type: Array
+    },
+    xAxisLabel: {
+      type: String,
+      default: 'xAxisLabel'
+    },
+    yAxisLabel: {
+      type: String,
+      default: 'yAxisLabel'
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    renderHorizontalGridLines: {
+      type: Boolean,
+      default: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
+    legendX: {
+      type: Number,
+      default: 0
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    }
+  },
+  computed: {
+    reducer: _generateReducer$1(0)
+  },
+  mounted: function mounted() {
+    var chart = this.chart;
+    var barNum = this.labels.length;
+
+    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticY(this.elasticY).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).renderHorizontalGridLines(this.renderHorizontalGridLines);
+    // stack
+    for (var i = 1; i < barNum; i++) {
+      chart.stack(_generateReducer$1(i).apply(this), this.labels[i]);
+    }
+    // reverse dc.legend() order
+    // See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
+    index$2.override(chart, 'legendables', function () {
+      var items = chart._legendables();
+      return items.reverse();
+    });
 
     return chart.render();
   }
@@ -34190,12 +34353,57 @@ var GeoJP = {
   }
 })();
 
+function _valueAccessor(d, k) {
+  return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
+}
+
+// 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
+// There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
+// reversibleGroup: function(group) {
+//   return {
+//     top: function(N) {
+//       return group.top(N);
+//     },
+//     bottom: function(N) {
+//       return group.top(Infinity).slice(-N).reverse();
+//     }
+//   }
+// }
+// ...
+// inspired by that code. And add _count filter.
+// FIXME: easy but low performance.
+function _filteredGroup(group) {
+  return {
+    top: function top(N) {
+      return group.order(function (p) {
+        return p._count === 0 ? 1 : 0;
+      }).top(N).filter(function (d) {
+        return d.value._count > 0;
+      });
+    },
+    bottom: function bottom(N) {
+      return group.order(function (p) {
+        return p._count === 0 ? 0 : 1;
+      }).top(Infinity).slice(-N).filter(function (d) {
+        return d.value._count > 0;
+      });
+    },
+    size: function size() {
+      return group.top(Infinity).filter(function (d) {
+        return d.value._count > 0;
+      }).length;
+    }
+  };
+}
+
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_c('span', [_vm._v(_vm._s(this.filteredSize) + " selected out of " + _vm._s(this.cfSize) + " records")]), _c('br'), _vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
-        } } }, [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id } })]);
+        } } }, [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
+          _vm.onclick($event);
+        } } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
@@ -34243,10 +34451,21 @@ var DataTable = { render: function render() {
       pag: this.rowsPerPage,
       cfSize: Store.getCfSize(),
       columnSettings: [],
-      filteredSize: 0
+      filteredDataSize: 0,
+      filteredSize: 0,
+      sortKey: this.sortBy,
+      sortOrder: this.order
     };
   },
 
+  watch: {
+    sortKey: function sortKey(newVal) {
+      this.reorder();
+    },
+    sortOrder: function sortOrder(newVal) {
+      this.reorder();
+    }
+  },
   computed: {
     getColsExtractor: function getColsExtractor() {
       return generateExtractor(this.columns);
@@ -34255,42 +34474,95 @@ var DataTable = { render: function render() {
       return this.getColsExtractor(this.firstRow);
     },
     colsKeys: function colsKeys() {
-      return this.getKeys(this.cols);
+      return Object.keys(this.cols);
     },
     beginRow: function beginRow() {
       return this.ofs;
     },
     endRow: function endRow() {
-      return this.ofs + this.pag - 1;
+      var end = this.ofs + this.pag - 1;
+      return Math.min(end, this.filteredSize);
     },
     firstRow: function firstRow() {
-      return this.grouping.top(1)[0];
+      var dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      return dim.top(1)[0];
     },
     isFirstPage: function isFirstPage() {
       return this.ofs - this.pag < 0 ? 'true' : null;
     },
     isLastPage: function isLastPage() {
       return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
+    },
+    grouping: function grouping() {
+      var _this = this;
+
+      var dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      var dimensionKey = this.extractDimensionName(this.dimension);
+      var grouping = dim.group().reduce(function (p, v) {
+        var vals = _this.getColsExtractor(v);
+        _this.colsKeys.forEach(function (k) {
+          if (k === dimensionKey) {
+            p[k] = vals[k];
+          } else if (vals[k].count) {
+            p[k].count += vals[k].count;
+            p[k].value += vals[k].value;
+            p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+          } else p[k] += vals[k];
+        });
+        p._count++;
+        return p;
+      }, function (p, v) {
+        var vals = _this.getColsExtractor(v);
+        _this.colsKeys.forEach(function (k) {
+          if (k === dimensionKey) {
+            p[k] = vals[k];
+          } else if (vals[k].count) {
+            p[k].count -= vals[k].count;
+            p[k].value -= vals[k].value;
+            p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+          } else p[k] -= vals[k];
+        });
+        p._count--;
+        return p;
+      }, function () {
+        var p = _this.getSchema();
+        p._count = 0;
+        return p;
+      });
+      return _filteredGroup(grouping);
     }
   },
   methods: {
+    onclick: function onclick(ev) {
+      if (ev && ev.target.classList.contains('dc-table-head')) {
+        var sortKey = Store.getKeyByLabel(ev.target.textContent) || ev.target.textContent;
+        if (this.colsKeys.indexOf(sortKey) >= 0) {
+          if (sortKey === this.sortKey) {
+            this.sortOrder = this.sortOrder === 'descending' ? 'ascending' : 'descending';
+          } else {
+            this.sortKey = sortKey;
+          }
+        }
+      }
+    },
+    reorder: function reorder() {
+      var _this2 = this;
+
+      this.chart.group(function (d) {
+        return null;
+      }).size(Infinity).sortBy(function (d) {
+        return _valueAccessor(d, _this2.sortKey);
+      }).order(d3$1[this.sortOrder]).render();
+    },
     extractDimensionName: function extractDimensionName(name) {
       return name.replace(/d\./, '');
     },
-    _registerDimension: function _registerDimension() {
-      var getter = this.getDimensionExtractor;
-      var grouping = getter(this.dimension);
-      return Store.registerDimension(this.dimension, grouping);
-    },
-    getKeys: function getKeys(v) {
-      return Object.keys(this.getColsExtractor(v));
-    },
     getSchema: function getSchema() {
-      var _this = this;
+      var _this3 = this;
 
       var schema = {};
       this.colsKeys.forEach(function (k) {
-        val = _this.cols[k];
+        val = _this3.cols[k];
         if (val instanceof String || typeof val === 'string') val = '';else if (val instanceof Number || typeof val === 'number') val = 0;else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
           val = { count: 0, value: 0, per: 0 };
         }
@@ -34299,10 +34571,10 @@ var DataTable = { render: function render() {
       return schema;
     },
     setColumnSettings: function setColumnSettings() {
-      var _this2 = this;
+      var _this4 = this;
 
       this.colsKeys.forEach(function (k) {
-        _this2.columnSettings.push({
+        _this4.columnSettings.push({
           label: Store.getLabel(k),
           format: function format(d) {
             return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
@@ -34324,63 +34596,24 @@ var DataTable = { render: function render() {
       this.ofs -= this.pag;
       this.updateTable();
       this.chart.redraw();
-    },
-    // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
-    // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
-    reversibleGroup: function reversibleGroup(group) {
-      return {
-        top: function top(N) {
-          return group.top(N);
-        },
-        bottom: function bottom(N) {
-          return group.top(Infinity).slice(-N).reverse();
-        }
-      };
     }
   },
   mounted: function mounted() {
-    var _this3 = this;
+    var _this5 = this;
 
-    var chart = this.chart;
-    var dim = Store.getDimension(this.dimension);
-    var dimensionName = this.extractDimensionName(this.dimension);
-    this._registerDimension();
     this.setColumnSettings();
 
-    var sortBy = this.sortBy || this.colsKeys[0];
+    var chart = this.chart;
+    var sortKey = this.sortKey || this.colsKeys[0];
 
-    chart.dimension(this.reversibleGroup(dim.group().reduce(function (p, v) {
-      var vals = _this3.getColsExtractor(v);
-      _this3.colsKeys.forEach(function (k) {
-        if (k === dimensionName) {
-          p[k] = vals[k];
-        } else if (vals[k].count) {
-          p[k].count += vals[k].count;
-          p[k].value += vals[k].value;
-          p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
-        } else p[k] += vals[k];
-      });
-      return p;
-    }, function (p, v) {
-      var vals = _this3.getColsExtractor(v);
-      _this3.colsKeys.forEach(function (k) {
-        if (k === dimensionName) {
-          p[k] = vals[k];
-        } else if (vals[k].count) {
-          p[k].count -= vals[k].count;
-          p[k].value -= vals[k].value;
-          p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
-        } else p[k] -= vals[k];
-      });
-      return p;
-    }, function () {
-      return _this3.getSchema();
-    }))).group(function (d) {
-      return d.value[sortBy];
+    chart.group(function (d) {
+      return null;
     }).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
-      return d.value[sortBy];
+      return _valueAccessor(d, sortKey);
     }).order(d3$1[this.order]).on('renderlet', function () {
-      return _this3.filteredSize = dim.groupAll().value();
+      var dim = Store.getDimension(_this5.dimensionName);
+      _this5.filteredDataSize = dim.groupAll().value();
+      _this5.filteredSize = _this5.grouping.size();
     });
     this.updateTable();
     return chart.render();
@@ -34392,6 +34625,8 @@ var components = {
   'week-row': WeekRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
+  'ordinal-bar': OrdinalBar,
+  'stacked-bar': StackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
@@ -34409,6 +34644,8 @@ var Chart = {
   StackedLines: StackedLines,
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
+  OrdinalBar: OrdinalBar,
+  StackedBar: StackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,
