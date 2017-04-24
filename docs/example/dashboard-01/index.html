@@ -34,6 +34,27 @@
     <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
+  <div class="container" style="display: flex; flex-direction: row;">
+    <ordinal-bar
+      dimension='d.name'
+      reduce='d.pv'
+      :width=768
+      :height=380
+      x-axis-label='name'
+      y-axis-label='pv'
+    ></ordinal-bar>
+    <stacked-bar
+      dimension='d.name'
+      reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
+      :labels="['PV', 'セッション数', '離脱数']"
+      :width=768
+      :height=380
+      :legend-x=300
+      x-axis-label='name'
+      y-axis-label='pv + session_cnt + bounce_cnt'
+    ></stacked-bar>
+  </div>
+
   <div>
     <data-table
       dimension="d.name"
