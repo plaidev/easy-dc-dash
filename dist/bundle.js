@@ -24438,9 +24438,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
-//-------------------------------------
-
-
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -33720,6 +33717,145 @@ var StackedLines = { render: function render() {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var OrdinalBar = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'barChart'
+    },
+    xAxisLabel: {
+      type: String,
+      default: 'xAxisLabel'
+    },
+    yAxisLabel: {
+      type: String,
+      default: 'yAxisLabel'
+    },
+    barPadding: {
+      type: Number,
+      default: 0
+    },
+    outerPadding: {
+      type: Number,
+      default: 0.5
+    }
+  },
+  mounted: function mounted() {
+    var chart = this.chart;
+
+    chart.x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding);
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+function _generateReducer$1() {
+  var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+  return function () {
+    var dim = Store.getDimension(this.dimensionName);
+    var _reducer = this.getReducerExtractor;
+    dim.group().reduceSum(function (d) {
+      console.log(_reducer(d)[idx]);
+    });
+    return dim.group().reduceSum(function (d) {
+      return _reducer(d)[idx];
+    });
+  };
+}
+
+var StackedBar = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'barChart'
+    },
+    labels: {
+      type: Array
+    },
+    xAxisLabel: {
+      type: String,
+      default: 'xAxisLabel'
+    },
+    yAxisLabel: {
+      type: String,
+      default: 'yAxisLabel'
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    renderHorizontalGridLines: {
+      type: Boolean,
+      default: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
+    legendX: {
+      type: Number,
+      default: 0
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    }
+  },
+  computed: {
+    reducer: _generateReducer$1(0)
+  },
+  mounted: function mounted() {
+    var chart = this.chart;
+    var barNum = this.labels.length;
+
+    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticY(this.elasticY).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).renderHorizontalGridLines(this.renderHorizontalGridLines);
+    // stack
+    for (var i = 1; i < barNum; i++) {
+      chart.stack(_generateReducer$1(i).apply(this), this.labels[i]);
+    }
+    // reverse dc.legend() order
+    // See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
+    index$2.override(chart, 'legendables', function () {
+      var items = chart._legendables();
+      return items.reverse();
+    });
+
+    return chart.render();
+  }
+};
+
 var identity = function (x) {
   return x;
 };
@@ -34391,6 +34527,8 @@ var components = {
   'week-row': WeekRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
+  'ordinal-bar': OrdinalBar,
+  'stacked-bar': StackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
@@ -34408,6 +34546,8 @@ var Chart = {
   StackedLines: StackedLines,
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
+  OrdinalBar: OrdinalBar,
+  StackedBar: StackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,
