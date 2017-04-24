@@ -33568,7 +33568,7 @@ var WeekRow = { render: function render() {
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     reducer: function reducer() {
-      var dim = Store.getDimension(this.dimensionName);
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var getter = this.getDimensionExtractor;
       var reducer = this.getReducerExtractor;
       var date_cnt = {};
@@ -33681,7 +33681,7 @@ var ListRow = { render: function render() {
   },
   data: function data() {
     return {
-      cfSize: Store.getCfSize()
+      cfSize: Store.getCfSize({ dataset: this.dataset })
     };
   },
 
@@ -33724,7 +33724,7 @@ var RateLine = { render: function render() {
 
   computed: {
     reducer: function reducer() {
-      var dim = Store.getDimension(this.dimensionName);
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var reducer = this.getReducerExtractor;
 
       return dim.group().reduce(function (p, v) {
@@ -33778,7 +33778,7 @@ function _generateReducer() {
   var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
   return function () {
-    var dim = Store.getDimension(this.dimensionName);
+    var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
     var _reducer = this.getReducerExtractor;
     return dim.group().reduceSum(function (d) {
       return _reducer(d)[idx];
@@ -33883,7 +33883,7 @@ function _generateReducer$1() {
   var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
   return function () {
-    var dim = Store.getDimension(this.dimensionName);
+    var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
     var _reducer = this.getReducerExtractor;
     dim.group().reduceSum(function (d) {
       console.log(_reducer(d)[idx]);
@@ -34547,7 +34547,7 @@ var DataTable = { render: function render() {
     return {
       ofs: this.offset,
       pag: this.rowsPerPage,
-      cfSize: Store.getCfSize(),
+      cfSize: Store.getCfSize({ dataset: this.dataset }),
       columnSettings: [],
       filteredDataSize: 0,
       filteredSize: 0,
@@ -34633,7 +34633,7 @@ var DataTable = { render: function render() {
   methods: {
     onclick: function onclick(ev) {
       if (ev && ev.target.classList.contains('dc-table-head')) {
-        var sortKey = Store.getKeyByLabel(ev.target.textContent) || ev.target.textContent;
+        var sortKey = Store.getKeyByLabel(ev.target.textContent, { dataset: this.dataset }) || ev.target.textContent;
         if (this.colsKeys.indexOf(sortKey) >= 0) {
           if (sortKey === this.sortKey) {
             this.sortOrder = this.sortOrder === 'descending' ? 'ascending' : 'descending';
@@ -34673,7 +34673,7 @@ var DataTable = { render: function render() {
 
       this.colsKeys.forEach(function (k) {
         _this4.columnSettings.push({
-          label: Store.getLabel(k),
+          label: Store.getLabel(k, { dataset: _this4.dataset }),
           format: function format(d) {
             return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
           }
@@ -34709,7 +34709,7 @@ var DataTable = { render: function render() {
     }).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
       return _valueAccessor(d, sortKey);
     }).order(d3$1[this.order]).on('renderlet', function () {
-      var dim = Store.getDimension(_this5.dimensionName);
+      var dim = Store.getDimension(_this5.dimensionName, { dataset: _this5.dataset });
       _this5.filteredDataSize = dim.groupAll().value();
       _this5.filteredSize = _this5.grouping.size();
     });
