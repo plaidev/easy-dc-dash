@@ -22,7 +22,7 @@ export function generateExtractor (rule) {
   }
 
   else if (typeof rule === "string" || rule instanceof String) {
-    return new Function('d', 'return ' + rule)
+    return new Function('d', `const v = ${rule}; return v === null? "": v;`)
   }
 
   else if (rule instanceof Array) {
@@ -31,7 +31,7 @@ export function generateExtractor (rule) {
       rule.forEach((k) => {
         row[k] = d[rule[k]]
       })
-      return row
+      return row === null? '': row;
     }
   }
 
@@ -41,7 +41,7 @@ export function generateExtractor (rule) {
       Object.keys(rule).forEach((k) => {
         row[k] = d[rule[k]]
       })
-      return row
+      return row === null? '': row;
     }
   }
 
