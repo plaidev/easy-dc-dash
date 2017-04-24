@@ -35,7 +35,7 @@ export default {
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName);
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const getter = this.getDimensionExtractor;
       const reducer = this.getReducerExtractor;
       const date_cnt = {};

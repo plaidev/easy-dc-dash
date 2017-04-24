@@ -13,7 +13,7 @@ import Store from '../store'
 
 function _generateReducer(idx=0) {
   return function() {
-    const dim = Store.getDimension(this.dimensionName);
+    const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
     const _reducer = this.getReducerExtractor;
     dim.group().reduceSum((d) => {
       console.log(_reducer(d)[idx])

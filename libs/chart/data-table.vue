@@ -108,7 +108,7 @@ export default {
     return {
       ofs: this.offset,
       pag: this.rowsPerPage,
-      cfSize: Store.getCfSize(),
+      cfSize: Store.getCfSize({dataset: this.dataset}),
       columnSettings: [],
       filteredDataSize: 0,
       filteredSize: 0,
@@ -199,7 +199,7 @@ export default {
   methods: {
     onclick: function(ev) {
       if (ev && ev.target.classList.contains('dc-table-head')) {
-        let sortKey = Store.getKeyByLabel(ev.target.textContent) || ev.target.textContent
+        let sortKey = Store.getKeyByLabel(ev.target.textContent, {dataset: this.dataset}) || ev.target.textContent
         if (this.colsKeys.indexOf(sortKey) >= 0 ) {
           if (sortKey === this.sortKey) {
             this.sortOrder = (this.sortOrder === 'descending')? 'ascending': 'descending'
@@ -237,7 +237,7 @@ export default {
     setColumnSettings: function() {
       this.colsKeys.forEach((k) => {
         this.columnSettings.push({
-          label: Store.getLabel(k),
+          label: Store.getLabel(k, {dataset: this.dataset}),
           format: (d) => d.value[k].per !== undefined ? d.value[k].per : d.value[k]
         })
       })
@@ -272,7 +272,7 @@ export default {
       .sortBy((d) => _valueAccessor(d, sortKey))
       .order(d3[this.order])
       .on('renderlet', () => {
-        const dim = Store.getDimension(this.dimensionName)
+        const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
         this.filteredDataSize = dim.groupAll().value()
         this.filteredSize = this.grouping.size()
       })
