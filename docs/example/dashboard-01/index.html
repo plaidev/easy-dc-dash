@@ -21,16 +21,16 @@
   ></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
-  <a onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
+  <a class="container" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
 
-  <div>
+  <div class="container" style="display: flex; flex-direction: row;">
     <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
     <segment-pie dimention='d.segments' :segments="referrerSegments" :labels="referrerSegmentLabels" reduce='d.pv'></segment-pie>
     <segment-pie dimension='d.segments' :segments="deviceSegments" :labels="deviceSegmentLabels" reduce='d.pv'></segment-pie>
     <segment-pie dimension='d.segments' :segments="repeatSegments" :labels="repeatSegmentLabels" reduce='d.pv'></segment-pie>
   </div>
 
-  <div>
+  <div class="container" style="display: flex; flex-direction: row;">
     <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
