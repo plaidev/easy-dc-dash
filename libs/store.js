@@ -110,6 +110,13 @@ class DashboardStore {
     Object.assign(this._labels[dataset], labels);
   }
 
+  getLabel(k, options={}) {
+    const {
+      dataset = 'default'
+    } = options;
+    return (this._labels[dataset][k] !== undefined) ? this._labels[dataset][k]: k;
+  }
+
   downloadCSV(filename, dimensionName='_all', options={}) {
     const {
       dataset = 'default',

@@ -120,7 +120,10 @@ export default {
     },
     setColumnSettings: function() {
       this.colsKeys.forEach((k) => {
-        this.columnSettings.push({label: k, format: (d) => d.value[k].per !== undefined ? d.value[k].per : d.value[k]})
+        this.columnSettings.push({
+          label: Store.getLabel(k),
+          format: (d) => d.value[k].per !== undefined ? d.value[k].per : d.value[k]
+        })
       })
     },
     // paging
