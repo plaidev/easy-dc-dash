@@ -34335,7 +34335,7 @@ var DataTable = { render: function render() {
       return this.getColsExtractor(this.firstRow);
     },
     colsKeys: function colsKeys() {
-      return Object.keys(this.getColsExtractor(this.cols));
+      return Object.keys(this.cols);
     },
     beginRow: function beginRow() {
       return this.ofs;
@@ -34396,9 +34396,13 @@ var DataTable = { render: function render() {
   methods: {
     onclick: function onclick(ev) {
       if (ev && ev.target.classList.contains('dc-table-head')) {
-        var sortKey = Store.getKeyByLabel(ev.target.textContent);
-        if (sortKey) {
-          this.sortKey = sortKey;
+        var sortKey = Store.getKeyByLabel(ev.target.textContent) || ev.target.textContent;
+        if (this.colsKeys.indexOf(sortKey) >= 0) {
+          if (sortKey === this.sortKey) {
+            this.sortOrder = this.sortOrder === 'descending' ? 'ascending' : 'descending';
+          } else {
+            this.sortKey = sortKey;
+          }
         }
       }
     },
