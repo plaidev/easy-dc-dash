@@ -13,7 +13,7 @@ function autoLoad() {
   if (elms.length <= 0) return Promise.resolve();
 
   const promises = Array.prototype.map.call(elms, (el) => {
-    const name = el.getAttribute('dataset') || undefined;
+    const dataset = el.getAttribute('dataset') || undefined;
     const mode = el.getAttribute('mode');
     const csv = el.getAttribute('csv');
 
@@ -41,11 +41,11 @@ function autoLoad() {
 
     if (mode) {
       p = loadMode(mode, options)
-        .then(({content, labels}) => Store.registerData(content, {name, labels}))
+        .then(({content, labels}) => Store.registerData(content, {dataset, labels}))
     }
     else if (csv) {
       p = loadCSV(csv, options)
-        .then(({content, labels}) => Store.registerData(content, {name, labels}))
+        .then(({content, labels}) => Store.registerData(content, {dataset, labels}))
     }
     else {
       p = Promise.resolve()
