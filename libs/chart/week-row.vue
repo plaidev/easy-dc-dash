@@ -32,7 +32,7 @@ export default {
     grouping: function() {
       const getter = this.getDimensionExtractor;
       const grouping = (d) => Number(_weekFormat(getter(d)))
-      return Store.registerDimension(this.dimensionName, grouping)
+      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName);

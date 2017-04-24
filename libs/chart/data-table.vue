@@ -142,7 +142,7 @@ export default {
       return Math.min(end, this.filteredSize)
     },
     firstRow: function() {
-      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     isFirstPage: function() {
@@ -152,7 +152,7 @@ export default {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
     },
     grouping: function() {
-      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
       const dimensionKey = this.extractDimensionName(this.dimension);
       const grouping = dim.group().reduce(
         (p, v) => {

@@ -50,7 +50,7 @@ export default {
         })
         return idx >= 0 ? segments[idx]: 'none';
       }
-      return Store.registerDimension(this.dimensionName, grouping);
+      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
     },
     segmentIds: function() {
       if (this.segments instanceof Array) {
@@ -91,7 +91,7 @@ export default {
   },
 
   destroyed: function() {
-    Store.unregisterDimension(this.dimension)
+    Store.unregisterDimension(this.dimension, {dataset: this.dataset})
   }
 }
 
