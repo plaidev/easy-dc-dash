@@ -27,13 +27,14 @@ class DashboardStore {
 
   registerData(data=[], options={}) {
     const {
-      name = 'default',
+      dataset = 'default',
       labels = {}
     } = options;
 
     // crossfilterのインスタンス作成
-    this._cf[name] = crossfilter(data);
-    this._labels[name] = labels;
+    this._cf[dataset] = crossfilter(data);
+
+    this.setLabels(labels, {dataset})
   }
 
   registerDimension(name, method, options={}) {
