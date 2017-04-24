@@ -17,6 +17,11 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
+
+function _valueAccessor(d, k) {
+  return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
+}
+
 export default {
   extends: Base,
   props: {
@@ -64,7 +69,17 @@ export default {
       pag: this.rowsPerPage,
       cfSize: Store.getCfSize(),
       columnSettings: [],
-      filteredSize: 0
+      filteredSize: 0,
+      sortKey: this.sortBy,
+      sortOrder: this.order
+    }
+  },
+  watch: {
+    sortKey: function(newVal) {
+      this.reorder()
+    },
+    sortOrder: function(newVal) {
+      this.reorder()
     }
   },
   computed: {
@@ -72,38 +87,92 @@ export default {
       return generateExtractor(this.columns)
     },
     cols: function() {
-      return this.getColsExtractor((this.firstRow))
+      return (this.getColsExtractor)(this.firstRow)
     },
     colsKeys: function() {
-      return this.getKeys(this.cols)
+      return Object.keys((this.getColsExtractor)(this.cols))
     },
     beginRow: function() {
       return this.ofs
     },
     endRow: function() {
-      return this.ofs + this.pag - 1
+      let end = this.ofs + this.pag - 1
+      return Math.min(end, this.filteredSize)
     },
     firstRow: function() {
-      return this.grouping.top(1)[0]
+      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      return dim.top(1)[0]
     },
     isFirstPage: function() {
       return ((this.ofs - this.pag) < 0) ? 'true' : null
     },
     isLastPage: function() {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
+    },
+    grouping: function() {
+      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor);
+      const dimensionKey = this.extractDimensionName(this.dimension);
+      const grouping = dim.group().reduce(
+        (p, v) => {
+          const vals = this.getColsExtractor(v);
+          this.colsKeys.forEach((k) => {
+            if (k === dimensionKey) {
+              p[k] = vals[k]
+            }
+            else if (vals[k].count) {
+              p[k].count += vals[k].count;
+              p[k].value += vals[k].value;
+              p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+            }
+            else p[k] += vals[k]
+          })
+          p._count++;
+          return p;
+        },
+        (p, v) => {
+          const vals = this.getColsExtractor(v);
+          this.colsKeys.forEach((k) => {
+            if (k === dimensionKey) {
+              p[k] = vals[k]
+            }
+            else if (vals[k].count) {
+              p[k].count -= vals[k].count;
+              p[k].value -= vals[k].value;
+              p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+            }
+            else p[k] -= vals[k]
+          })
+          p._count--;
+          return p;
+        },
+        () => {
+          const p = this.getSchema()
+          p._count = 0;
+          return p
+        }
+      )
+      return _filteredGroup(grouping)
     }
   },
   methods: {
+    onclick: function(ev) {
+      if (ev && ev.target.classList.contains('dc-table-head')) {
+        const sortKey = Store.getKeyByLabel(ev.target.textContent);
+        if (sortKey) {
+          this.sortKey = sortKey;
+        }
+      }
+    },
+    reorder: function() {
+      this.chart
+        .group((d) => null)
+        .size(Infinity)
+        .sortBy((d) => _valueAccessor(d, this.sortKey))
+        .order(d3[this.sortOrder])
+        .render()
+    },
     extractDimensionName: function(name) {
       return name.replace(/d\./, '')
-    },
-    _registerDimension: function() {
-      const getter = this.getDimensionExtractor;
-      const grouping = getter(this.dimension)
-      return Store.registerDimension(this.dimension, grouping)
-    },
-    getKeys: function(v) {
-      return Object.keys(this.getColsExtractor(v))
     },
     getSchema: function() {
       const schema = {}
@@ -155,57 +224,22 @@ export default {
     }
   },
   mounted: function() {
-    const chart = this.chart;
-    const dim = Store.getDimension(this.dimension);
-    const dimensionName = this.extractDimensionName(this.dimension);
-    this._registerDimension()
     this.setColumnSettings()
 
-    const sortBy = this.sortBy || this.colsKeys[0]
+    const chart = this.chart;
+    const sortKey = this.sortKey || this.colsKeys[0]
 
     chart
-      .dimension(this.reversibleGroup(dim.group().reduce(
-        (p, v) => {
-          const vals = this.getColsExtractor(v);
-          this.colsKeys.forEach((k) => {
-            if (k === dimensionName) {
-              p[k] = vals[k]
-            }
-            else if (vals[k].count) {
-              p[k].count += vals[k].count;
-              p[k].value += vals[k].value;
-              p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
-            }
-            else p[k] += vals[k]
-          })
-          return p;
-        },
-        (p, v) => {
-          const vals = this.getColsExtractor(v);
-          this.colsKeys.forEach((k) => {
-            if (k === dimensionName) {
-              p[k] = vals[k]
-            }
-            else if (vals[k].count) {
-              p[k].count -= vals[k].count;
-              p[k].value -= vals[k].value;
-              p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
-            }
-            else p[k] -= vals[k]
-          })
-          return p;
-        },
-        () => {
-          return this.getSchema()
-        }
-      )))
       .group((d) => d.value[sortBy])
       .size(Infinity)
       .showGroups(false)
       .columns(this.columnSettings)
-      .sortBy((d) => d.value[sortBy])
+      .sortBy((d) => _valueAccessor(d, sortKey))
       .order(d3[this.order])
-      .on('renderlet', () => this.filteredSize = dim.groupAll().value())
+      .on('renderlet', () => {
+        const dim = Store.getDimension(this.dimensionName)
+        this.filteredSize = this.grouping.size()
+      })
     this.updateTable()
     return chart.render();
   }
