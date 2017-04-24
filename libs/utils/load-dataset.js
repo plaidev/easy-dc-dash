@@ -61,7 +61,10 @@ export function loadMode(queryName, options={}) {
 
   const data = window.datasets.filter((d) => { if (d) { return d.queryName == queryName;}; })[0];
   const content = data && data.content;
-  if (!content) return Promise.resolve([]);
+  if (!content) {
+    console.log('WARN: dataset not found. dataset: ', queryName, ', window.datasets:', window.datasets)
+    return Promise.resolve([]);
+  }
 
   content.forEach((d) => convert(d, options));
 
