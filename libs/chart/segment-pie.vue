@@ -25,6 +25,14 @@ export default {
     },
     labels: {
       type: Object
+    },
+    width: {
+      type: Number,
+      default: 240
+    },
+    height: {
+      type: Number,
+      default: 200
     }
   },
 
@@ -59,7 +67,6 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .width(240).height(200)
       .label((d) => this.segmentLabel(d.key))
       .render()
     return chart

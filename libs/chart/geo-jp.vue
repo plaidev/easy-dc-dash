@@ -13,6 +13,14 @@ export default {
     chartType: {
       type: String,
       default: 'geoChoroplethChart'
+    },
+    width: {
+      type: Number,
+      default: 1000
+    },
+    height: {
+      type: Number,
+      default: 1000
     }
   },
 
@@ -26,16 +34,13 @@ export default {
         .render()
     })
 
-    const width = 1000;
-    const height = 1000;
     const max = this.reducer.top(1)[0].value;
 
     this.chart
-      .width(width).height(height)
       .projection(d3.geo.mercator()
         .center([136, 35.5])
         .scale(2000)
-        .translate([width / 2, height / 2])
+        .translate([this.width / 2, this.height / 2])
       )
       .colorAccessor(d3.scale.log()
         .domain([1, max])
