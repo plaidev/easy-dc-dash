@@ -14,6 +14,14 @@ export function compose(Left, Right) {
       chartType: {
         type: String,
         default: 'compositeChart'
+      },
+      width: {
+        type: Number,
+        default: 240*4
+      },
+      height: {
+        type: Number,
+        default: 240
       }
     },
 
@@ -72,7 +80,6 @@ export function compose(Left, Right) {
           bottom: 25,
           left: 40
         })
-        .width(240*4).height(240)
         .dimension(dim)
         .compose([
           Left.mounted.apply(leftInstance),
