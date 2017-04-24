@@ -24359,8 +24359,10 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24439,6 +24441,9 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
+//-------------------------------------
+
+
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -24466,22 +24471,23 @@ var DashboardStore = function () {
     value: function registerData() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$name = options.name,
-          name = _options$name === undefined ? 'default' : _options$name,
+      var _options$dataset = options.dataset,
+          dataset = _options$dataset === undefined ? 'default' : _options$dataset,
           _options$labels = options.labels,
           labels = _options$labels === undefined ? {} : _options$labels;
 
       // crossfilterのインスタンス作成
 
-      this._cf[name] = index$1(data);
-      this._labels[name] = labels;
+      this._cf[dataset] = index$1(data);
+
+      this.setLabels(labels, { dataset: dataset });
     }
   }, {
     key: 'registerDimension',
     value: function registerDimension(name, method) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var _options$dataset = options.dataset,
-          dataset = _options$dataset === undefined ? 'default' : _options$dataset;
+      var _options$dataset2 = options.dataset,
+          dataset = _options$dataset2 === undefined ? 'default' : _options$dataset2;
 
 
       if (!(dataset in this._dimensions)) {
@@ -24506,8 +24512,8 @@ var DashboardStore = function () {
     key: 'getDimension',
     value: function getDimension(name) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset2 = options.dataset,
-          dataset = _options$dataset2 === undefined ? 'default' : _options$dataset2;
+      var _options$dataset3 = options.dataset,
+          dataset = _options$dataset3 === undefined ? 'default' : _options$dataset3;
 
       return this._dimensions[dataset][name];
     }
@@ -24515,8 +24521,8 @@ var DashboardStore = function () {
     key: 'getCfSize',
     value: function getCfSize() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var _options$name2 = options.name,
-          name = _options$name2 === undefined ? 'default' : _options$name2;
+      var _options$name = options.name,
+          name = _options$name === undefined ? 'default' : _options$name;
 
       return this._cf[name].size();
     }
@@ -24560,19 +24566,28 @@ var DashboardStore = function () {
     key: 'setLabels',
     value: function setLabels(labels) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset3 = options.dataset,
-          dataset = _options$dataset3 === undefined ? 'default' : _options$dataset3;
+      var _options$dataset4 = options.dataset,
+          dataset = _options$dataset4 === undefined ? 'default' : _options$dataset4;
 
       if (!this._labels[dataset]) this._labels[dataset] = {};
       Object.assign(this._labels[dataset], labels);
+    }
+  }, {
+    key: 'getLabel',
+    value: function getLabel(k) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset5 = options.dataset,
+          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5;
+
+      return this._labels[dataset][k] !== undefined ? this._labels[dataset][k] : k;
     }
   }, {
     key: 'downloadCSV',
     value: function downloadCSV$$1(filename) {
       var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var _options$dataset4 = options.dataset,
-          dataset = _options$dataset4 === undefined ? 'default' : _options$dataset4,
+      var _options$dataset6 = options.dataset,
+          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
           _options$labels2 = options.labels,
           labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
 
@@ -33319,6 +33334,14 @@ function compose(Left, Right) {
       chartType: {
         type: String,
         default: 'compositeChart'
+      },
+      width: {
+        type: Number,
+        default: 240 * 4
+      },
+      height: {
+        type: Number,
+        default: 240
       }
     },
 
@@ -33376,7 +33399,7 @@ function compose(Left, Right) {
         right: 50,
         bottom: 25,
         left: 40
-      }).width(240 * 4).height(240).dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
+      }).dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
       //.rightY(scale.linear().domain([0, 1]))
       .elasticY(true);
 
@@ -33423,6 +33446,14 @@ var SegmentPie = { render: function render() {
     },
     labels: {
       type: Object
+    },
+    width: {
+      type: Number,
+      default: 240
+    },
+    height: {
+      type: Number,
+      default: 200
     }
   },
 
@@ -33460,7 +33491,7 @@ var SegmentPie = { render: function render() {
     var _this = this;
 
     var chart = this.chart;
-    chart.width(240).height(200).label(function (d) {
+    chart.label(function (d) {
       return _this.segmentLabel(d.key);
     }).render();
     return chart;
@@ -33958,6 +33989,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34058,6 +34103,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34069,6 +34117,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -34097,6 +34147,10 @@ function reverse$1(array, start, end) {
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
 
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
+
 (function () {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
@@ -34118,6 +34172,14 @@ var GeoJP = {
     chartType: {
       type: String,
       default: 'geoChoroplethChart'
+    },
+    width: {
+      type: Number,
+      default: 1000
+    },
+    height: {
+      type: Number,
+      default: 1000
     }
   },
 
@@ -34131,11 +34193,9 @@ var GeoJP = {
       }).render();
     });
 
-    var width = 1000;
-    var height = 1000;
     var max = this.reducer.top(1)[0].value;
 
-    this.chart.width(width).height(height).projection(d3$1.geo.mercator().center([136, 35.5]).scale(2000).translate([width / 2, height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).title(function (d) {
+    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(2000).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).title(function (d) {
       return d.key;
     });
 
@@ -34267,9 +34327,12 @@ var DataTable = { render: function render() {
       var _this2 = this;
 
       this.colsKeys.forEach(function (k) {
-        _this2.columnSettings.push({ label: k, format: function format(d) {
+        _this2.columnSettings.push({
+          label: Store.getLabel(k),
+          format: function format(d) {
             return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
-          } });
+          }
+        });
       });
     },
     // paging
@@ -34475,26 +34538,26 @@ function autoLoad() {
   if (elms.length <= 0) return Promise.resolve();
 
   var promises = Array.prototype.map.call(elms, function (el) {
-    var name = el.getAttribute('dataset') || undefined;
+    var _options;
+
+    var dataset = el.getAttribute('dataset') || undefined;
     var mode = el.getAttribute('mode');
     var csv = el.getAttribute('csv');
 
     var labels = el.getAttribute('labels');
-    var dateFields = el.getAttribute('date-fields');
     var intFields = el.getAttribute('int-fields');
     var floatFields = el.getAttribute('float-fields');
+    var dateFields = el.getAttribute('date-fields');
     var dateFormat = el.getAttribute('date-format');
     var isUTC = el.getAttribute('date-is-utc');
     if (isUTC === undefined || isUTC === null) isUTC = true;else isUTC = isUTC == 'true';
 
-    var options = {
+    var options = (_options = {
       labels: labels,
-      dateFields: dateFields ? dateFields.split(',') : undefined,
       intFields: intFields ? intFields.split(',') : undefined,
-      floateFields: floatFields ? floatFields.split(',') : undefined,
-      dateFormat: dateFormat,
-      isUTC: isUTC
-    };
+      floatFields: floatFields ? floatFields.split(',') : undefined,
+      dateFields: dateFields ? dateFields.split(',') : undefined
+    }, defineProperty(_options, 'intFields', intFields ? intFields.split(',') : undefined), defineProperty(_options, 'floateFields', floatFields ? floatFields.split(',') : undefined), defineProperty(_options, 'dateFormat', dateFormat), defineProperty(_options, 'isUTC', isUTC), _options);
 
     var p = void 0;
 
@@ -34502,13 +34565,13 @@ function autoLoad() {
       p = loadMode(mode, options).then(function (_ref) {
         var content = _ref.content,
             labels = _ref.labels;
-        return Store.registerData(content, { name: name, labels: labels });
+        return Store.registerData(content, { dataset: dataset, labels: labels });
       });
     } else if (csv) {
       p = loadCSV(csv, options).then(function (_ref2) {
         var content = _ref2.content,
             labels = _ref2.labels;
-        return Store.registerData(content, { name: name, labels: labels });
+        return Store.registerData(content, { dataset: dataset, labels: labels });
       });
     } else {
       p = Promise.resolve();
