@@ -1,13 +1,15 @@
 <template>
   <div class="container">
     <div class="table-paging" v-if="this.useTablePaging">
-      <span>{{this.filteredSize}} selected out of {{this.cfSize}} records</span>
-      <br>
+      <!--
+        {{this.filteredDataSize}} selected out of {{this.cfSize}} records
+      -->
       Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
+      <span> / total {{this.filteredSize}} rows</span>
       <button :disabled="isFirstPage" @click="prevPage()">Prev</button>
       <button :disabled="isLastPage" @click="nextPage()">Next</button>
     </div>
-    <table class="krt-dc-data-table table table-hover" :id="id"></table>
+    <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
   </div>
 </template>
 
@@ -20,6 +22,45 @@ import {generateExtractor} from '../utils'
 
 function _valueAccessor(d, k) {
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
+}
+
+// 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
+// There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
+// reversibleGroup: function(group) {
+//   return {
+//     top: function(N) {
+//       return group.top(N);
+//     },
+//     bottom: function(N) {
+//       return group.top(Infinity).slice(-N).reverse();
+//     }
+//   }
+// }
+// ...
+// inspired by that code. And add _count filter.
+// FIXME: easy but low performance.
+function _filteredGroup(group) {
+  return {
+    top: function(N) {
+      return group
+        .order((p) => (p._count===0)? 1: 0)
+        .top(N)
+        .filter((d) => d.value._count > 0)
+    },
+    bottom: function(N) {
+      return group
+        .order((p) => (p._count===0)? 0: 1)
+        .top(Infinity)
+        .slice(-N)
+        .filter((d) => d.value._count > 0)
+    },
+    size: function() {
+      return group
+        .top(Infinity)
+        .filter((d) => d.value._count > 0)
+        .length
+    }
+  }
 }
 
 export default {
@@ -69,6 +110,7 @@ export default {
       pag: this.rowsPerPage,
       cfSize: Store.getCfSize(),
       columnSettings: [],
+      filteredDataSize: 0,
       filteredSize: 0,
       sortKey: this.sortBy,
       sortOrder: this.order
@@ -209,18 +251,6 @@ export default {
       this.ofs -= this.pag;
       this.updateTable();
       this.chart.redraw();
-    },
-    // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
-    // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
-    reversibleGroup: function(group) {
-      return {
-        top: function(N) {
-          return group.top(N);
-        },
-        bottom: function(N) {
-          return group.top(Infinity).slice(-N).reverse();
-        }
-      }
     }
   },
   mounted: function() {
@@ -238,6 +268,7 @@ export default {
       .order(d3[this.order])
       .on('renderlet', () => {
         const dim = Store.getDimension(this.dimensionName)
+        this.filteredDataSize = dim.groupAll().value()
         this.filteredSize = this.grouping.size()
       })
     this.updateTable()
