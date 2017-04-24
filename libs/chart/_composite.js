@@ -74,6 +74,7 @@ export function compose(Left, Right) {
       const composite = this.chart;
 
       composite
+        .width(this.width).height(this.height)
         .margins({
           top: 30,
           right: 50,
