@@ -24439,9 +24439,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
-//-------------------------------------
-
-
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -33611,6 +33608,78 @@ var WeekRow = { render: function render() {
   }
 })();
 
+var ListRow = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'rowChart'
+    },
+    barHeight: {
+      type: Number,
+      default: 30
+    },
+    gap: {
+      type: Number,
+      default: 5
+    },
+    labelOffsetX: {
+      type: Number,
+      default: 10
+    },
+    labeloffsetY: {
+      type: Number,
+      default: 15
+    },
+    titleLabelOffsetX: {
+      type: Number,
+      default: 2
+    },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    renderTitleLabel: {
+      type: Boolean,
+      default: true
+    }
+  },
+  data: function data() {
+    return {
+      cfSize: Store.getCfSize()
+    };
+  },
+
+  mounted: function mounted() {
+    var chart = this.chart;
+    // const count = top(N)
+    chart.width(this.width).height(this.cfSize * this.barHeight)
+    // .group(dim.group().reduceSum((d) => d.pv))
+    .x(d3$1.scale.linear().domain([0, this.cfSize])).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).elasticX(this.elasticX).renderTitleLabel(this.renderTitleLabel).titleLabelOffsetX(this.titleLabelOffsetX)
+    // .gap(this.gap)
+    // .fixedBarHeight(this.height - (count + 1) * this.gap - this.barHeight / count)
+    .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
+      return -d.value;
+    });
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
 var RateLine = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
@@ -34390,6 +34459,7 @@ var DataTable = { render: function render() {
 var components = {
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
+  'list-row': ListRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'geo-jp': GeoJP,
@@ -34408,6 +34478,7 @@ var Chart = {
   RateLine: RateLine,
   StackedLines: StackedLines,
   WeekRow: WeekRow,
+  ListRow: ListRow,
   SegmentPie: SegmentPie,
   GeoJP: GeoJP,
   DataTable: DataTable,
