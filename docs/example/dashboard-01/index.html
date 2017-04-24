@@ -25,9 +25,26 @@
 
   <div>
     <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
-    <segment-pie dimention='d.segments' :segments="referrerSegments" :labels="referrerSegmentLabels" reduce='d.pv'></segment-pie>
-    <segment-pie dimension='d.segments' :segments="deviceSegments" :labels="deviceSegmentLabels" reduce='d.pv'></segment-pie>
-    <segment-pie dimension='d.segments' :segments="repeatSegments" :labels="repeatSegmentLabels" reduce='d.pv'></segment-pie>
+    <!-- Object segments -->
+    <segment-pie
+      dimention='d.segments'
+      :segments="referrerSegments"
+      reduce='d.pv'></segment-pie>
+
+    <!-- Array and label Object -->
+    <segment-pie
+      dimension='d.segments'
+      :segments="deviceSegments"
+      :labels="deviceSegmentLabels"
+      reduce='d.pv'
+    ></segment-pie>
+
+    <!-- segment CSV and Store.setLabels({...}) -->
+    <segment-pie
+      dimension='d.segments'
+      segments='5890222d3601a6183b69f15a,5890222d3601a6183b69f15c,5890222d3601a6183b69f15e,5890222d3601a6183b69f160'
+      reduce='d.pv'
+    ></segment-pie>
   </div>
 
   <div>
@@ -81,43 +98,16 @@ const DateVolumeChart = {
 }
 
 
-//-------------------
-// セグメントのセット
-// segment-pieで使う
-
-const segmentSets = [
-  {
-    title: 'device',
-    segments: {
-      "5890222d3601a6183b69f151": 'SP',
-      "5890222d3601a6183b69f14f": 'PC'
-    }
-  },
-  {
-    title: 'referrer',
-    segments: {
-      "5890222d3601a6183b69f153": 'search',
-      "58902caa7048639a5ba53b17": 'newspicks',
-      "58902d517048639a5ba53b26": 'facebook',
-      "58902e8c7048639a5ba53b3a": 'twitter'
-    },
-  },
-  {
-    title: 'repeat',
-    segments: {
-      "5890222d3601a6183b69f15a": '初回来訪',
-      "5890222d3601a6183b69f15c": '来訪2回',
-      "5890222d3601a6183b69f15e": '来訪3回',
-      "5890222d3601a6183b69f160": '来訪4回以上'
-    },
-  }
-];
-
-
 //--------------------
 
 EasyDC.Store.setLabels({
-  bounce_rate: '離脱率'
+  bounce_rate: '離脱率',
+
+  // repeat segment labels
+  "5890222d3601a6183b69f15a": '初回来訪',
+  "5890222d3601a6183b69f15c": '来訪2回',
+  "5890222d3601a6183b69f15e": '来訪3回',
+  "5890222d3601a6183b69f160": '来訪4回以上'
 })
 
 
@@ -137,13 +127,20 @@ function run(content) {
   });
 }
 
+const deviceSegments = {
+  "5890222d3601a6183b69f151": 'SP',
+  "5890222d3601a6183b69f14f": 'PC'
+}
+
 const bindData = {
-  deviceSegments: Object.keys(segmentSets[0].segments),
-  referrerSegments: Object.keys(segmentSets[1].segments),
-  repeatSegments: Object.keys(segmentSets[2].segments),
-  deviceSegmentLabels: segmentSets[0].segments,
-  referrerSegmentLabels: segmentSets[1].segments,
-  repeatSegmentLabels: segmentSets[2].segments
+  deviceSegments: Object.keys(deviceSegments),
+  deviceSegmentLabels: deviceSegments,
+  referrerSegments: {
+    "5890222d3601a6183b69f153": 'search',
+    "58902caa7048639a5ba53b17": 'newspicks',
+    "58902d517048639a5ba53b26": 'facebook',
+    "58902e8c7048639a5ba53b3a": 'twitter'
+  }
 }
 
 for (let k in bindData) {
