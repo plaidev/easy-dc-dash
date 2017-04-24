@@ -132,7 +132,7 @@ export default {
       return (this.getColsExtractor)(this.firstRow)
     },
     colsKeys: function() {
-      return Object.keys((this.getColsExtractor)(this.cols))
+      return Object.keys(this.cols)
     },
     beginRow: function() {
       return this.ofs
@@ -200,7 +200,7 @@ export default {
     onclick: function(ev) {
       if (ev && ev.target.classList.contains('dc-table-head')) {
         let sortKey = Store.getKeyByLabel(ev.target.textContent) || ev.target.textContent
-        if (sortKey in this.colsKeys) {
+        if (this.colsKeys.indexOf(sortKey) >= 0 ) {
           if (sortKey === this.sortKey) {
             this.sortOrder = (this.sortOrder === 'descending')? 'ascending': 'descending'
           }
