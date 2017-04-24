@@ -30,6 +30,12 @@ export default {
     },
     scale: {
       type: String
+    },
+    width: {
+      type: Number
+    },
+    height: {
+      type: Number
     }
   },
 
@@ -92,6 +98,8 @@ export default {
     if (this.reducer) chart.group(this.reducer);
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
+    if (this.width) chart.width(this.width);
+    if (this.height) chart.width(this.height);
 
     this.chart = chart;
 

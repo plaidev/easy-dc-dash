@@ -49,6 +49,25 @@ var createClass = function () {
   };
 }();
 
+
+
+
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
 var d3$1 = createCommonjsModule(function (module) {
   !function () {
     var d3 = {
@@ -24340,10 +24359,8 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    
+    //# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24422,9 +24439,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
-//-------------------------------------
-
-
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -24496,6 +24510,15 @@ var DashboardStore = function () {
           dataset = _options$dataset2 === undefined ? 'default' : _options$dataset2;
 
       return this._dimensions[dataset][name];
+    }
+  }, {
+    key: 'getCfSize',
+    value: function getCfSize() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _options$name2 = options.name,
+          name = _options$name2 === undefined ? 'default' : _options$name2;
+
+      return this._cf[name].size();
     }
   }, {
     key: 'registerChart',
@@ -24584,6 +24607,36 @@ function generateDomId() {
   return 'id-' + generateUUID();
 }
 
+// String(js): <data-table columns="{key: d.key}"></data-table>
+// Object: <data-table :columns="{key: "key"}"></data-table>
+// Array: <data-table :columns="["key"]"></data-table>
+// Function: <data-table :columns="customParser"></data-table>
+function generateExtractor(rule) {
+  if (typeof rule === 'function' || rule instanceof Function) {
+    return rule;
+  } else if (typeof rule === "string" || rule instanceof String) {
+    return new Function('d', 'return ' + rule);
+  } else if (rule instanceof Array) {
+    return function (d) {
+      row = {};
+      rule.forEach(function (k) {
+        row[k] = d[rule[k]];
+      });
+      return row;
+    };
+  } else if (rule instanceof Object) {
+    return function (d) {
+      row = {};
+      Object.keys(rule).forEach(function (k) {
+        row[k] = d[rule[k]];
+      });
+      return row;
+    };
+  }
+
+  return; // else
+}
+
 var Base = {
 
   template: '<div class="krt-dc-component" :id="id"></div>',
@@ -24593,12 +24646,8 @@ var Base = {
       type: String,
       default: 'default'
     },
-    dimension: {
-      type: String
-    },
-    reduce: {
-      type: String
-    },
+    dimension: {},
+    reduce: {},
     id: {
       type: String,
       default: generateDomId
@@ -24612,6 +24661,12 @@ var Base = {
     },
     scale: {
       type: String
+    },
+    width: {
+      type: Number
+    },
+    height: {
+      type: Number
     }
   },
 
@@ -24623,10 +24678,10 @@ var Base = {
       return this.dimension;
     },
     getDimensionExtractor: function getDimensionExtractor() {
-      return new Function('d', 'return ' + this.dimension);
+      return generateExtractor(this.dimension);
     },
     getReducerExtractor: function getReducerExtractor() {
-      return new Function('d', 'return ' + this.reduce);
+      return generateExtractor(this.reduce);
     },
     grouping: function grouping() {
       var grouping = this.getDimensionExtractor;
@@ -24668,6 +24723,8 @@ var Base = {
     if (this.reducer) chart.group(this.reducer);
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
+    if (this.width) chart.width(this.width);
+    if (this.height) chart.width(this.height);
 
     this.chart = chart;
 
@@ -33278,7 +33335,7 @@ function compose(Left, Right) {
           },
           getReducerExtractor: function getReducerExtractor() {
             return function (d) {
-              var _reducer = new Function('d', 'return ' + _this.reduce);
+              var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[0];
             };
           }
@@ -33297,7 +33354,7 @@ function compose(Left, Right) {
           },
           getReducerExtractor: function getReducerExtractor() {
             return function (d) {
-              var _reducer = new Function('d', 'return ' + _this.reduce);
+              var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[1];
             };
           }
@@ -33901,20 +33958,6 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34015,9 +34058,6 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
-// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
-// point sequences are identified. The topology can then be subsequently deduped
-// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34029,8 +34069,6 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
-
-// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -34058,10 +34096,6 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
-
-// Constructs the TopoJSON Topology for the specified hash of features.
-// Each object in the specified hash must be a GeoJSON object,
-// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -34109,12 +34143,219 @@ var GeoJP = {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .container { display: flex; flex-direction: column; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var DataTable = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_c('span', [_vm._v(_vm._s(this.filteredSize) + " selected out of " + _vm._s(this.cfSize) + " records")]), _c('br'), _vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+          _vm.prevPage();
+        } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
+          _vm.nextPage();
+        } } }, [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id } })]);
+  }, staticRenderFns: [],
+  extends: Base,
+  props: {
+    chartType: {
+      type: String,
+      default: 'dataTable'
+    },
+    columns: {
+      type: String
+    },
+    // row order
+    sortBy: {
+      type: String
+    },
+    order: {
+      type: String,
+      default: 'descending'
+    },
+    // chart style
+    width: {
+      type: Number,
+      default: 1000
+    },
+    height: {
+      type: Number,
+      default: 1000
+    },
+    // paging
+    useTablePaging: {
+      type: Boolean,
+      default: true
+    },
+    offset: {
+      type: Number,
+      default: 0
+    },
+    rowsPerPage: {
+      type: Number,
+      default: 10
+    }
+  },
+  data: function data() {
+    return {
+      ofs: this.offset,
+      pag: this.rowsPerPage,
+      cfSize: Store.getCfSize(),
+      columnSettings: [],
+      filteredSize: 0
+    };
+  },
+
+  computed: {
+    getColsExtractor: function getColsExtractor() {
+      return generateExtractor(this.columns);
+    },
+    cols: function cols() {
+      return this.getColsExtractor(this.firstRow);
+    },
+    colsKeys: function colsKeys() {
+      return this.getKeys(this.cols);
+    },
+    beginRow: function beginRow() {
+      return this.ofs;
+    },
+    endRow: function endRow() {
+      return this.ofs + this.pag - 1;
+    },
+    firstRow: function firstRow() {
+      return this.grouping.top(1)[0];
+    },
+    isFirstPage: function isFirstPage() {
+      return this.ofs - this.pag < 0 ? 'true' : null;
+    },
+    isLastPage: function isLastPage() {
+      return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
+    }
+  },
+  methods: {
+    extractDimensionName: function extractDimensionName(name) {
+      return name.replace(/d\./, '');
+    },
+    _registerDimension: function _registerDimension() {
+      var getter = this.getDimensionExtractor;
+      var grouping = getter(this.dimension);
+      return Store.registerDimension(this.dimension, grouping);
+    },
+    getKeys: function getKeys(v) {
+      return Object.keys(this.getColsExtractor(v));
+    },
+    getSchema: function getSchema() {
+      var _this = this;
+
+      var schema = {};
+      this.colsKeys.forEach(function (k) {
+        val = _this.cols[k];
+        if (val instanceof String || typeof val === 'string') val = '';else if (val instanceof Number || typeof val === 'number') val = 0;else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          val = { count: 0, value: 0, per: 0 };
+        }
+        Object.assign(schema, defineProperty({}, k, val));
+      });
+      return schema;
+    },
+    setColumnSettings: function setColumnSettings() {
+      var _this2 = this;
+
+      this.colsKeys.forEach(function (k) {
+        _this2.columnSettings.push({ label: k, format: function format(d) {
+            return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
+          } });
+      });
+    },
+    // paging
+    updateTable: function updateTable() {
+      this.chart.beginSlice(this.ofs);
+      this.chart.endSlice(this.ofs + this.pag);
+    },
+    nextPage: function nextPage() {
+      this.ofs += this.pag;
+      this.updateTable();
+      this.chart.redraw();
+    },
+    prevPage: function prevPage() {
+      this.ofs -= this.pag;
+      this.updateTable();
+      this.chart.redraw();
+    },
+    // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
+    // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
+    reversibleGroup: function reversibleGroup(group) {
+      return {
+        top: function top(N) {
+          return group.top(N);
+        },
+        bottom: function bottom(N) {
+          return group.top(Infinity).slice(-N).reverse();
+        }
+      };
+    }
+  },
+  mounted: function mounted() {
+    var _this3 = this;
+
+    var chart = this.chart;
+    var dim = Store.getDimension(this.dimension);
+    var dimensionName = this.extractDimensionName(this.dimension);
+    this._registerDimension();
+    this.setColumnSettings();
+
+    var sortBy = this.sortBy || this.colsKeys[0];
+
+    chart.dimension(this.reversibleGroup(dim.group().reduce(function (p, v) {
+      var vals = _this3.getColsExtractor(v);
+      _this3.colsKeys.forEach(function (k) {
+        if (k === dimensionName) {
+          p[k] = vals[k];
+        } else if (vals[k].count) {
+          p[k].count += vals[k].count;
+          p[k].value += vals[k].value;
+          p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+        } else p[k] += vals[k];
+      });
+      return p;
+    }, function (p, v) {
+      var vals = _this3.getColsExtractor(v);
+      _this3.colsKeys.forEach(function (k) {
+        if (k === dimensionName) {
+          p[k] = vals[k];
+        } else if (vals[k].count) {
+          p[k].count -= vals[k].count;
+          p[k].value -= vals[k].value;
+          p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+        } else p[k] -= vals[k];
+      });
+      return p;
+    }, function () {
+      return _this3.getSchema();
+    }))).group(function (d) {
+      return d.value[sortBy];
+    }).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
+      return d.value[sortBy];
+    }).order(d3$1[this.order]).on('renderlet', function () {
+      return _this3.filteredSize = dim.groupAll().value();
+    });
+    this.updateTable();
+    return chart.render();
+  }
+};
+
 var components = {
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'geo-jp': GeoJP,
+  'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
 };
 
@@ -34131,6 +34372,7 @@ var Chart = {
   WeekRow: WeekRow,
   SegmentPie: SegmentPie,
   GeoJP: GeoJP,
+  DataTable: DataTable,
   compose: compose,
   install: install,
   installedComponents: components
@@ -34239,6 +34481,8 @@ function autoLoad() {
 
     var labels = el.getAttribute('labels');
     var dateFields = el.getAttribute('date-fields');
+    var intFields = el.getAttribute('int-fields');
+    var floatFields = el.getAttribute('float-fields');
     var dateFormat = el.getAttribute('date-format');
     var isUTC = el.getAttribute('date-is-utc');
     if (isUTC === undefined || isUTC === null) isUTC = true;else isUTC = isUTC == 'true';
@@ -34246,6 +34490,8 @@ function autoLoad() {
     var options = {
       labels: labels,
       dateFields: dateFields ? dateFields.split(',') : undefined,
+      intFields: intFields ? intFields.split(',') : undefined,
+      floateFields: floatFields ? floatFields.split(',') : undefined,
       dateFormat: dateFormat,
       isUTC: isUTC
     };
