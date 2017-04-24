@@ -230,7 +230,7 @@ export default {
     const sortKey = this.sortKey || this.colsKeys[0]
 
     chart
-      .group((d) => d.value[sortBy])
+      .group((d) => null)
       .size(Infinity)
       .showGroups(false)
       .columns(this.columnSettings)
