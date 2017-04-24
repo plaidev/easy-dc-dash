@@ -58,7 +58,6 @@ export default {
     chart
       .width(this.width)
       .height(this.cfSize * this.barHeight)
-      // .group(dim.group().reduceSum((d) => d.pv))
       .x(d3.scale.linear().domain([0, this.cfSize]))
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
