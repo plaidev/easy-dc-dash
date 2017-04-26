@@ -32,7 +32,7 @@ export default {
       default: 400
     },
     dimensions: {
-      type: String
+      type: Array
     },
     renderLabel: {
       type: Boolean,
@@ -51,8 +51,11 @@ export default {
     dimensionName: function() {
       return this.multikey(this.dimensions[0], this.dimensions[1])
     },
+    getDimensionExtractor: function() {
+      return new Function('d', `return ${this.dimensions[0]} + ',' + ${this.dimensions[1]}`)
+    },
     grouping: function() {
-      const grouping = _getDimensionsExtractor(this.dimensions)
+      const grouping = this.getDimensionExtractor
       return Store.registerDimension(this.dimensionName, grouping, {dataest: this.dataset});
     },
     reducer: function() {
