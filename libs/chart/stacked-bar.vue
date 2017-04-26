@@ -10,15 +10,14 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
+import {removeEmptyBins} from '../utils'
 
 function _generateReducer(idx=0) {
   return function() {
     const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
     const _reducer = this.getReducerExtractor;
-    dim.group().reduceSum((d) => {
-      console.log(_reducer(d)[idx])
-    })
-    return dim.group().reduceSum((d) => _reducer(d)[idx]);
+    const group = dim.group().reduceSum((d) => _reducer(d)[idx]);
+    return this.removeEmptyRows ? removeEmptyBins(group) : group
   }
 }
 
@@ -49,10 +48,6 @@ export default {
       type: Boolean,
       default: true
     },
-    elasticY: {
-      type: Boolean,
-      default: true
-    },
     legendX: {
       type: Number,
       default: 0
@@ -61,14 +56,10 @@ export default {
       type: Number,
       default: 0
     },
-    // brushOn: {
-    //   type: Boolean,
-    //   default: false
-    // },
-    // clipPadding: {
-    //   type: Number,
-    //   default: 10
-    // }
+    removeEmptyRows: {
+      type: Boolean,
+      default: true
+    }
   },
   computed: {
     reducer: _generateReducer(0)
@@ -83,7 +74,8 @@ export default {
       .xUnits(dc.units.ordinal)
       .brushOn(false)
       .clipPadding(10)
-      .elasticY(this.elasticY)
+      .elasticX(true)
+      .elasticY(true)
       .xAxisLabel(this.xAxisLabel)
       .yAxisLabel(this.yAxisLabel)
       .renderLabel(this.renderLabel)
