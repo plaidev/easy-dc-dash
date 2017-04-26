@@ -11,10 +11,6 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 
-function _getDimensionsExtractor(dimensions) {
-  return new Function('d', `const vals = Object.values(${dimensions}); return vals[0] + ',' + vals[1]`)
-}
-
 export default {
   extends: Base,
 
