@@ -78,8 +78,14 @@
   </div>
 
   <div class="container" style="display: flex; flex-direction: row;">
+    <!-- dimensions="{name: d.name, meta: d.meta}"
+            -> x(name), y(meta)
+    -->
+    <!-- dimensions="{meta: d.meta, name: d.name}"
+            -> x(meta), y(name)
+     -->
     <filter-stacked-bar
-      dimensions="{name: d.name, num: d.num}"
+      dimensions="{name: d.name, meta: d.meta}"
       reduce='d.pv'
       :width=768
       :height=380
