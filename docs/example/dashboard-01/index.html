@@ -76,6 +76,18 @@
   </div>
 
   <div>
+  <div class="container" style="display: flex; flex-direction: row;">
+    <filter-stacked-bar
+      dimensions="{name: d.name, num: d.num}"
+      reduce='d.pv'
+      :width=768
+      :height=380
+    ></filter-stacked-bar>
+    <segment-pie
+      dimension='d.name'
+      segments="a,b,c,d,e,f"
+      reduce='d.pv'></segment-pie>
+  </div>
     <data-table
       dimension="d.name"
       columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
