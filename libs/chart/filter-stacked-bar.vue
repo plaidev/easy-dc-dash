@@ -11,15 +11,6 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 
-function _generateReducer(idx=0) {
-  return function() {
-    const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-    const _reducer = this.getReducerExtractor;
-    const group = dim.group().reduceSum((d) => _reducer(d));
-    return this.stackSecond(group);
-  }
-}
-
 function _getDimensionsExtractor(dimensions) {
   return new Function('d', `const vals = Object.values(${dimensions}); return vals[0] + ',' + vals[1]`)
 }
@@ -64,7 +55,12 @@ export default {
       const grouping = _getDimensionsExtractor(this.dimensions)
       return Store.registerDimension(this.dimensionName, grouping, {dataest: this.dataset});
     },
-    reducer: _generateReducer(0),
+    reducer: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const reducer = this.getReducerExtractor;
+      const group = dim.group().reduceSum(reducer)
+      return this.stackSecond(group);
+    },
     getStackKeys: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const all = dim.group().all()
@@ -127,7 +123,7 @@ export default {
       })
     // stack
     for (let i=1; i<barNum; i++) {
-      chart.stack(_generateReducer(i).apply(this), this.selStacks(stackKeys[i]));
+      chart.stack(this.reducer, this.selStacks(stackKeys[i]));
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
