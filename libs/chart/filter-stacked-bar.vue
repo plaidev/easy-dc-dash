@@ -32,7 +32,7 @@ export default {
       default: 400
     },
     dimensions: {
-      type: Array
+      type: String
     },
     renderLabel: {
       type: Boolean,
@@ -49,10 +49,10 @@ export default {
   },
   computed: {
     dimensionName: function() {
-      return this.multikey(this.dimensions[0], this.dimensions[1])
+      return this.dimensions
     },
     getDimensionExtractor: function() {
-      return new Function('d', `return ${this.dimensions[0]} + ',' + ${this.dimensions[1]}`)
+      return new Function('d', `return ${this.dimensions}.join(',')`)
     },
     grouping: function() {
       const grouping = this.getDimensionExtractor
