@@ -4,8 +4,6 @@ import d3 from 'd3'
 import {feature} from 'topojson'
 import Base from './_base'
 
-const TOPO_JP_URL = "https://raw.githubusercontent.com/dataofjapan/land/master/japan.topojson";
-
 export default {
   extends: Base,
 
@@ -21,16 +19,22 @@ export default {
     height: {
       type: Number,
       default: 1000
+    },
+    scale: {
+      type: Number,
+      default: 2000
     }
   },
 
   mounted: function() {
     const chart = this.chart;
 
-    d3.json(TOPO_JP_URL, (error, japan) => {
+    d3.json('../../../libs/json/japan.topojson', (error, japan) => {
       const geo_features = feature(japan, japan.objects.japan).features;
       chart
         .overlayGeoJson(geo_features, "pref", (d) => ('0'+d.properties.id).slice(-2))
+        .height(this.height)
+        .width(this.width)
         .render()
     })
 
@@ -39,7 +43,7 @@ export default {
     this.chart
       .projection(d3.geo.mercator()
         .center([136, 35.5])
-        .scale(2000)
+        .scale(this.scale)
         .translate([this.width / 2, this.height / 2])
       )
       .colorAccessor(d3.scale.log()
