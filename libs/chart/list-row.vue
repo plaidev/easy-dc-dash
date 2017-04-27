@@ -18,29 +18,52 @@ export default {
       type: String,
       default: 'rowChart'
     },
-    barHeight: {
+    height: {
       type: Number,
-      default: 30
+      default: 400
     },
+    width: {
+      type: Number,
+      default: 200
+    },
+    scale: {
+      type: String,
+      default: 'linear'
+    },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    // display limit
+    displayRows: {
+      type: Number
+    },
+    // order by
+    descending: {
+      type: Boolean,
+      default: true
+    },
+    // vertical gap space between rows
     gap: {
       type: Number,
       default: 5
     },
+    barHeight: {
+      type: Number,
+      default: 30
+    },
+    // label
     labelOffsetX: {
       type: Number,
       default: 10
     },
     labeloffsetY: {
       type: Number,
-      default: 15
+      default: 10
     },
     titleLabelOffsetX: {
       type: Number,
       default: 2
-    },
-    elasticX: {
-      type: Boolean,
-      default: true
     },
     renderTitleLabel: {
       type: Boolean,
@@ -52,24 +75,53 @@ export default {
       cfSize: Store.getCfSize({dataset: this.dataset})
     }
   },
+  computed: {
+    reducer: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const reducer = this.getReducerExtractor;
+      return this.filteredGroup(dim.group().reduceSum(reducer))
+    },
+    rowNums: function() {
+      if(!this.displayRows) return this.cfSize
+      return (this.displayRows > this.cfSize) ? this.cfSize : this.displayRows
+    }
+  },
+  methods: {
+    filteredGroup: function(group) {
+      return {
+        all: () => {
+          return group.top(this.rowNums)
+        }
+      }
+    }
+  },
   mounted: function() {
     const chart = this.chart;
-    // const count = top(N)
+    const spaceForScales = 70;
+
     chart
-      .width(this.width)
-      .height(this.cfSize * this.barHeight)
-      .x(d3.scale.linear().domain([0, this.cfSize]))
+      .height(this.height)
+      .x(d3.scale[this.scale]())
+      .gap(this.gap)
+      .elasticX(this.elasticX)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
-      .elasticX(this.elasticX)
-      .renderTitleLabel(this.renderTitleLabel)
       .titleLabelOffsetX(this.titleLabelOffsetX)
-      // .gap(this.gap)
-      // .fixedBarHeight(this.height - (count + 1) * this.gap - this.barHeight / count)
+      .renderTitleLabel(this.renderTitleLabel)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
-      .ordering(function(d) { return -d.value })
+      .fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums)
+      .ordering((d) => this.descending ? -d.value : d.value)
     return chart.render();
   }
 }
 
 </script>
+
+<style scoped>
+/*.dc-chart g.row text.row {
+    fill: #fff
+}*/
+.dc-chart g.row text.titlerow {
+    fill: #2AAB9F
+  }
+</style>
