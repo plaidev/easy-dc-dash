@@ -52,7 +52,15 @@
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
   <div>
-    <list-row dimension='d.name' reduce='d.pv' :width=768 :bar-height=30></list-row>
+    <list-row
+       dimension='d.name'
+       reduce='d.pv'
+       :descending=true
+       :height=400
+       :width=200
+       :gap=10
+       :display-rows=6
+    ></list-row>
   </div>
   <div class="container" style="display: flex; flex-direction: row;">
     <ordinal-bar
