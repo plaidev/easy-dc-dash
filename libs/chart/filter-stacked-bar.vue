@@ -10,6 +10,17 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
+import {generateExtractor} from '../utils'
+
+function _joinkey(k) {
+  return k.join(',')
+}
+function _splitkey(k) {
+  return k.split(',')
+}
+function _multikey(x, y) {
+  return x + ',' + y;
+}
 
 export default {
   extends: Base,
@@ -48,7 +59,7 @@ export default {
       return this.dimensions
     },
     getDimensionExtractor: function() {
-      return new Function('d', `return ${this.dimensions}.join(',')`)
+      return (d) => _joinkey(generateExtractor(this.dimensions)(d))
     },
     grouping: function() {
       const grouping = this.getDimensionExtractor
@@ -60,24 +71,18 @@ export default {
       const group = dim.group().reduceSum(reducer)
       return this.stackSecond(group);
     },
-    getStackKeys: function() {
+    stackKeys: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const all = dim.group().all()
       const stackKeys = [];
       all.forEach((obj) => {
-        const stackKey = obj.key.split(',')[1]
+        const stackKey = _splitkey(obj.key)[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey)
       })
       return stackKeys
     }
   },
   methods: {
-    multikey: function (x, y) {
-      return x + ',' + y;
-    },
-    splitkey: function (k) {
-        return k.split(',');
-    },
     stackSecond: function (group) {
       // See: https://github.com/dc-js/dc.js/blob/master/web/examples/filter-stacks.html#L59-L76
       return {
@@ -86,7 +91,7 @@ export default {
             const m = {};
             // build matrix from multikey/value pairs
             all.forEach((kv) => {
-                const ks = kv.key.split(',');
+                const ks = _splitkey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};
                 m[ks[0]][ks[1]] = kv.value;
             });
@@ -105,7 +110,7 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const stackKeys = this.getStackKeys
+    const stackKeys = this.stackKeys
     const barNum = stackKeys.length;
 
     chart
@@ -128,11 +133,11 @@ export default {
     chart.on('pretransition', (chart) => {
       chart.selectAll('rect.bar')
         .classed('stack-deselected', (d) => {
-          const key = this.multikey(d.x, stackKeys[+d.layer]);
+          const key = _multikey(d.x, stackKeys[+d.layer]);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
-          chart.filter(this.multikey(d.x, stackKeys[+d.layer]));
+          chart.filter(_multikey(d.x, stackKeys[+d.layer]));
           dc.redrawAll();
         })
     });
