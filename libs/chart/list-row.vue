@@ -48,10 +48,6 @@ export default {
       type: Number,
       default: 5
     },
-    barHeight: {
-      type: Number,
-      default: 30
-    },
     // label
     labelOffsetX: {
       type: Number,
