@@ -133,13 +133,13 @@ export default {
       .brushOn(false)
       .clipPadding(10)
       .mouseZoomable(false)
-      .title(function(d) {
-        return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]]
-      })
       .elasticX(true)
       .elasticY(true)
       .renderLabel(this.renderLabel)
       .legend(dc.legend().x(this.legendX).y(this.legendY))
+      .title(function(d) {
+        return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]]
+      })
     // stack
     for (let i=1; i<barNum; i++) {
       chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
