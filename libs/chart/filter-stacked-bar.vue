@@ -52,6 +52,10 @@ export default {
     clipPadding: {
       type: Number,
       default: 10
+    },
+    removeEmptyRows: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -87,9 +91,14 @@ export default {
       // See: https://github.com/dc-js/dc.js/blob/master/web/examples/filter-stacks.html#L59-L76
       return {
           all: () => {
-            const all = group.all();
+            let all = group.all();
             const m = {};
             // build matrix from multikey/value pairs
+            if(this.removeEmptyRows) {
+              all = all.filter((kv) => {
+                return kv.value != 0
+              })
+            }
             all.forEach((kv) => {
                 const ks = _splitkey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};
@@ -125,6 +134,8 @@ export default {
       .title(function(d) {
         return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]]
       })
+      .elasticX(true)
+      .elasticY(true)
     // stack
     for (let i=1; i<barNum; i++) {
       chart.stack(this.reducer, this.selStacks(stackKeys[i]));
