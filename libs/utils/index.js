@@ -47,3 +47,14 @@ export function generateExtractor (rule) {
 
   return // else
 }
+
+// https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
+export function removeEmptyBins(sourceGroup) {
+  return {
+    all:function () {
+      return sourceGroup.all().filter(function(d) {
+        return d.value != 0;
+      });
+    }
+  };
+}
