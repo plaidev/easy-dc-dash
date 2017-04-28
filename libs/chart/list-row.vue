@@ -35,7 +35,7 @@ export default {
       default: true
     },
     // display limit
-    displayRows: {
+    rows: {
       type: Number
     },
     // order by
