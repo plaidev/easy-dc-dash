@@ -41,17 +41,21 @@ export default {
     dimensions: {
       type: String
     },
-    renderLabel: {
+    removeEmptyRows: {
       type: Boolean,
       default: true
     },
-    brushOn: {
+    renderLabel: {
       type: Boolean,
       default: false
     },
-    clipPadding: {
+    legendX: {
       type: Number,
-      default: 10
+      default: 300
+    },
+    legendY: {
+      type: Number,
+      default: 0
     }
   },
   computed: {
@@ -87,9 +91,14 @@ export default {
       // See: https://github.com/dc-js/dc.js/blob/master/web/examples/filter-stacks.html#L59-L76
       return {
           all: () => {
-            const all = group.all();
+            let all = group.all();
             const m = {};
             // build matrix from multikey/value pairs
+            if(this.removeEmptyRows) {
+              all = all.filter((kv) => {
+                return kv.value != 0
+              })
+            }
             all.forEach((kv) => {
                 const ks = _splitkey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};
@@ -106,6 +115,9 @@ export default {
       return (d) => {
         return d.value[k]
       }
+    },
+    extractKey: function(k) {
+      return k.replace(/\'/g, '')
     }
   },
   mounted: function() {
@@ -114,20 +126,23 @@ export default {
     const barNum = stackKeys.length;
 
     chart
-      .group(this.reducer, this.selStacks(stackKeys[0]))
+      .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
       .controlsUseVisibility(true)
       .brushOn(false)
       .clipPadding(10)
-      .renderLabel(true)
       .mouseZoomable(false)
+      .elasticX(true)
+      .elasticY(true)
+      .renderLabel(this.renderLabel)
+      .legend(dc.legend().x(this.legendX).y(this.legendY))
       .title(function(d) {
         return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]]
       })
     // stack
     for (let i=1; i<barNum; i++) {
-      chart.stack(this.reducer, this.selStacks(stackKeys[i]));
+      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
