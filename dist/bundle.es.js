@@ -11208,6 +11208,8 @@ var d3$1 = createCommonjsModule(function (module) {
     d3.xml = d3_xhrType(function (request) {
       return request.responseXML;
     });
+    console.log(typeof undefined === "function" && undefined.amd, 'object' === "object" && module.exports);
+
     if (typeof undefined === "function" && undefined.amd) this.d3 = d3, undefined(d3);else if ('object' === "object" && module.exports) module.exports = d3;else this.d3 = d3;
   }();
 });
@@ -24641,14 +24643,14 @@ function generateExtractor(rule) {
   if (typeof rule === 'function' || rule instanceof Function) {
     return rule;
   } else if (typeof rule === "string" || rule instanceof String) {
-    return new Function('d', 'return ' + rule);
+    return new Function('d', 'const v = ' + rule + '; return v === null? "": v;');
   } else if (rule instanceof Array) {
     return function (d) {
       row = {};
       rule.forEach(function (k) {
         row[k] = d[rule[k]];
       });
-      return row;
+      return row === null ? '' : row;
     };
   } else if (rule instanceof Object) {
     return function (d) {
@@ -24656,11 +24658,22 @@ function generateExtractor(rule) {
       Object.keys(rule).forEach(function (k) {
         row[k] = d[rule[k]];
       });
-      return row;
+      return row === null ? '' : row;
     };
   }
 
   return; // else
+}
+
+// https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
+function removeEmptyBins(sourceGroup) {
+  return {
+    all: function all() {
+      return sourceGroup.all().filter(function (d) {
+        return d.value != 0;
+      });
+    }
+  };
 }
 
 var Base = {
@@ -33631,7 +33644,7 @@ var WeekRow = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " /*.dc-chart g.row text.row { fill: #fff }*/ .dc-chart g.row text.titlerow { fill: #2AAB9F } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33649,29 +33662,48 @@ var ListRow = { render: function render() {
       type: String,
       default: 'rowChart'
     },
-    barHeight: {
+    height: {
       type: Number,
-      default: 30
+      default: 400
     },
+    width: {
+      type: Number,
+      default: 200
+    },
+    scale: {
+      type: String,
+      default: 'linear'
+    },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    // display limit
+    rows: {
+      type: Number
+    },
+    // order by
+    descending: {
+      type: Boolean,
+      default: true
+    },
+    // vertical gap space between rows
     gap: {
       type: Number,
       default: 5
     },
+    // label
     labelOffsetX: {
       type: Number,
       default: 10
     },
     labeloffsetY: {
       type: Number,
-      default: 15
+      default: 10
     },
     titleLabelOffsetX: {
       type: Number,
       default: 2
-    },
-    elasticX: {
-      type: Boolean,
-      default: true
     },
     renderTitleLabel: {
       type: Boolean,
@@ -33684,14 +33716,36 @@ var ListRow = { render: function render() {
     };
   },
 
+  computed: {
+    reducer: function reducer() {
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var reducer = this.getReducerExtractor;
+      return this.filteredGroup(dim.group().reduceSum(reducer));
+    },
+    rowNums: function rowNums() {
+      if (!this.displayRows) return this.cfSize;
+      return this.displayRows > this.cfSize ? this.cfSize : this.displayRows;
+    }
+  },
+  methods: {
+    filteredGroup: function filteredGroup(group) {
+      var _this = this;
+
+      return {
+        all: function all() {
+          return group.top(_this.rowNums);
+        }
+      };
+    }
+  },
   mounted: function mounted() {
+    var _this2 = this;
+
     var chart = this.chart;
-    // const count = top(N)
-    chart.width(this.width).height(this.cfSize * this.barHeight).x(d3$1.scale.linear().domain([0, this.cfSize])).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).elasticX(this.elasticX).renderTitleLabel(this.renderTitleLabel).titleLabelOffsetX(this.titleLabelOffsetX)
-    // .gap(this.gap)
-    // .fixedBarHeight(this.height - (count + 1) * this.gap - this.barHeight / count)
-    .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
-      return -d.value;
+    var spaceForScales = 70;
+
+    chart.height(this.height).x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(this.elasticX).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).titleLabelOffsetX(this.titleLabelOffsetX).renderTitleLabel(this.renderTitleLabel).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums).ordering(function (d) {
+      return _this2.descending ? -d.value : d.value;
     });
     return chart.render();
   }
@@ -33856,12 +33910,24 @@ var OrdinalBar = { render: function render() {
     outerPadding: {
       type: Number,
       default: 0.5
+    },
+    removeEmptyRows: {
+      type: Boolean,
+      default: true
+    }
+  },
+  computed: {
+    reducer: function reducer() {
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var reducer = this.getReducerExtractor;
+      var group = dim.group().reduceSum(reducer);
+      return this.removeEmptyRows ? removeEmptyBins(group) : group;
     }
   },
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding);
+    chart.xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(true).elasticY(true);
     return chart.render();
   }
 };
@@ -33884,12 +33950,10 @@ function _generateReducer$1() {
   return function () {
     var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
     var _reducer = this.getReducerExtractor;
-    dim.group().reduceSum(function (d) {
-      console.log(_reducer(d)[idx]);
-    });
-    return dim.group().reduceSum(function (d) {
+    var group = dim.group().reduceSum(function (d) {
       return _reducer(d)[idx];
     });
+    return this.removeEmptyRows ? removeEmptyBins(group) : group;
   };
 }
 
@@ -33922,10 +33986,6 @@ var StackedBar = { render: function render() {
       type: Boolean,
       default: true
     },
-    elasticY: {
-      type: Boolean,
-      default: true
-    },
     legendX: {
       type: Number,
       default: 0
@@ -33933,6 +33993,10 @@ var StackedBar = { render: function render() {
     legendY: {
       type: Number,
       default: 0
+    },
+    removeEmptyRows: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -33942,7 +34006,7 @@ var StackedBar = { render: function render() {
     var chart = this.chart;
     var barNum = this.labels.length;
 
-    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticY(this.elasticY).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).renderHorizontalGridLines(this.renderHorizontalGridLines);
+    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(true).elasticY(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).renderHorizontalGridLines(this.renderHorizontalGridLines);
     // stack
     for (var i = 1; i < barNum; i++) {
       chart.stack(_generateReducer$1(i).apply(this), this.labels[i]);
@@ -33954,6 +34018,160 @@ var StackedBar = { render: function render() {
       return items.reverse();
     });
 
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .dc-chart g.chart-body { clip-path: none; } .dc-chart g.stack._0 .deselected { fill: #1f77b4; } .dc-chart g.stack._1 .deselected { fill: #ff7f0e; } .dc-chart g.stack._2 .deselected { fill: #2ca02c; } .dc-chart g.stack._3 .deselected { fill: #d62728; } .dc-chart g.stack._4 .deselected { fill: #9467bd; } .dc-chart .stack-deselected { opacity: .5; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+function _joinkey(k) {
+  return k.join(',');
+}
+function _splitkey(k) {
+  return k.split(',');
+}
+function _multikey(x, y) {
+  return x + ',' + y;
+}
+
+var FilterStackedBar = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'barChart'
+    },
+    width: {
+      type: Number,
+      default: 600
+    },
+    height: {
+      type: Number,
+      default: 400
+    },
+    dimensions: {
+      type: String
+    },
+    removeEmptyRows: {
+      type: Boolean,
+      default: true
+    },
+    renderLabel: {
+      type: Boolean,
+      default: false
+    },
+    legendX: {
+      type: Number,
+      default: 300
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    }
+  },
+  computed: {
+    dimensionName: function dimensionName() {
+      return this.dimensions;
+    },
+    getDimensionExtractor: function getDimensionExtractor() {
+      var _this = this;
+
+      return function (d) {
+        return _joinkey(generateExtractor(_this.dimensions)(d));
+      };
+    },
+    grouping: function grouping() {
+      var grouping = this.getDimensionExtractor;
+      return Store.registerDimension(this.dimensionName, grouping, { dataest: this.dataset });
+    },
+    reducer: function reducer() {
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var reducer = this.getReducerExtractor;
+      var group = dim.group().reduceSum(reducer);
+      return this.stackSecond(group);
+    },
+    stackKeys: function stackKeys() {
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var all = dim.group().all();
+      var stackKeys = [];
+      all.forEach(function (obj) {
+        var stackKey = _splitkey(obj.key)[1];
+        if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey);
+      });
+      return stackKeys;
+    }
+  },
+  methods: {
+    stackSecond: function stackSecond(group) {
+      var _this2 = this;
+
+      // See: https://github.com/dc-js/dc.js/blob/master/web/examples/filter-stacks.html#L59-L76
+      return {
+        all: function all() {
+          var all = group.all();
+          var m = {};
+          // build matrix from multikey/value pairs
+          if (_this2.removeEmptyRows) {
+            all = all.filter(function (kv) {
+              return kv.value != 0;
+            });
+          }
+          all.forEach(function (kv) {
+            var ks = _splitkey(kv.key);
+            m[ks[0]] = m[ks[0]] || {};
+            m[ks[0]][ks[1]] = kv.value;
+          });
+          // then produce multivalue key/value pairs
+          return Object.keys(m).map(function (k) {
+            return { key: k, value: m[k] };
+          });
+        }
+      };
+    },
+    selStacks: function selStacks(k) {
+      return function (d) {
+        return d.value[k];
+      };
+    },
+    extractKey: function extractKey(k) {
+      return k.replace(/\'/g, '');
+    }
+  },
+  mounted: function mounted() {
+    var chart = this.chart;
+    var stackKeys = this.stackKeys;
+    var barNum = stackKeys.length;
+
+    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).controlsUseVisibility(true).brushOn(false).clipPadding(10).mouseZoomable(false).elasticX(true).elasticY(true).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).title(function (d) {
+      return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]];
+    });
+    // stack
+    for (var i = 1; i < barNum; i++) {
+      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
+    }
+    // select <-> deselect && redraw
+    chart.on('pretransition', function (chart) {
+      chart.selectAll('rect.bar').classed('stack-deselected', function (d) {
+        var key = _multikey(d.x, stackKeys[+d.layer]);
+        return chart.filter() && chart.filters().indexOf(key) === -1;
+      }).on('click', function (d) {
+        chart.filter(_multikey(d.x, stackKeys[+d.layer]));
+        index$2.redrawAll();
+      });
+    });
     return chart.render();
   }
 };
@@ -34398,8 +34616,6 @@ function reverse$1(array, start, end) {
   }
 })();
 
-var TOPO_JP_URL = "https://raw.githubusercontent.com/dataofjapan/land/master/japan.topojson";
-
 var GeoJP = {
   extends: Base,
 
@@ -34415,22 +34631,28 @@ var GeoJP = {
     height: {
       type: Number,
       default: 1000
+    },
+    scale: {
+      type: Number,
+      default: 2000
     }
   },
 
   mounted: function mounted() {
+    var _this = this;
+
     var chart = this.chart;
 
-    d3$1.json(TOPO_JP_URL, function (error, japan) {
+    d3$1.json('../../../libs/json/japan.topojson', function (error, japan) {
       var geo_features = feature(japan, japan.objects.japan).features;
       chart.overlayGeoJson(geo_features, "pref", function (d) {
         return ('0' + d.properties.id).slice(-2);
-      }).render();
+      }).height(_this.height).width(_this.width).render();
     });
 
     var max = this.reducer.top(1)[0].value;
 
-    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(2000).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).title(function (d) {
+    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.scale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).title(function (d) {
       return d.key;
     });
 
@@ -34725,6 +34947,7 @@ var components = {
   'stacked-lines': StackedLines,
   'ordinal-bar': OrdinalBar,
   'stacked-bar': StackedBar,
+  'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
   'stack-and-rate': compose(StackedLines, RateLine)
@@ -34745,6 +34968,7 @@ var Chart = {
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
   StackedBar: StackedBar,
+  FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,
@@ -34825,7 +35049,10 @@ function loadMode(queryName) {
     }
   })[0];
   var content = data && data.content;
-  if (!content) return Promise.resolve([]);
+  if (!content) {
+    console.log('WARN: dataset not found. dataset: ', queryName, ', window.datasets:', window.datasets);
+    return Promise.resolve([]);
+  }
 
   content.forEach(function (d) {
     return convert(d, options);
