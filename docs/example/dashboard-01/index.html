@@ -47,7 +47,7 @@
     ></segment-pie>
   </div>
 
-  <div class="container" style="display: flex; flex-direction: row;">
+  <div class="container" style="display: flex; flex-direction: column;">
     <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
@@ -62,6 +62,7 @@
        :rows=6
     ></list-row>
   </div>
+
   <div class="container" style="display: flex; flex-direction: row;">
     <ordinal-bar
       dimension='d.name'
@@ -83,7 +84,23 @@
     ></stacked-bar>
   </div>
 
-  <div>
+  <div class="container" style="display: flex; flex-direction: row;">
+    <!-- dimensions="[d.name, d.meta]"
+            -> x-axis(name), y-axis(meta)
+    -->
+    <filter-stacked-bar
+      dimensions="[d.name, d.meta]"
+      reduce='d.pv'
+      :width=768
+      :height=380
+    ></filter-stacked-bar>
+    <segment-pie
+      dimension='d.name'
+      segments="a,b,c,d,e,f"
+      reduce='d.pv'></segment-pie>
+  </div>
+
+  <div class="container">
     <data-table
       dimension="d.name"
       columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
