@@ -41,21 +41,21 @@ export default {
     dimensions: {
       type: String
     },
-    renderLabel: {
-      type: Boolean,
-      default: true
-    },
-    brushOn: {
-      type: Boolean,
-      default: false
-    },
-    clipPadding: {
-      type: Number,
-      default: 10
-    },
     removeEmptyRows: {
       type: Boolean,
       default: true
+    },
+    renderLabel: {
+      type: Boolean,
+      default: false
+    },
+    legendX: {
+      type: Number,
+      default: 300
+    },
+    legendY: {
+      type: Number,
+      default: 0
     }
   },
   computed: {
@@ -115,6 +115,9 @@ export default {
       return (d) => {
         return d.value[k]
       }
+    },
+    extractKey: function(k) {
+      return k.replace(/\'/g, '')
     }
   },
   mounted: function() {
@@ -123,22 +126,23 @@ export default {
     const barNum = stackKeys.length;
 
     chart
-      .group(this.reducer, this.selStacks(stackKeys[0]))
+      .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
       .controlsUseVisibility(true)
       .brushOn(false)
       .clipPadding(10)
-      .renderLabel(true)
       .mouseZoomable(false)
       .title(function(d) {
         return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]]
       })
       .elasticX(true)
       .elasticY(true)
+      .renderLabel(this.renderLabel)
+      .legend(dc.legend().x(this.legendX).y(this.legendY))
     // stack
     for (let i=1; i<barNum; i++) {
-      chart.stack(this.reducer, this.selStacks(stackKeys[i]));
+      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
