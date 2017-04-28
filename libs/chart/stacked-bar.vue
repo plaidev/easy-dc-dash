@@ -15,9 +15,6 @@ function _generateReducer(idx=0) {
   return function() {
     const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
     const _reducer = this.getReducerExtractor;
-    dim.group().reduceSum((d) => {
-      console.log(_reducer(d)[idx])
-    })
     return dim.group().reduceSum((d) => _reducer(d)[idx]);
   }
 }
