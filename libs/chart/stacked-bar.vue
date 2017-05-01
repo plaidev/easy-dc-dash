@@ -1,6 +1,6 @@
 <template>
   <div class="krt-dc-stacked-bar" :id="id">
-    <a class="reset" style="display: none">reset</a>
+    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
   </div>
 </template>
 

@@ -2,11 +2,15 @@ import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
 import {generateDomId, generateExtractor} from '../utils'
-
+import ResetButton from './components/reset-button.vue'
 
 export default {
 
-  template: `<div class="krt-dc-component" :id="id"></div>`,
+  template: `<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>`,
+
+  components: {
+    'reset-button': ResetButton
+  },
 
   props: {
     dataset: {
@@ -84,6 +88,13 @@ export default {
       if (!scale) return null;
       return scale().domain([this.min, this.max])
     }
+  },
+
+  methods: {
+    removeFilterAndRedrawChart: function() {
+      this.chart.filterAll();
+      dc.redrawAll();
+    },
   },
 
   mounted: function() {
