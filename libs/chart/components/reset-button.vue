@@ -8,7 +8,6 @@
 </template>
 
 <script lang="js">
-import dc from 'dc'
 
 export default {
   methods: {
