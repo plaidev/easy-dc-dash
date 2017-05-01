@@ -1,6 +1,6 @@
 <template>
   <div class="krt-dc-filter-stacked" :id="id">
-    <a class="reset" style="display: none">reset</a>
+    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
   </div>
 </template>
 
@@ -129,7 +129,6 @@ export default {
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
-      .controlsUseVisibility(true)
       .brushOn(false)
       .clipPadding(10)
       .mouseZoomable(false)
