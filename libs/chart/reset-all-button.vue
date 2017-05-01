@@ -5,7 +5,6 @@
 <script lang="js">
 import dc from 'dc'
 
-
 export default {
   methods: {
     resetAll: function() {
