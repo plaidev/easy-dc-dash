@@ -97,12 +97,3 @@ export default {
 
 
 </script>
-
-<style scoped>
-a.reset {
-  display: block;
-  position: absolute;
-  width: 5em;
-  right: 0;
-}
-</style>
