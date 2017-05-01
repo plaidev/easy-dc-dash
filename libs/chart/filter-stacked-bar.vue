@@ -137,7 +137,7 @@ export default {
       .renderLabel(this.renderLabel)
       .legend(dc.legend().x(this.legendX).y(this.legendY))
       .title(function(d) {
-        return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]]
+        return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
       })
     // stack
     for (let i=1; i<barNum; i++) {
@@ -145,13 +145,13 @@ export default {
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
-      chart.selectAll('rect.bar')
+      chart.selectAll('.krt-dc-filter-stacked rect.bar')
         .classed('stack-deselected', (d) => {
-          const key = _multikey(d.x, stackKeys[+d.layer]);
+          const key = _multikey(d.x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
-          chart.filter(_multikey(d.x, stackKeys[+d.layer]));
+          chart.filter(_multikey(d.x, d.layer));
           dc.redrawAll();
         })
     });
@@ -161,25 +161,25 @@ export default {
 </script>
 
 <style scoped>
-.dc-chart g.chart-body {
+.krt-dc-filter-stacked g.chart-body {
     clip-path: none;
 }
-.dc-chart g.stack._0 .deselected {
+.krt-dc-filter-stacked g.stack._0 rect.bar.deselected {
   fill: #1f77b4;
 }
-.dc-chart g.stack._1 .deselected {
+.krt-dc-filter-stacked g.stack._1 rect.bar.deselected {
   fill: #ff7f0e;
 }
-.dc-chart g.stack._2 .deselected {
+.krt-dc-filter-stacked g.stack._2 rect.bar.deselected {
   fill: #2ca02c;
 }
-.dc-chart g.stack._3 .deselected {
+.krt-dc-filter-stacked g.stack._3 rect.bar.deselected {
   fill: #d62728;
 }
-.dc-chart g.stack._4 .deselected {
+.krt-dc-filter-stacked g.stack._4 rect.bar.deselected {
   fill: #9467bd;
 }
-.dc-chart .stack-deselected {
+.krt-dc-filter-stacked rect.bar.deselected.stack-deselected {
   opacity: .5;
   fill-opacity: .5;
 }

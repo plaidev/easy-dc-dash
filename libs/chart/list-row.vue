@@ -78,8 +78,8 @@ export default {
       return this.filteredGroup(dim.group().reduceSum(reducer))
     },
     rowNums: function() {
-      if(!this.displayRows) return this.cfSize
-      return (this.displayRows > this.cfSize) ? this.cfSize : this.displayRows
+      if(!this.rows) return this.cfSize
+      return (this.rows > this.cfSize) ? this.cfSize : this.rows
     }
   },
   methods: {
@@ -114,10 +114,7 @@ export default {
 </script>
 
 <style scoped>
-/*.dc-chart g.row text.row {
-    fill: #fff
-}*/
-.dc-chart g.row text.titlerow {
+.krt-dc-list-row g.row text.titlerow {
     fill: #2AAB9F
   }
 </style>

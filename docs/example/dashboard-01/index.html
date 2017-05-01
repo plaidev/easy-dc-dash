@@ -4,12 +4,26 @@
   <head>
     <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0/dc.min.css" rel="stylesheet" type="text/css" />
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
     <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
 
   </head>
+
+  <style>
+    a.btn {
+      cursor: pointer;
+    }
+    a.btn.btn-outline-primary {
+      color: #2AAB9F !important;
+      border-color: #2AAB9F;
+      font-weight: bold;
+    }
+    a.btn.btn-outline-primary:hover {
+      background-color: #fff;
+      opacity: .8;
+    }
+  </style>
 
   <body>
   <easy-dc-dataset
@@ -21,8 +35,10 @@
   ></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
-  <a class="container" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
-  <reset-all-button></reset-all-button>
+  <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-around;">
+    <a class="btn btn-outline-primary btn-lg" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
+    <reset-all-button></reset-all-button>
+  </div>
 
   <div class="container" style="display: flex; flex-direction: row;">
     <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
