@@ -110,7 +110,7 @@ export default {
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
-    if (this.height) chart.width(this.height);
+    if (this.height) chart.height(this.height);
 
     this.chart = chart;
 
