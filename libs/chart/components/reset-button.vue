@@ -39,9 +39,12 @@ span.reset {
   font-size: 12px;
 }
 span.reset .badge {
+  max-width: 200px;
   background-color: #2FAB9F;
   font-size: 12px;
   font-weight: 200;
   vertical-align: 8%;
+  white-space: normal;
+  word-wrap: break-all;
 }
 </style>

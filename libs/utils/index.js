@@ -1,3 +1,4 @@
+import dc from 'dc'
 
 export function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -57,4 +58,13 @@ export function removeEmptyBins(sourceGroup) {
       });
     }
   };
+}
+
+// reverse dc.legend() order
+// See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
+export function reverseLegendOrder(chart) {
+  dc.override(chart, 'legendables', function() {
+      var items = chart._legendables();
+      return items.reverse();
+  });
 }

@@ -6,8 +6,8 @@
       -->
       Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
       <span> / total {{this.filteredSize}} rows</span>
-      <button :disabled="isFirstPage" @click="prevPage()">Prev</button>
-      <button :disabled="isLastPage" @click="nextPage()">Next</button>
+      <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
+      <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
     </div>
     <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
   </div>

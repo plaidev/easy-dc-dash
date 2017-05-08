@@ -115,6 +115,6 @@ export default {
 
 <style scoped>
 .krt-dc-list-row g.row text.titlerow {
-    fill: #2AAB9F
+    fill: #000000
   }
 </style>

@@ -10,7 +10,7 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins} from '../utils'
+import {removeEmptyBins, reverseLegendOrder} from '../utils'
 
 function _generateReducer(idx=0) {
   return function() {
@@ -48,6 +48,14 @@ export default {
       type: Boolean,
       default: true
     },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
     legendX: {
       type: Number,
       default: 0
@@ -55,6 +63,18 @@ export default {
     legendY: {
       type: Number,
       default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: false
     },
     removeEmptyRows: {
       type: Boolean,
@@ -79,19 +99,18 @@ export default {
       .xAxisLabel(this.xAxisLabel)
       .yAxisLabel(this.yAxisLabel)
       .renderLabel(this.renderLabel)
-      .legend(dc.legend().x(this.legendX).y(this.legendY))
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
+      .title(function(d) {
+        return d.key + '[' + this.layer + ']: ' + d.value
+      })
     // stack
     for (let i=1; i<barNum; i++) {
       chart.stack(_generateReducer(i).apply(this), this.labels[i]);
     }
-    // reverse dc.legend() order
-    // See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
-    dc.override(chart, 'legendables', function() {
-        var items = chart._legendables();
-        return items.reverse();
-    });
-
+    if(this.useLegend) {
+      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal))
+      reverseLegendOrder(chart)
+    }
     return chart.render();
   }
 }

@@ -5,6 +5,7 @@
 </template>
 
 <script lang='js'>
+import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 
@@ -26,13 +27,41 @@ export default {
     labels: {
       type: Object
     },
-    width: {
-      type: Number,
-      default: 240
-    },
     height: {
       type: Number,
+      default: 160
+    },
+    width: {
+      type: Number,
       default: 200
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendX: {
+      type: Number,
+      default: 0
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -86,8 +115,10 @@ export default {
     const chart = this.chart;
     chart
       .label((d) => this.segmentLabel(d.key))
-      .render()
-    return chart
+    if(this.useLegend) {
+      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal))
+    }
+    return chart.render()
   },
 
   destroyed: function() {

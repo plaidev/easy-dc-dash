@@ -10,7 +10,7 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {generateExtractor} from '../utils'
+import {generateExtractor, reverseLegendOrder} from '../utils'
 
 function _joinkey(k) {
   return k.join(',')
@@ -30,16 +30,24 @@ export default {
       type: String,
       default: 'barChart'
     },
-    width: {
-      type: Number,
-      default: 600
+    dimensions: {
+      type: String
     },
     height: {
       type: Number,
       default: 400
     },
-    dimensions: {
-      type: String
+    width: {
+      type: Number,
+      default: 600
+    },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
     },
     removeEmptyRows: {
       type: Boolean,
@@ -47,15 +55,35 @@ export default {
     },
     renderLabel: {
       type: Boolean,
-      default: false
+      default: true
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
     },
     legendX: {
       type: Number,
-      default: 300
+      default: 0
     },
     legendY: {
       type: Number,
       default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -135,7 +163,7 @@ export default {
       .elasticX(true)
       .elasticY(true)
       .renderLabel(this.renderLabel)
-      .legend(dc.legend().x(this.legendX).y(this.legendY))
+      .mouseZoomable(false)
       .title(function(d) {
         return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
       })
@@ -146,6 +174,7 @@ export default {
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
       chart.selectAll('.krt-dc-filter-stacked rect.bar')
+        .classed('deselected', false)
         .classed('stack-deselected', (d) => {
           const key = _multikey(d.x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
@@ -155,6 +184,10 @@ export default {
           dc.redrawAll();
         })
     });
+    if(this.useLegend) {
+      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal))
+      reverseLegendOrder(chart)
+    }
     return chart.render();
   }
 }
@@ -164,23 +197,8 @@ export default {
 .krt-dc-filter-stacked g.chart-body {
     clip-path: none;
 }
-.krt-dc-filter-stacked g.stack._0 rect.bar.deselected {
-  fill: #1f77b4;
-}
-.krt-dc-filter-stacked g.stack._1 rect.bar.deselected {
-  fill: #ff7f0e;
-}
-.krt-dc-filter-stacked g.stack._2 rect.bar.deselected {
-  fill: #2ca02c;
-}
-.krt-dc-filter-stacked g.stack._3 rect.bar.deselected {
-  fill: #d62728;
-}
-.krt-dc-filter-stacked g.stack._4 rect.bar.deselected {
-  fill: #9467bd;
-}
-.krt-dc-filter-stacked rect.bar.deselected.stack-deselected {
-  opacity: .5;
+.krt-dc-filter-stacked rect.bar.stack-deselected {
+  opacity: .8;
   fill-opacity: .5;
 }
 </style>
