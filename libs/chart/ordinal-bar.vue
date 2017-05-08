@@ -10,7 +10,7 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins} from '../utils'
+import {removeEmptyAndFilterBins} from '../utils'
 
 export default {
   extends: Base,
@@ -31,14 +31,19 @@ export default {
     barPadding: {
       type: Number,
       default: 0
+      default: 0.05
     },
     outerPadding: {
       type: Number,
-      default: 0.5
+      default: 0
     },
     removeEmptyRows: {
       type: Boolean,
       default: true
+    },
+    // display limit
+    rows: {
+      type: Number
     }
   },
   computed: {
@@ -46,7 +51,8 @@ export default {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const reducer = this.getReducerExtractor;
       const group = dim.group().reduceSum(reducer)
-      return this.removeEmptyRows ? removeEmptyBins(group) : group
+      return this.removeEmptyRows ? removeEmptyAndFilterBins(group, this.rows) : group
+    },
     }
   },
   mounted: function() {

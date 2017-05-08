@@ -20,6 +20,7 @@ function _generateReducer(idx=0) {
     return this.removeEmptyRows ? removeEmptyBins(group) : group
   }
 }
+import {combineGroups, removeEmptyAndFilterBinsForCombinedGroup, reverseLegendOrder} from '../utils'
 
 export default {
   extends: Base,
@@ -31,6 +32,10 @@ export default {
     },
     labels: {
       type: Array
+    },
+    // display limit
+    rows: {
+      type: Number
     },
     xAxisLabel: {
       type: String,
@@ -62,14 +67,21 @@ export default {
     }
   },
   computed: {
-    reducer: _generateReducer(0)
+    combinedGroup: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const _reducer = this.getReducerExtractor;
+      const groups = []
+      for (let i=0; i<this.labels.length; i++) {
+        groups.push(dim.group().reduceSum((d) => _reducer(d)[i]))
+      }
+      return removeEmptyAndFilterBinsForCombinedGroup(combineGroups(groups), this.rows)
+    }
   },
   mounted: function() {
     const chart = this.chart;
-    const barNum = this.labels.length
 
     chart
-      .group(this.reducer, this.labels[0])
+      .group(this.combinedGroup, this.labels[0], (d) => d.value[0])
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
       .brushOn(false)
@@ -82,8 +94,8 @@ export default {
       .legend(dc.legend().x(this.legendX).y(this.legendY))
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
     // stack
-    for (let i=1; i<barNum; i++) {
-      chart.stack(_generateReducer(i).apply(this), this.labels[i]);
+    for (let i=1; i<this.labels.length; i++) {
+      chart.stack(this.combinedGroup, this.labels[i], (d) => d.value[i]);
     }
     // reverse dc.legend() order
     // See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
