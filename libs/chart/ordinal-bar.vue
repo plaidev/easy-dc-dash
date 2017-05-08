@@ -22,15 +22,19 @@ export default {
     },
     xAxisLabel: {
       type: String,
-      default: 'xAxisLabel'
+      default: ''
     },
     yAxisLabel: {
       type: String,
-      default: 'yAxisLabel'
+      default: ''
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
     },
     barPadding: {
       type: Number,
-      default: 0
+      default: 0.1
     },
     outerPadding: {
       type: Number,
@@ -39,7 +43,7 @@ export default {
     removeEmptyRows: {
       type: Boolean,
       default: true
-    }
+    },
   },
   computed: {
     reducer: function() {
@@ -57,6 +61,7 @@ export default {
       .yAxisLabel(this.yAxisLabel)
       .barPadding(this.barPadding)
       .outerPadding(this.outerPadding)
+      .renderLabel(this.renderLabel)
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
       .elasticX(true)

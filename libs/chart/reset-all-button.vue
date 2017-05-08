@@ -1,5 +1,5 @@
 <template>
-  <a class="btn btn-danger btn-lg" @click="resetAll">Reset All</a>
+  <a class="btn btn-primary btn-lg" @click="resetAll">Reset All</a>
 </template>
 
 <script lang="js">
@@ -19,9 +19,15 @@ export default {
   a.btn {
     cursor: pointer;
   }
+  a.btn.btn-primary {
+    font-weight: bold;
+    background-color: #2AAB9F !important;
+    border-color: #2AAB9F !important;
+    color: #fff !important;
+  }
   a.btn.btn-danger {
     color: #fff !important;
-    border-color: #AB312A;
+    background-color: #AB312A !important;
     font-weight: bold;
   }
   a.btn.btn-danger:hover {

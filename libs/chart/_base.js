@@ -40,6 +40,9 @@ export default {
     },
     height: {
       type: Number
+    },
+    margins: {
+      type: Object
     }
   },
 
@@ -111,6 +114,7 @@ export default {
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
+    if (this.margins) chart.margins(this.margins);
 
     this.chart = chart;
 
