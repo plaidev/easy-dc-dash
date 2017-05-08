@@ -41,6 +41,7 @@ export default {
     dimensions: {
       type: String
     },
+    // display limit
     rows: {
       type: Number
     },

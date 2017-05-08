@@ -33,6 +33,7 @@ export default {
     labels: {
       type: Array
     },
+    // display limit
     rows: {
       type: Number
     },
@@ -78,7 +79,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const barNum = this.labels.length
 
     chart
       .group(this.combinedGroup, this.labels[0], (d) => d.value[0])

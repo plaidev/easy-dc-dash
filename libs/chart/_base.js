@@ -42,11 +42,6 @@ export default {
     },
     height: {
       type: Number
-    margins: {
-      type: Object
-    },
-    rows: {
-      type: Number
     }
   },
 
