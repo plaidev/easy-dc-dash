@@ -29,8 +29,8 @@ export default {
 .reset-button.reset {
   font-weight: bold;
 }
-a.reset.btn {
-  color: #fff !important;
+.reset-button a.reset.btn {
+  color: #fff;
   background-color: #969E9C;
   font-size: 10px;
 }
