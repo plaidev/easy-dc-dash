@@ -41,6 +41,9 @@ export default {
     dimensions: {
       type: String
     },
+    rows: {
+      type: Number
+    },
     removeEmptyRows: {
       type: Boolean,
       default: true
@@ -93,12 +96,27 @@ export default {
           all: () => {
             let all = group.all();
             const m = {};
-            // build matrix from multikey/value pairs
             if(this.removeEmptyRows) {
               all = all.filter((kv) => {
                 return kv.value != 0
               })
             }
+            const sum = {};
+            // Sum up values per dimensions[0]
+            all.forEach((kv) => {
+              const ks = _splitkey(kv.key);
+              if (!sum[ks[0]]) sum[ks[0]] = 0
+              sum[ks[0]] += kv.value
+            })
+            // Sort by total value
+            const sorted = Object.keys(sum).sort((a,b) => sum[a] - sum[b])
+            // Filter by display limit to bar on the x-axis
+            const filtered = sorted.slice(0, this.rowNums)
+            all = all.filter((kv) => {
+              const ks = _splitkey(kv.key);
+              if(filtered.includes(ks[0])) return kv;
+            })
+            // build matrix from multikey/value pairs
             all.forEach((kv) => {
                 const ks = _splitkey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};

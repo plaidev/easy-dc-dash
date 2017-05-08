@@ -9,6 +9,7 @@
 import d3 from "d3"
 import Base from './_base'
 import Store from '../store'
+import {removeEmptyAndFilterBins} from '../utils'
 
 export default {
   extends: Base,
@@ -66,11 +67,6 @@ export default {
       default: true
     }
   },
-  data () {
-    return {
-      cfSize: Store.getCfSize({dataset: this.dataset})
-    }
-  },
   computed: {
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
@@ -80,6 +76,8 @@ export default {
     rowNums: function() {
       if(!this.displayRows) return this.cfSize
       return (this.displayRows > this.cfSize) ? this.cfSize : this.displayRows
+      const group = dim.group().reduceSum(reducer)
+      return removeEmptyAndFilterBins(group, this.rows)
     }
   },
   methods: {

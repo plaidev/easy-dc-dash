@@ -8,6 +8,12 @@ export default {
 
   template: `<div class="krt-dc-component" :id="id"></div>`,
 
+  data () {
+    return {
+      cfSize: Store.getCfSize({dataset: this.dataset})
+    }
+  },
+
   props: {
     dataset: {
       type: String,
@@ -35,6 +41,11 @@ export default {
       type: Number
     },
     height: {
+      type: Number
+    margins: {
+      type: Object
+    },
+    rows: {
       type: Number
     }
   },

@@ -47,14 +47,69 @@ export function generateExtractor (rule) {
 
   return // else
 }
-
-// https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
-export function removeEmptyBins(sourceGroup) {
+// See: https://github.com/dc-js/dc.js/wiki/FAQ#combine-groups
+export function combineGroups(groups) {
   return {
-    all:function () {
-      return sourceGroup.all().filter(function(d) {
-        return d.value != 0;
-      });
+      all: function() {
+        const alls = groups.map((g) => g.all());
+        const gm = {};
+        alls.forEach((a, i) => {
+          a.forEach((b) => {
+            if(!gm[b.key]) {
+              gm[b.key] = new Array(groups.length);
+              for(let j=0; j<groups.length; ++j)
+                gm[b.key][j] = 0;
+            }
+            gm[b.key][i] = b.value;
+          });
+        });
+      const ret = [];
+      for(let k in gm)
+        ret.push({key: k, value: gm[k]});
+      return ret;
+    }
+  };
+}
+// See: https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
+//      https://github.com/dc-js/dc.js/wiki/FAQ#-but-i-need-top
+export function removeEmptyAndFilterBins(group, topN) {
+  function nonZeroPred(d) {
+    return d.value != 0;
+  }
+  function sortByValue(a, b) {
+    return b.value - a.value
+  }
+  return {
+    all: () => {
+      if(!topN) {
+        const topN = group.all().length
+      }
+      return group.all()
+        .filter(nonZeroPred)
+        .sort(sortByValue)
+        .slice(0, topN);
+    }
+  };
+}
+export function removeEmptyAndFilterBinsForCombinedGroup(combinedGroup, topN) {
+  function valueSum(d) {
+    return d.value.reduce((previous, current) => previous + current)
+  }
+  function nonZeroPred(d) {
+    return valueSum(d) != 0
+  }
+  function sortByValueSum(a, b) {
+    return valueSum(b) - valueSum(a)
+  }
+  return {
+    all: () => {
+      if(!topN) {
+        const topN = combinedGroup.all().length
+      }
+      return combinedGroup.all()
+        .filter(nonZeroPred)
+        .sort(sortByValueSum)
+        .slice(0, topN);
     }
   };
 }
