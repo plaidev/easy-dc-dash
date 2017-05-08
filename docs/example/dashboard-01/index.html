@@ -11,15 +11,22 @@
   </head>
 
   <style>
-    a.btn {
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+   }
+    .buttons .download-csv-button a:not([href]):not([tabindex]) {
+      color: #2AAB9F;
       cursor: pointer;
-    }
-    a.btn.btn-outline-primary {
-      color: #2AAB9F !important;
-      border-color: #2AAB9F;
       font-weight: bold;
     }
-    a.btn.btn-outline-primary:hover {
+    .buttons .download-csv-button .btn.btn-outline-primary {
+      border-color: #2AAB9F;
+    }
+    .buttons .download-csv-button .btn.btn-outline-primary:hover {
+      border-color: #2AAB9F;
       background-color: #fff;
       opacity: .8;
     }
@@ -35,8 +42,10 @@
   ></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
-  <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-around;">
-    <a class="btn btn-outline-primary btn-lg" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
+  <div class="buttons">
+    <div class="download-csv-button">
+      <a class="btn btn-outline-primary btn-lg" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
+    </div>
     <reset-all-button></reset-all-button>
   </div>
 
