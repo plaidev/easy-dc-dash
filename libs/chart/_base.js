@@ -2,11 +2,15 @@ import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
 import {generateDomId, generateExtractor} from '../utils'
-
+import ResetButton from './components/reset-button.vue'
 
 export default {
 
-  template: `<div class="krt-dc-component" :id="id"></div>`,
+  template: `<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>`,
+
+  components: {
+    'reset-button': ResetButton
+  },
 
   props: {
     dataset: {
@@ -36,6 +40,9 @@ export default {
     },
     height: {
       type: Number
+    },
+    margins: {
+      type: Object
     }
   },
 
@@ -86,6 +93,13 @@ export default {
     }
   },
 
+  methods: {
+    removeFilterAndRedrawChart: function() {
+      this.chart.filterAll();
+      dc.redrawAll();
+    },
+  },
+
   mounted: function() {
     const chart = Store.registerChart(
       this.parent,
@@ -99,7 +113,8 @@ export default {
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
-    if (this.height) chart.width(this.height);
+    if (this.height) chart.height(this.height);
+    if (this.margins) chart.margins(this.margins);
 
     this.chart = chart;
 

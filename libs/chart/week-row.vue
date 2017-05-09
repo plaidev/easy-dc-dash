@@ -1,6 +1,6 @@
 <template>
   <div class="krt-dc-week-row" :id="id">
-    <a class="reset" style="display: none">reset</a>
+    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
   </div>
 </template>
 
@@ -22,6 +22,14 @@ export default {
     chartType: {
       type: String,
       default: 'rowChart'
+    },
+    height: {
+      type: Number,
+      default: 240
+    },
+    width: {
+      type: Number,
+      default: 200
     }
   },
 
@@ -85,20 +93,13 @@ export default {
     const chart = this.chart;
 
     chart
-      .width(240).height(200)
-      .margins({
-        top: 0,
-        right: 0, // 50
-        bottom: 20,
-        left: 0 // 60
-      })
-      .title(function(p) {
-        return "test"
+      .title(function(d) {
+        return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key]
       })
       .label(function(d) {
         return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key]
       })
-      .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
+      .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
       .renderTitle(true)
       .x(d3.scale.linear().domain([0, 7]))
       .elasticX(true);
