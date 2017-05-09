@@ -10,6 +10,7 @@ import StackedBar from './stacked-bar.vue'
 import FilterStackedBar from './filter-stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
+import resetAllButton from './reset-all-button.vue'
 
 const components = {
   'segment-pie': SegmentPie,
@@ -22,7 +23,8 @@ const components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
-  'stack-and-rate': compose(StackedLines, RateLine)
+  'stack-and-rate': compose(StackedLines, RateLine),
+  'reset-all-button': resetAllButton
 }
 
 function install(Vue, options) {
@@ -44,6 +46,7 @@ export default {
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,
+  resetAllButton: resetAllButton,
   install: install,
   installedComponents: components
 }
