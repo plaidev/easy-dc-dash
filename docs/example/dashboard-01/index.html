@@ -4,12 +4,33 @@
   <head>
     <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0/dc.min.css" rel="stylesheet" type="text/css" />
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
     <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
 
   </head>
+
+  <style>
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+   }
+    .buttons .download-csv-button a:not([href]):not([tabindex]) {
+      color: #2AAB9F;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .buttons .download-csv-button .btn.btn-outline-primary {
+      border-color: #2AAB9F;
+    }
+    .buttons .download-csv-button .btn.btn-outline-primary:hover {
+      border-color: #2AAB9F;
+      background-color: #fff;
+      opacity: .8;
+    }
+  </style>
 
   <body>
   <easy-dc-dataset
@@ -21,7 +42,12 @@
   ></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
-  <a class="container" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
+  <div class="buttons">
+    <div class="download-csv-button">
+      <a class="btn btn-outline-primary btn-lg" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
+    </div>
+    <reset-all-button></reset-all-button>
+  </div>
 
   <div class="container" style="display: flex; flex-direction: row;">
     <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
