@@ -12,6 +12,10 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
+function _splitkey(k) {
+  return k.split(',')
+}datata
+
 export default {
   extends: Base,
 
@@ -38,15 +42,11 @@ export default {
     },
     getDimensionExtractor: function() {
       return generateExtractor(this.dimensions)
-    },
-    grouping: function() {
-      const grouping = this.getDimensionExtractor
-      return Store.registerDimension(this.dimensionName, grouping, {dataest: this.dataset});
-    },
-    reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.getReducerExtractor;
-      return dim.group().reduceSum(reducer)
+    }
+  },
+  methods: {
+    extractName: function(name) {
+      return name.replace(/d\./, '')
     }
   },
   mounted: function() {
@@ -58,10 +58,10 @@ export default {
       .keyAccessor((d) => d.key[0])
       .valueAccessor((d) => d.key[1])
       .colorAccessor((d) => d.value)
-      // .title(function(d) {
-      //     return "Run:   " + d.key[0] + "\n" +
-      //            "Expt:  " + d.key[1] + "\n" +
-      //            "Speed: " + (299000 + d.value) + " km/s";})
+      .title(function(d) {
+          return `${this.extractName(_splitkey(d.key)[0])}: ${d.key[0]}\n`
+                 + `${this.extractName(_splitkey(d.key)[1])}: ${d.key[1]}\n`
+                 + `#{this.extractName(this.reduce)} ${d.value} ${this.valueFormat}})`
       .colors(["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"])
     return chart.render();
   }
