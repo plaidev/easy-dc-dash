@@ -1,6 +1,6 @@
 <template>
-  <div class="krt-dc-ordinal-bar" :id="id">
-    <a class="reset" style="display: none">reset</a>
+  <div class="krt-dc-bubble-chart" :id="id">
+    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
   </div>
 </template>
 
@@ -11,6 +11,15 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+
+const _ymdFormat = (key) => d3.time.format("%Y-%m-%d")(key)
+const _ymFormat = (key) => d3.time.format("%Y-%m")(key)
+const _yearFormat = (key) => d3.time.format('%Y')(key)
+const _monthFormat = (key) => d3.time.format('%m')(key)
+const _dayFormat = (key) => d3.time.format('%d')(key)
+const _yearInterval = (key) => d3.time.year(key)
+const _monthInterval = (key) => d3.time.month(key)
+const _dayInterval = (key) => d3.time.day(key)
 
 export default {
   extends: Base,
@@ -26,26 +35,48 @@ export default {
     timeScale: {
       type: String
     },
-    xAxis: {
+    timeFormat: {
       type: String
+    },
+    xAxis: {
+      type: String,
+      default: 'x'
     },
     xAxisFormat: {
       type: String,
       default: ''
     },
     yAxis: {
-      type: String
+      type: String,
+      default: 'y'
     },
     yAxisFormat: {
       type: String,
       default: ''
     },
     radius: {
-      type: String
+      type: String,
+      default: 'radius'
     },
     radiusFormat: {
       type: String,
       default: ''
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    renderTitle: {
+      type: Boolean,
+      default: true
+    },
+    renderHorizontalGridLines: {
+      type: Boolean,
+      default: true
+    },
+    renderVerticalGridLines: {
+      type: Boolean,
+      default: true
     },
     maxBubbleRelativeSize: {
       type: Number,
@@ -58,19 +89,23 @@ export default {
     elasticRadius: {
       type: Boolean,
       default: false
+    },
+    xAxisPadding: {
+      type: Number,
+      default: 500
+    },
+    yAxisPadding: {
+      type: Number,
+      default: 100
     }
   },
   computed: {
-    getDimensionExtractor: function() {
-      const format = this.getFormat()
-      if(format != null) return generateExtractor(`${format}(${this.dimension})`)
-      return generateExtractor(this.dimensionName)
-    },
-    getReducersExtractor: function() {
-      return generateExtractor(this.reduces)
+    dimensionName: function() {
+      if(this.timeScale != undefined) return `${this.timeScale}(${this.dimension})`
+      return this.dimension
     },
     data: function() {
-      return (this.getReducersExtractor)(this.firstRow)
+      return (this.getReducerExtractor)(this.firstRow)
     },
     dataKeys: function() {
       return Object.keys(this.data)
@@ -79,12 +114,18 @@ export default {
       const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
       return dim.top(1)[0]
     },
+    grouping: function() {
+      const getter = this.getDimensionExtractor;
+      const interval = this.getTimeInterval()
+      const grouping = (d) => interval(getter(d))
+      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
+    },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
       const dimensionKey = this.extractDimensionName(this.dimension);
       return dim.group().reduce(
         (p, v) => {
-          const vals = this.getReducersExtractor(v);
+          const vals = this.getReducerExtractor(v);
           this.dataKeys.forEach((k) => {
             if (typeof(p[k]) === 'string' && typeof(vals[k]) === 'string') {
               p[k] = vals[k]
@@ -100,7 +141,7 @@ export default {
           return p;
         },
         (p, v) => {
-          const vals = this.getReducersExtractor(v);
+          const vals = this.getReducerExtractor(v);
           this.dataKeys.forEach((k) => {
             if (k === dimensionKey) {
               p[k] = vals[k]
@@ -140,50 +181,57 @@ export default {
       })
       return schema
     },
-    extractRateValue: function(val) {
+    extractValue: function(val) {
       if(val instanceof Number || typeof val === 'number') return val
       else if(val instanceof Object || typeof val === 'object') {
         if(val.per != undefined) return val.per
       }
     },
-    getFormat: function() {
-      if (this.timeScale === undefined) return null
-      else if (this.timeScale === 'ymd') return `d3.time.format('%Y-%m-%d')`
-      else if (this.timeScale === 'ym') return `d3.time.format('%Y-%m')`
-      else if(this.timeScale === 'year') return `d3.time.format('%Y')`
-      else if (this.timeScale === 'month') return `d3.time.format('%m')`
-      else if (this.timeScale === 'day') return `d3.time.format('%d')`
+    getTimeInterval: function() {
+      if(this.timeScale === undefined) return null
+      else if(this.timeScale === 'year') return _yearInterval
+      else if (this.timeScale === 'month') return _monthInterval
+      else if (this.timeScale === 'day') return _dayInterval
+    },
+    getTimeFormat: function() {
+      if (this.timeFormat === undefined) return null
+      else if (this.timeFormat === 'ymd') return _ymdFormat
+      else if (this.timeFormat === 'ym') return _ymFormat
+      else if(this.timeFormat === 'year') return _yearFormat
+      else if (this.timeFormat === 'month') return _monthFormat
+      else if (this.timeFormat === 'day') return _dayFormat
     }
   },
   mounted: function() {
     const chart = this.chart;
     const all = this.reducer.all()
+    const format = this.getTimeFormat()
 
     chart.transitionDuration(1500)
       .colors(d3.scale.category10())
-      .keyAccessor((p) => this.extractRateValue(p.value[this.xAxis]))
-      .valueAccessor((p) => this.extractRateValue(p.value[this.yAxis]))
-      .radiusValueAccessor((p) => this.extractRateValue(p.value[this.radius]))
+      .keyAccessor((p) => this.extractValue(p.value[this.xAxis]))
+      .valueAccessor((p) => this.extractValue(p.value[this.yAxis]))
+      .radiusValueAccessor((p) => this.extractValue(p.value[this.radius]))
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
       .sortBubbleSize(this.sortBubbleSize)
       .elasticRadius(this.elasticRadius)
-      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractRateValue(d.value[this.xAxis]))))
-      .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractRateValue(d.value[this.yAxis]))))
-      .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractRateValue(d.value[this.radius]))))
-      .elasticY(true)
+      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxis]))))
+      .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxis]))))
+      .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radius]))))
       .elasticX(true)
-      .xAxisPadding(500)
-      .yAxisPadding(100)
-      .renderHorizontalGridLines(true)
-      .renderVerticalGridLines(true)
-      .renderLabel(true)
-      .renderTitle(true)
-      .label((p) => p.key)
+      .elasticY(true)
+      .xAxisPadding(this.xAxisPadding)
+      .yAxisPadding(this.yAxisPadding)
+      .renderHorizontalGridLines(this.renderHorizontalGridLines)
+      .renderVerticalGridLines(this.renderVerticalGridLines)
+      .renderLabel(this.renderLabel)
+      .renderTitle(this.renderTitle)
+      .label((p) => format(p.key))
       .title((p) => {
-        return `[${p.key}]\n`
-          + `${this.xAxis}: ${this.extractRateValue(p.value[this.xAxis])}${this.xAxisFormat}\n`
-          + `${this.yAxis}: ${this.extractRateValue(p.value[this.yAxis])}${this.yAxisFormat}\n`
-          + `${this.radius}: ${this.extractRateValue(p.value[this.radius])}${this.radiusFormat}`
+        return `[${format(p.key)}]\n`
+          + `${this.xAxis}: ${this.extractValue(p.value[this.xAxis])}${this.xAxisFormat}\n`
+          + `${this.yAxis}: ${this.extractValue(p.value[this.yAxis])}${this.yAxisFormat}\n`
+          + `${this.radius}: ${this.extractValue(p.value[this.radius])}${this.radiusFormat}`
       })
     chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
