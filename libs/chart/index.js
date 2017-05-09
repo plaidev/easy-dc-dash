@@ -10,6 +10,7 @@ import StackedBar from './stacked-bar.vue'
 import FilterStackedBar from './filter-stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
+import Bubble from './bubble.vue'
 
 const components = {
   'segment-pie': SegmentPie,
@@ -22,6 +23,7 @@ const components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
+  'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine)
 }
 
@@ -43,6 +45,7 @@ export default {
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
+  Bubble: Bubble,
   compose: compose,
   install: install,
   installedComponents: components
