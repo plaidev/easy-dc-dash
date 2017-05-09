@@ -132,13 +132,11 @@
   <div class="container">
     <bubble
       dimension="d.session_end_date"
-      time-scale="ym"
-      reduces="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+      time-scale="month"
+      time-format="ym"
+      reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
       :width=990
       :height=250
-      x-axis='pv'
-      y-axis='bounce_cnt'
-      radius='bounce_rate'
       radius-format='%'
       :max-bubble-relative-size=0.1
     ></bubble>
