@@ -129,6 +129,13 @@
   </div>
 
   <div class="container">
+    <heat-map
+      dimensions="[d.pv, d.session_cnt]"
+      reduce="d.bounce_cnt"
+    ></heat-map>
+  </div>
+
+  <div class="container">
     <data-table
       dimension="d.name"
       columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"

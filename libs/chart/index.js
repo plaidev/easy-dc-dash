@@ -10,6 +10,7 @@ import StackedBar from './stacked-bar.vue'
 import FilterStackedBar from './filter-stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
+import HeatMap from './heat-map.vue'
 import resetAllButton from './reset-all-button.vue'
 
 const components = {
@@ -23,6 +24,7 @@ const components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
+  'heat-map': HeatMap,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton
 }
@@ -45,6 +47,7 @@ export default {
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
+  HeatMap: HeatMap,
   compose: compose,
   resetAllButton: resetAllButton,
   install: install,
