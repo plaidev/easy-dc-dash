@@ -125,7 +125,6 @@ export default {
   mounted: function() {
     const chart = this.chart;
     const all = this.reducer.all()
-    console.log(d3.extent(all, (d) => this.extractRateValue(d.value[this.radius])))
 
     chart.transitionDuration(1500)
       .colors(d3.scale.category10())
