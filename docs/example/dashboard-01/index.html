@@ -103,6 +103,18 @@
   </div>
 
   <div class="container">
+    <bubble
+      dimension="d.name"
+      reduces="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+      :width=990
+      :height=250
+      x-axis='pv'
+      y-axis='bounce_cnt'
+      radius='bounce_rate'
+    ></bubble>
+  </div>
+
+  <div class="container">
     <data-table
       dimension="d.name"
       columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
