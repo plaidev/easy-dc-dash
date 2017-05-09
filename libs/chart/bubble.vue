@@ -29,16 +29,41 @@ export default {
     xAxis: {
       type: String
     },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
     yAxis: {
       type: String
     },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
     radius: {
       type: String
+    },
+    radiusFormat: {
+      type: String,
+      default: ''
+    },
+    maxBubbleRelativeSize: {
+      type: Number,
+      default: 0.3
+    },
+    sortBubbleSize: {
+      type: Boolean,
+      default: false
+    },
+    elasticRadius: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     getDimensionExtractor: function() {
-      if(this.timeScale) return new Function('d', `return d3.${this.timeScale}(${this.dimensionName})`)
+      const format = this.getFormat()
+      if(format != null) return generateExtractor(`${format}(${this.dimension})`)
       return generateExtractor(this.dimensionName)
     },
     getReducersExtractor: function() {
@@ -120,6 +145,14 @@ export default {
       else if(val instanceof Object || typeof val === 'object') {
         if(val.per != undefined) return val.per
       }
+    },
+    getFormat: function() {
+      if (this.timeScale === undefined) return null
+      else if (this.timeScale === 'ymd') return `d3.time.format('%Y-%m-%d')`
+      else if (this.timeScale === 'ym') return `d3.time.format('%Y-%m')`
+      else if(this.timeScale === 'year') return `d3.time.format('%Y')`
+      else if (this.timeScale === 'month') return `d3.time.format('%m')`
+      else if (this.timeScale === 'day') return `d3.time.format('%d')`
     }
   },
   mounted: function() {
@@ -131,7 +164,9 @@ export default {
       .keyAccessor((p) => this.extractRateValue(p.value[this.xAxis]))
       .valueAccessor((p) => this.extractRateValue(p.value[this.yAxis]))
       .radiusValueAccessor((p) => this.extractRateValue(p.value[this.radius]))
-      .maxBubbleRelativeSize(0.3)
+      .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
+      .sortBubbleSize(this.sortBubbleSize)
+      .elasticRadius(this.elasticRadius)
       .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractRateValue(d.value[this.xAxis]))))
       .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractRateValue(d.value[this.yAxis]))))
       .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractRateValue(d.value[this.radius]))))
@@ -143,19 +178,15 @@ export default {
       .renderVerticalGridLines(true)
       .renderLabel(true)
       .renderTitle(true)
-      // .label(function (p) {
-      //     return p.key.getFullYear();
-      // })
-      // .title(function (p) {
-      //     return p.key.getFullYear()
-      //             + "\n"
-      //             + "Index Gain: " + numberFormat(p.value.absGain) + "\n"
-      //             + "Index Gain in Percentage: " + numberFormat(p.value.percentageGain) + "%\n"
-      //             + "Fluctuation / Index Ratio: " + numberFormat(p.value.fluctuationPercentage) + "%";
-      // })
-      // .yAxis().tickFormat(function (v) {
-      //     return v + "%";
-      // });
+      .label((p) => p.key)
+      .title((p) => {
+        return `[${p.key}]\n`
+          + `${this.xAxis}: ${this.extractRateValue(p.value[this.xAxis])}${this.xAxisFormat}\n`
+          + `${this.yAxis}: ${this.extractRateValue(p.value[this.yAxis])}${this.yAxisFormat}\n`
+          + `${this.radius}: ${this.extractRateValue(p.value[this.radius])}${this.radiusFormat}`
+      })
+    chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
+    chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
     return chart.render();
   }
 }
