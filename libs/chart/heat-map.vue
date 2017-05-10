@@ -52,6 +52,10 @@ export default {
       type: Number,
       default: 45 * 5 + 40
     },
+    yBorderRadius: {
+      type: Number,
+      defaulat: 6.75
+    },
     xAxisLabel: {
       type: String
     },
@@ -76,11 +80,17 @@ export default {
   },
   computed: {
     dimensionName: function() {
-      if(this.dateKey != undefined) return `${this.dimensionKeys[0]}(${this.dateKey})`
+      if(this.dateKey != undefined) return `${this.xKey}(${this.dateKey})`
       return this.dimensions
     },
     dimensionKeys: function() {
       return _splitkey(_extractName(this.dimensions))
+    },
+    xKey: function() {
+      return this.dimensionKeys[0]
+    },
+    yKey: function() {
+      return this.dimensionKeys[1]
     },
     firstRow: function() {
       const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
@@ -98,15 +108,21 @@ export default {
     },
     grouping: function() {
       const getter = this.getDimensionExtractor;
-      const interval = this.getTimeInterval()
-      const grouping = (interval === null) ?  getter : (d) => (interval(getter(d)))
-      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
+      const xInterval = this.getTimeInterval(this.xKey)
+      const yInterval = this.getTimeInterval(this.yKey)
+      if((xInterval && yInterval) === null) {
+        return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
+      }
+      else {
+        const grouping = (d) => [xInterval(getter(d)), yInterval(getter(d))]
+        return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
+      }
     }
   },
   methods: {
-    getTimeInterval: function() {
+    getTimeInterval: function(key) {
       if(this.dateKey === undefined) return null
-      else return TIME_INTERVALS[this.dimensionKeys[0]]
+      else return TIME_INTERVALS[key]
     },
     getTimeFormat: function(key) {
       if(this.dateKey === undefined) return null
@@ -114,32 +130,33 @@ export default {
       else return TIME_FORMAT[key]
     },
     formatKey: function(axis, key) {
-      const xTimeFormat = this.getTimeFormat(this.dimensionKeys[0])
-      const yTimeFormat = this.getTimeFormat(this.dimensionKeys[1])
-      const FORMAT = {
+      const xTimeFormat = this.getTimeFormat(this.xKey)
+      const yTimeFormat = this.getTimeFormat(this.yKey)
+      const FORMATS = {
         x: xTimeFormat,
         y: yTimeFormat
       }
-      if(FORMAT[axis] === null) return key
-      return Number(FORMAT[axis](key))
+      if(FORMATS[axis] === null) return key
+      return Number(FORMATS[axis](key))
     }
   },
   mounted: function() {
     const chart = this.chart;
-    const xAxisLabel = this.xAxisLabel || this.dimensionKeys[0]
-    const yAxisLabel = this.xAxisLabel || this.dimensionKeys[1]
+    const xAxisLabel = this.xAxisLabel || this.xKey
+    const yAxisLabel = this.xAxisLabel || this.yKey
     const valueLabel = this.valueLabel || _extractName(this.reduce)
 
     chart
-      .width(this.width)
-      .height(this.height)
-      .keyAccessor((d) => this.formatKey('x', d.key))
-      .valueAccessor((d) => this.formatKey('y', d.key))
+      .keyAccessor((d) => this.formatKey('x', d.key[0]))
+      .valueAccessor((d) => this.formatKey('y', d.key[1]))
       .colorAccessor((d) => +d.value)
       .colors(d3.scale.category20b())
+      .yBorderRadius(this.yBorderRadius)
+      .colsLabel((d) => d + `${this.xAxisFormat}`)
+      .rowsLabel((d) => d + `${this.yAxisFormat}`)
       .title((d) => {
-          return `${xAxisLabel}: ${this.formatKey('x', d.key)}${this.xAxisFormat}\n`
-                 + `${yAxisLabel}: ${this.formatKey('y', d.key)}${this.yAxisFormat}\n`
+          return `${xAxisLabel}: ${this.formatKey('x', d.key[0])}${this.xAxisFormat}\n`
+                 + `${yAxisLabel}: ${this.formatKey('y', d.key[1])}${this.yAxisFormat}\n`
                  + `${valueLabel}: ${+d.value}${this.valueFormat}`
       })
     return chart.render();
