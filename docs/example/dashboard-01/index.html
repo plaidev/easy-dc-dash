@@ -133,7 +133,7 @@
     <bubble
       dimension="d.session_end_date"
       time-scale="month"
-      time-format="ym"
+      time-format="%Y-%m"
       reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
       :width=990
       :height=250
