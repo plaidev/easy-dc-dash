@@ -199,12 +199,16 @@ export default {
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       // else format is automatically selected (depending on time-scale)
       else return TIME_FORMATS[this.timeScale]
+    },
+    formatKey: function(key) {
+      const format = this.getTimeFormat()
+      if (format === null) return key
+      return format(key)
     }
   },
   mounted: function() {
     const chart = this.chart;
     const all = this.reducer.all()
-    const format = this.getTimeFormat()
 
     chart.transitionDuration(1500)
       .colors(d3.scale.category10())
@@ -225,9 +229,9 @@ export default {
       .renderVerticalGridLines(this.renderVerticalGridLines)
       .renderLabel(this.renderLabel)
       .renderTitle(this.renderTitle)
-      .label((p) => format(p.key))
+      .label((p) => this.formatKey(p.key))
       .title((p) => {
-        return `[${format(p.key)}]\n`
+        return `[${this.formatKey(p.key)}]\n`
           + `${this.xAxis}: ${this.extractValue(p.value[this.xAxis])}${this.xAxisFormat}\n`
           + `${this.yAxis}: ${this.extractValue(p.value[this.yAxis])}${this.yAxisFormat}\n`
           + `${this.radius}: ${this.extractValue(p.value[this.radius])}${this.radiusFormat}`
