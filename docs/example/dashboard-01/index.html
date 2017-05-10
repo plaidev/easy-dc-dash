@@ -131,8 +131,11 @@
   <div class="container">
     <heat-map
       date-key='d.session_end_date'
-      dimensions="[month, year]"
-      reduce="d.bounce_cnt"
+      dimensions="[year, month]"
+      reduce="d.pv"
+      x-axis-format="年"
+      y-axis-format="月"
+      :y-border-radius=3
     ></heat-map>
   </div>
 
