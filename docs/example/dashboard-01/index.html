@@ -129,6 +129,14 @@
   </div>
 
   <div class="container">
+    <series
+      date-key="d.session_end_date"
+      dimensions="[year, month]"
+      reduce="d.session_cnt"
+    ></series>
+  </div>
+
+  <div class="container">
     <data-table
       dimension="d.name"
       columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
