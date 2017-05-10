@@ -30,9 +30,6 @@ export default {
       type: String,
       default: 'barChart'
     },
-    dimensions: {
-      type: String
-    },
     height: {
       type: Number,
       default: 400
@@ -88,10 +85,10 @@ export default {
   },
   computed: {
     dimensionName: function() {
-      return this.dimensions
+      return this.dimension
     },
     getDimensionExtractor: function() {
-      return (d) => _joinkey(generateExtractor(this.dimensions)(d))
+      return (d) => _joinkey(generateExtractor(this.dimension)(d))
     },
     grouping: function() {
       const grouping = this.getDimensionExtractor
