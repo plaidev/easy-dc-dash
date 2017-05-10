@@ -9,7 +9,9 @@
       <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
       <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
     </div>
-    <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
+    <div :style="{width: width+'px', height: height+'px'}">
+      <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
+    </div>
   </div>
 </template>
 
@@ -88,7 +90,7 @@ export default {
     },
     height: {
       type: Number,
-      default: 1000
+      default: 400
     },
     // paging
     useTablePaging: {
