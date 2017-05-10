@@ -126,7 +126,6 @@ export default {
     },
     getTimeFormat: function(key) {
       if(this.dateKey === undefined) return null
-      else if (this.timeFormat != undefined) return d3.time.format(this.timeFormat)
       else return TIME_FORMAT[key]
     },
     formatKey: function(axis, key) {
