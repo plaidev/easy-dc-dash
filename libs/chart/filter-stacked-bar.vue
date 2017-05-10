@@ -88,7 +88,15 @@ export default {
       return this.dimension
     },
     getDimensionExtractor: function() {
-      return (d) => _joinkey(generateExtractor(this.dimension)(d))
+      const extractor = generateExtractor(this.dimension)
+      // TODO: dateに限ってしまっているのを修正、unitを作るか...
+      return (d) => {
+        const v = extractor(d)
+        if (this.scale === 'time') {
+          v[0] = d3.time.format('%Y-%m-%d')(v[0])
+        }
+        return _joinkey(v)
+      }
     },
     grouping: function() {
       const grouping = this.getDimensionExtractor
@@ -131,7 +139,10 @@ export default {
             });
             // then produce multivalue key/value pairs
             return Object.keys(m).map((k) => {
-                return {key: k, value: m[k]};
+                let key = k
+                if (this.scale === 'time')
+                  key = d3.time.format('%Y-%m-%d').parse(k)
+                return {key, value: m[k]};
             });
           }
       };
@@ -150,10 +161,16 @@ export default {
     const stackKeys = this.stackKeys
     const barNum = stackKeys.length;
 
+    if (!this.scale)
+      chart
+        .x(d3.scale.ordinal())
+        .xUnits(dc.units.ordinal)
+    else
+      chart
+        .xUnits(d3.time.days) // FIXME
+
     chart
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
-      .x(d3.scale.ordinal())
-      .xUnits(dc.units.ordinal)
       .brushOn(false)
       .clipPadding(10)
       .mouseZoomable(false)
@@ -173,11 +190,15 @@ export default {
       chart.selectAll('.krt-dc-filter-stacked rect.bar')
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
-          const key = _multikey(d.x, d.layer);
+          let x = d.x;
+          if (this.scale === 'time') x = d3.time.format('%Y-%m-%d')(x)
+          const key = _multikey(x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
-          chart.filter(_multikey(d.x, d.layer));
+          let x = d.x;
+          if (this.scale === 'time') x = d3.time.format('%Y-%m-%d')(x)
+          chart.filter(_multikey(x, d.layer));
           dc.redrawAll();
         })
     });
