@@ -12,14 +12,16 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
-const _ymdFormat = (key) => d3.time.format("%Y-%m-%d")(key)
-const _ymFormat = (key) => d3.time.format("%Y-%m")(key)
-const _yearFormat = (key) => d3.time.format('%Y')(key)
-const _monthFormat = (key) => d3.time.format('%m')(key)
-const _dayFormat = (key) => d3.time.format('%d')(key)
-const _yearInterval = (key) => d3.time.year(key)
-const _monthInterval = (key) => d3.time.month(key)
-const _dayInterval = (key) => d3.time.day(key)
+const TIME_FORMATS = {
+  year: d3.time.format('%Y'),
+  month: d3.time.format('%m'),
+  day: d3.time.format('%d')
+}
+const TIME_INTERVALS = {
+  year: d3.time.year,
+  month: d3.time.month,
+  day: d3.time.day
+}
 
 export default {
   extends: Base,
@@ -189,17 +191,14 @@ export default {
     },
     getTimeInterval: function() {
       if(this.timeScale === undefined) return null
-      else if(this.timeScale === 'year') return _yearInterval
-      else if (this.timeScale === 'month') return _monthInterval
-      else if (this.timeScale === 'day') return _dayInterval
+      else return TIME_INTERVALS[this.timeScale]
     },
     getTimeFormat: function() {
-      if (this.timeFormat === undefined) return null
-      else if (this.timeFormat === 'ymd') return _ymdFormat
-      else if (this.timeFormat === 'ym') return _ymFormat
-      else if(this.timeFormat === 'year') return _yearFormat
-      else if (this.timeFormat === 'month') return _monthFormat
-      else if (this.timeFormat === 'day') return _dayFormat
+      if (this.timeScale === undefined) return null
+      // If time-format passed from props, then use it
+      else if (this.timeFormat) return d3.time.format(this.timeFormat)
+      // else format is automatically selected (depending on time-scale)
+      else return TIME_FORMATS[this.timeScale]
     }
   },
   mounted: function() {
