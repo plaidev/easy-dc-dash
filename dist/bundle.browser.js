@@ -24677,9 +24677,46 @@ function removeEmptyBins(sourceGroup) {
   };
 }
 
+// reverse dc.legend() order
+// See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
+function reverseLegendOrder(chart) {
+  index$2.override(chart, 'legendables', function () {
+    var items = chart._legendables();
+    return items.reverse();
+  });
+}
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .reset-button { display: flex; flex-direction: row; align-items: center; padding-left: 20px; padding-bottom: 5px; } .reset-button.reset { font-weight: bold; } .reset-button a.reset.btn { color: #fff; background-color: #969E9C; font-size: 10px; } span.reset { padding-left: 5px; font-size: 12px; } span.reset .badge { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; vertical-align: 8%; white-space: normal; word-wrap: break-all; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var ResetButton = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button" }, [_c('a', { staticClass: "reset btn btn-secondary", staticStyle: { "display": "none" }, on: { "click": _vm.reset } }, [_vm._v("reset")]), _vm._v(" "), _vm._m(0)]);
+  }, staticRenderFns: [function () {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("Selected: "), _c('span', { staticClass: "filter badge" })]);
+  }],
+  methods: {
+    reset: function reset() {
+      this.$emit('reset');
+    }
+  }
+};
+
 var Base = {
 
-  template: '<div class="krt-dc-component" :id="id"></div>',
+  template: '<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>',
+
+  components: {
+    'reset-button': ResetButton
+  },
 
   props: {
     dataset: {
@@ -24707,6 +24744,9 @@ var Base = {
     },
     height: {
       type: Number
+    },
+    margins: {
+      type: Object
     }
   },
 
@@ -24756,6 +24796,13 @@ var Base = {
     }
   },
 
+  methods: {
+    removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
+      this.chart.filterAll();
+      index$2.redrawAll();
+    }
+  },
+
   mounted: function mounted() {
     var chart = Store.registerChart(this.parent, this.id, this.chartType, { volume: this.volume });
 
@@ -24764,7 +24811,8 @@ var Base = {
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
-    if (this.height) chart.width(this.height);
+    if (this.height) chart.height(this.height);
+    if (this.margins) chart.margins(this.margins);
 
     this.chart = chart;
 
@@ -33444,7 +33492,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " a.reset { display: block; position: absolute; width: 5em; right: 0; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = "";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33453,7 +33501,9 @@ function compose(Left, Right) {
 })();
 
 var SegmentPie = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33472,13 +33522,41 @@ var SegmentPie = { render: function render() {
     labels: {
       type: Object
     },
-    width: {
-      type: Number,
-      default: 240
-    },
     height: {
       type: Number,
+      default: 160
+    },
+    width: {
+      type: Number,
       default: 200
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendX: {
+      type: Number,
+      default: 0
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -33533,8 +33611,11 @@ var SegmentPie = { render: function render() {
     var chart = this.chart;
     chart.label(function (d) {
       return _this.segmentLabel(d.key);
-    }).render();
-    return chart;
+    });
+    if (this.useLegend) {
+      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+    }
+    return chart.render();
   },
 
   destroyed: function destroyed() {
@@ -33558,7 +33639,9 @@ var _weekFormat = d3$1.time.format("%w");
 var _ymdFormat = d3$1.time.format("%Y-%m-%d");
 
 var WeekRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33566,6 +33649,14 @@ var WeekRow = { render: function render() {
     chartType: {
       type: String,
       default: 'rowChart'
+    },
+    height: {
+      type: Number,
+      default: 240
+    },
+    width: {
+      type: Number,
+      default: 200
     }
   },
 
@@ -33624,16 +33715,11 @@ var WeekRow = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.width(240).height(200).margins({
-      top: 0,
-      right: 0, // 50
-      bottom: 20,
-      left: 0 // 60
-    }).title(function (p) {
-      return "test";
+    chart.title(function (d) {
+      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
     }).label(function (d) {
       return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
-    }).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).renderTitle(true).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
+    }).ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).renderTitle(true).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
 
     //.y(d3.scale.linear().domain([500, 5000]))
 
@@ -33645,7 +33731,7 @@ var WeekRow = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " /*.dc-chart g.row text.row { fill: #fff }*/ .dc-chart g.row text.titlerow { fill: #2AAB9F } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33654,7 +33740,9 @@ var WeekRow = { render: function render() {
 })();
 
 var ListRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33724,8 +33812,8 @@ var ListRow = { render: function render() {
       return this.filteredGroup(dim.group().reduceSum(reducer));
     },
     rowNums: function rowNums() {
-      if (!this.displayRows) return this.cfSize;
-      return this.displayRows > this.cfSize ? this.cfSize : this.displayRows;
+      if (!this.rows) return this.cfSize;
+      return this.rows > this.cfSize ? this.cfSize : this.rows;
     }
   },
   methods: {
@@ -33765,7 +33853,9 @@ var ListRow = { render: function render() {
 })();
 
 var RateLine = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33841,7 +33931,9 @@ function _generateReducer() {
 }
 
 var StackedLines = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33887,7 +33979,9 @@ var StackedLines = { render: function render() {
 })();
 
 var OrdinalBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33898,15 +33992,19 @@ var OrdinalBar = { render: function render() {
     },
     xAxisLabel: {
       type: String,
-      default: 'xAxisLabel'
+      default: ''
     },
     yAxisLabel: {
       type: String,
-      default: 'yAxisLabel'
+      default: ''
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
     },
     barPadding: {
       type: Number,
-      default: 0
+      default: 0.1
     },
     outerPadding: {
       type: Number,
@@ -33928,7 +34026,7 @@ var OrdinalBar = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(true).elasticY(true);
+    chart.xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding).renderLabel(this.renderLabel).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(true).elasticY(true);
     return chart.render();
   }
 };
@@ -33959,7 +34057,9 @@ function _generateReducer$1() {
 }
 
 var StackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33987,6 +34087,14 @@ var StackedBar = { render: function render() {
       type: Boolean,
       default: true
     },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
     legendX: {
       type: Number,
       default: 0
@@ -33994,6 +34102,18 @@ var StackedBar = { render: function render() {
     legendY: {
       type: Number,
       default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: false
     },
     removeEmptyRows: {
       type: Boolean,
@@ -34007,18 +34127,17 @@ var StackedBar = { render: function render() {
     var chart = this.chart;
     var barNum = this.labels.length;
 
-    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(true).elasticY(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).renderHorizontalGridLines(this.renderHorizontalGridLines);
+    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(true).elasticY(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
+      return d.key + '[' + this.layer + ']: ' + d.value;
+    });
     // stack
     for (var i = 1; i < barNum; i++) {
       chart.stack(_generateReducer$1(i).apply(this), this.labels[i]);
     }
-    // reverse dc.legend() order
-    // See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
-    index$2.override(chart, 'legendables', function () {
-      var items = chart._legendables();
-      return items.reverse();
-    });
-
+    if (this.useLegend) {
+      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+      reverseLegendOrder(chart);
+    }
     return chart.render();
   }
 };
@@ -34027,7 +34146,7 @@ var StackedBar = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .dc-chart g.chart-body { clip-path: none; } .dc-chart g.stack._0 .deselected { fill: #1f77b4; } .dc-chart g.stack._1 .deselected { fill: #ff7f0e; } .dc-chart g.stack._2 .deselected { fill: #2ca02c; } .dc-chart g.stack._3 .deselected { fill: #d62728; } .dc-chart g.stack._4 .deselected { fill: #9467bd; } .dc-chart .stack-deselected { opacity: .5; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-filter-stacked g.chart-body { clip-path: none; } .krt-dc-filter-stacked rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34046,7 +34165,9 @@ function _multikey(x, y) {
 }
 
 var FilterStackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34055,16 +34176,21 @@ var FilterStackedBar = { render: function render() {
       type: String,
       default: 'barChart'
     },
-    width: {
-      type: Number,
-      default: 600
-    },
     height: {
       type: Number,
       default: 400
     },
-    dimensions: {
-      type: String
+    width: {
+      type: Number,
+      default: 600
+    },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
     },
     removeEmptyRows: {
       type: Boolean,
@@ -34072,26 +34198,46 @@ var FilterStackedBar = { render: function render() {
     },
     renderLabel: {
       type: Boolean,
-      default: false
+      default: true
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
     },
     legendX: {
       type: Number,
-      default: 300
+      default: 0
     },
     legendY: {
       type: Number,
       default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     dimensionName: function dimensionName() {
-      return this.dimensions;
+      return this.dimension;
     },
     getDimensionExtractor: function getDimensionExtractor() {
       var _this = this;
 
       return function (d) {
-        return _joinkey(generateExtractor(_this.dimensions)(d));
+        return _joinkey(generateExtractor(_this.dimension)(d));
       };
     },
     grouping: function grouping() {
@@ -34156,8 +34302,8 @@ var FilterStackedBar = { render: function render() {
     var stackKeys = this.stackKeys;
     var barNum = stackKeys.length;
 
-    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).controlsUseVisibility(true).brushOn(false).clipPadding(10).mouseZoomable(false).elasticX(true).elasticY(true).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).title(function (d) {
-      return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]];
+    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).mouseZoomable(false).elasticX(true).elasticY(true).renderLabel(this.renderLabel).mouseZoomable(false).title(function (d) {
+      return d.key + '[' + this.layer + ']: ' + d.value[this.layer];
     });
     // stack
     for (var i = 1; i < barNum; i++) {
@@ -34165,14 +34311,18 @@ var FilterStackedBar = { render: function render() {
     }
     // select <-> deselect && redraw
     chart.on('pretransition', function (chart) {
-      chart.selectAll('rect.bar').classed('stack-deselected', function (d) {
-        var key = _multikey(d.x, stackKeys[+d.layer]);
+      chart.selectAll('.krt-dc-filter-stacked rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
+        var key = _multikey(d.x, d.layer);
         return chart.filter() && chart.filters().indexOf(key) === -1;
       }).on('click', function (d) {
-        chart.filter(_multikey(d.x, stackKeys[+d.layer]));
+        chart.filter(_multikey(d.x, d.layer));
         index$2.redrawAll();
       });
     });
+    if (this.useLegend) {
+      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+      reverseLegendOrder(chart);
+    }
     return chart.render();
   }
 };
@@ -34717,9 +34867,9 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
-        } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
+        } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
         } } }, [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
           _vm.onclick($event);
@@ -34940,6 +35090,29 @@ var DataTable = { render: function render() {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .reset-all-button a { cursor: pointer; font-weight: bold; } .reset-all-button a:not([href]):not([tabindex]) { color: #fff; } .reset-all-button a:not([href]):not([tabindex]):hover { color: #fff; } .reset-all-button .btn-primary { border-color: #2AAB9F; background-color: #2AAB9F; } .reset-all-button .btn-primary:hover { opacity: .6; color: #fff; border-color: #2AAB9F; background-color: #2AAB9F; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var resetAllButton = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-all-button" }, [_c('a', { staticClass: "btn btn-primary btn-lg", on: { "click": _vm.resetAll } }, [_vm._v("Reset All")])]);
+  }, staticRenderFns: [],
+  methods: {
+    resetAll: function resetAll() {
+      index$2.filterAll();
+      index$2.renderAll();
+    }
+  }
+};
+
 var components = {
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
@@ -34951,7 +35124,8 @@ var components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
-  'stack-and-rate': compose(StackedLines, RateLine)
+  'stack-and-rate': compose(StackedLines, RateLine),
+  'reset-all-button': resetAllButton
 };
 
 function install(Vue, options) {
@@ -34973,6 +35147,7 @@ var Chart = {
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,
+  resetAllButton: resetAllButton,
   install: install,
   installedComponents: components
 };
