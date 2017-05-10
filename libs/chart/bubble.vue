@@ -119,7 +119,7 @@ export default {
     grouping: function() {
       const getter = this.getDimensionExtractor;
       const interval = this.getTimeInterval()
-      const grouping = (d) => interval(getter(d))
+      const grouping = (interval === null) ? getter : (d) => interval(getter(d))
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
