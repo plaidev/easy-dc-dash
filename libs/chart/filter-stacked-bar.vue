@@ -138,7 +138,7 @@ export default {
     },
     selStacks: function(k) {
       return (d) => {
-        return d.value[k]
+        return d.value[k] || 0
       }
     },
     extractKey: function(k) {
