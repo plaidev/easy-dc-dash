@@ -130,7 +130,8 @@
 
   <div class="container">
     <heat-map
-      dimensions="[d.pv, d.session_cnt]"
+      date-key='d.session_end_date'
+      dimensions="[month, year]"
       reduce="d.bounce_cnt"
     ></heat-map>
   </div>
