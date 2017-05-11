@@ -153,8 +153,8 @@ export default {
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
     if (this.margins) chart.margins(this.margins);
-    chart.xAxisLabel(this.xAxisLabel)
-    chart.yAxisLabel(this.yAxisLabel)
+    if(this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
+    if(this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
     chart.renderLabel(this.renderLabel)
     chart.renderTitle(this.rendertitle)
 

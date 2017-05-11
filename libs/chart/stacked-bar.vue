@@ -60,7 +60,6 @@ export default {
       .clipPadding(10)
       .elasticX(true)
       .elasticY(true)
-      .renderLabel(this.renderLabel)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .title(function(d) {
         return d.key + '[' + this.layer + ']: ' + d.value

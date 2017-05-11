@@ -30,10 +30,6 @@ export default {
       type: String,
       default: 'linear'
     },
-    elasticX: {
-      type: Boolean,
-      default: true
-    },
     // display limit
     rows: {
       type: Number
@@ -96,7 +92,7 @@ export default {
       .height(this.height)
       .x(d3.scale[this.scale]())
       .gap(this.gap)
-      .elasticX(this.elasticX)
+      .elasticX(true)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
       .titleLabelOffsetX(this.titleLabelOffsetX)
