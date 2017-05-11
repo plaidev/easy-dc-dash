@@ -9,13 +9,8 @@
 import Base from './_base'
 import Store from '../store'
 
-function _extractName(s) {
-    return s.replace(/d\./, '')
-}
-
 export default {
   extends: Base,
-
   props: {
     chartType: {
       type: String,
@@ -30,15 +25,20 @@ export default {
     }
   },
   computed: {
+    reducer: function() {
+      const cf = Store.getCf({dataset: this.dataset});
+      const reducer = this.getReducerExtractor;
+      return cf.groupAll().reduceSum(reducer)
+    },
     _boxLabel: function() {
-      return _extractName(this.dimension) + `[${_extractName(this.reduce)}]`
+      return this.reduce.replace(/d\./, '')
     }
   },
   mounted: function() {
     const chart = this.chart;
 
     chart
-      .valueAccessor((d) => d.value)
+      .valueAccessor((d) => d)
       .formatNumber(d3.format(this.numberFormat))
       .html({
         none:"<span class=\"number-display\">0</span>"
