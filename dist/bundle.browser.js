@@ -11209,6 +11209,8 @@ var d3$1 = createCommonjsModule(function (module) {
     d3.xml = d3_xhrType(function (request) {
       return request.responseXML;
     });
+    console.log(typeof undefined === "function" && undefined.amd, 'object' === "object" && module.exports);
+
     if (typeof undefined === "function" && undefined.amd) this.d3 = d3, undefined(d3);else if ('object' === "object" && module.exports) module.exports = d3;else this.d3 = d3;
   }();
 });
@@ -24359,8 +24361,10 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24438,6 +24442,9 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.setAttribute('download', filename);
   pom.click();
 }
+
+//-------------------------------------
+
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -24670,46 +24677,9 @@ function removeEmptyBins(sourceGroup) {
   };
 }
 
-// reverse dc.legend() order
-// See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
-function reverseLegendOrder(chart) {
-  index$2.override(chart, 'legendables', function () {
-    var items = chart._legendables();
-    return items.reverse();
-  });
-}
-
-(function () {
-  if (document) {
-    var head = document.head || document.getElementsByTagName('head')[0],
-        style = document.createElement('style'),
-        css = " .reset-button { display: flex; flex-direction: row; align-items: center; padding-left: 20px; padding-bottom: 5px; } .reset-button.reset { font-weight: bold; } .reset-button a.reset.btn { color: #fff; background-color: #969E9C; font-size: 10px; } span.reset { padding-left: 5px; font-size: 12px; } span.reset .badge { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; vertical-align: 8%; white-space: normal; word-wrap: break-all; } ";style.type = 'text/css';if (style.styleSheet) {
-      style.styleSheet.cssText = css;
-    } else {
-      style.appendChild(document.createTextNode(css));
-    }head.appendChild(style);
-  }
-})();
-
-var ResetButton = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button" }, [_c('a', { staticClass: "reset btn btn-secondary", staticStyle: { "display": "none" }, on: { "click": _vm.reset } }, [_vm._v("reset")]), _vm._v(" "), _vm._m(0)]);
-  }, staticRenderFns: [function () {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("Selected: "), _c('span', { staticClass: "filter badge" })]);
-  }],
-  methods: {
-    reset: function reset() {
-      this.$emit('reset');
-    }
-  }
-};
-
 var Base = {
 
-  template: '<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>',
-
-  components: {
-    'reset-button': ResetButton
-  },
+  template: '<div class="krt-dc-component" :id="id"></div>',
 
   props: {
     dataset: {
@@ -24737,9 +24707,6 @@ var Base = {
     },
     height: {
       type: Number
-    },
-    margins: {
-      type: Object
     }
   },
 
@@ -24789,13 +24756,6 @@ var Base = {
     }
   },
 
-  methods: {
-    removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
-      this.chart.filterAll();
-      index$2.redrawAll();
-    }
-  },
-
   mounted: function mounted() {
     var chart = Store.registerChart(this.parent, this.id, this.chartType, { volume: this.volume });
 
@@ -24804,8 +24764,7 @@ var Base = {
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
-    if (this.height) chart.height(this.height);
-    if (this.margins) chart.margins(this.margins);
+    if (this.height) chart.width(this.height);
 
     this.chart = chart;
 
@@ -33485,7 +33444,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " a.reset { display: block; position: absolute; width: 5em; right: 0; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33494,9 +33453,7 @@ function compose(Left, Right) {
 })();
 
 var SegmentPie = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33515,41 +33472,13 @@ var SegmentPie = { render: function render() {
     labels: {
       type: Object
     },
-    height: {
-      type: Number,
-      default: 160
-    },
     width: {
       type: Number,
+      default: 240
+    },
+    height: {
+      type: Number,
       default: 200
-    },
-    useLegend: {
-      type: Boolean,
-      default: true
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
     }
   },
 
@@ -33604,11 +33533,8 @@ var SegmentPie = { render: function render() {
     var chart = this.chart;
     chart.label(function (d) {
       return _this.segmentLabel(d.key);
-    });
-    if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
-    }
-    return chart.render();
+    }).render();
+    return chart;
   },
 
   destroyed: function destroyed() {
@@ -33632,9 +33558,7 @@ var _weekFormat = d3$1.time.format("%w");
 var _ymdFormat = d3$1.time.format("%Y-%m-%d");
 
 var WeekRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33642,14 +33566,6 @@ var WeekRow = { render: function render() {
     chartType: {
       type: String,
       default: 'rowChart'
-    },
-    height: {
-      type: Number,
-      default: 240
-    },
-    width: {
-      type: Number,
-      default: 200
     }
   },
 
@@ -33708,11 +33624,16 @@ var WeekRow = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.title(function (d) {
-      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
+    chart.width(240).height(200).margins({
+      top: 0,
+      right: 0, // 50
+      bottom: 20,
+      left: 0 // 60
+    }).title(function (p) {
+      return "test";
     }).label(function (d) {
       return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
-    }).ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).renderTitle(true).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
+    }).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).renderTitle(true).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
 
     //.y(d3.scale.linear().domain([500, 5000]))
 
@@ -33724,7 +33645,7 @@ var WeekRow = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " /*.dc-chart g.row text.row { fill: #fff }*/ .dc-chart g.row text.titlerow { fill: #2AAB9F } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33733,9 +33654,7 @@ var WeekRow = { render: function render() {
 })();
 
 var ListRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33805,8 +33724,8 @@ var ListRow = { render: function render() {
       return this.filteredGroup(dim.group().reduceSum(reducer));
     },
     rowNums: function rowNums() {
-      if (!this.rows) return this.cfSize;
-      return this.rows > this.cfSize ? this.cfSize : this.rows;
+      if (!this.displayRows) return this.cfSize;
+      return this.displayRows > this.cfSize ? this.cfSize : this.displayRows;
     }
   },
   methods: {
@@ -33846,9 +33765,7 @@ var ListRow = { render: function render() {
 })();
 
 var RateLine = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33924,9 +33841,7 @@ function _generateReducer() {
 }
 
 var StackedLines = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33972,9 +33887,7 @@ var StackedLines = { render: function render() {
 })();
 
 var OrdinalBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33985,19 +33898,15 @@ var OrdinalBar = { render: function render() {
     },
     xAxisLabel: {
       type: String,
-      default: ''
+      default: 'xAxisLabel'
     },
     yAxisLabel: {
       type: String,
-      default: ''
-    },
-    renderLabel: {
-      type: Boolean,
-      default: true
+      default: 'yAxisLabel'
     },
     barPadding: {
       type: Number,
-      default: 0.1
+      default: 0
     },
     outerPadding: {
       type: Number,
@@ -34019,7 +33928,7 @@ var OrdinalBar = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding).renderLabel(this.renderLabel).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(true).elasticY(true);
+    chart.xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(true).elasticY(true);
     return chart.render();
   }
 };
@@ -34050,9 +33959,7 @@ function _generateReducer$1() {
 }
 
 var StackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34080,14 +33987,6 @@ var StackedBar = { render: function render() {
       type: Boolean,
       default: true
     },
-    useLegend: {
-      type: Boolean,
-      default: true
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
     legendX: {
       type: Number,
       default: 0
@@ -34095,18 +33994,6 @@ var StackedBar = { render: function render() {
     legendY: {
       type: Number,
       default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: false
     },
     removeEmptyRows: {
       type: Boolean,
@@ -34120,17 +34007,18 @@ var StackedBar = { render: function render() {
     var chart = this.chart;
     var barNum = this.labels.length;
 
-    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(true).elasticY(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
-      return d.key + '[' + this.layer + ']: ' + d.value;
-    });
+    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(true).elasticY(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).renderHorizontalGridLines(this.renderHorizontalGridLines);
     // stack
     for (var i = 1; i < barNum; i++) {
       chart.stack(_generateReducer$1(i).apply(this), this.labels[i]);
     }
-    if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
-      reverseLegendOrder(chart);
-    }
+    // reverse dc.legend() order
+    // See: http://stackoverflow.com/questions/39811210/dc-charts-change-legend-order
+    index$2.override(chart, 'legendables', function () {
+      var items = chart._legendables();
+      return items.reverse();
+    });
+
     return chart.render();
   }
 };
@@ -34139,7 +34027,7 @@ var StackedBar = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-filter-stacked g.chart-body { clip-path: none; } .krt-dc-filter-stacked rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .dc-chart g.chart-body { clip-path: none; } .dc-chart g.stack._0 .deselected { fill: #1f77b4; } .dc-chart g.stack._1 .deselected { fill: #ff7f0e; } .dc-chart g.stack._2 .deselected { fill: #2ca02c; } .dc-chart g.stack._3 .deselected { fill: #d62728; } .dc-chart g.stack._4 .deselected { fill: #9467bd; } .dc-chart .stack-deselected { opacity: .5; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34158,9 +34046,7 @@ function _multikey(x, y) {
 }
 
 var FilterStackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("reset")])]);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34169,24 +34055,16 @@ var FilterStackedBar = { render: function render() {
       type: String,
       default: 'barChart'
     },
-    dimensions: {
-      type: String
+    width: {
+      type: Number,
+      default: 600
     },
     height: {
       type: Number,
       default: 400
     },
-    width: {
-      type: Number,
-      default: 600
-    },
-    xAxisLabel: {
-      type: String,
-      default: ''
-    },
-    yAxisLabel: {
-      type: String,
-      default: ''
+    dimensions: {
+      type: String
     },
     removeEmptyRows: {
       type: Boolean,
@@ -34194,35 +34072,15 @@ var FilterStackedBar = { render: function render() {
     },
     renderLabel: {
       type: Boolean,
-      default: true
-    },
-    useLegend: {
-      type: Boolean,
-      default: true
-    },
-    legendGap: {
-      type: Number,
-      default: 5
+      default: false
     },
     legendX: {
       type: Number,
-      default: 0
+      default: 300
     },
     legendY: {
       type: Number,
       default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: false
     }
   },
   computed: {
@@ -34298,8 +34156,8 @@ var FilterStackedBar = { render: function render() {
     var stackKeys = this.stackKeys;
     var barNum = stackKeys.length;
 
-    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).mouseZoomable(false).elasticX(true).elasticY(true).renderLabel(this.renderLabel).mouseZoomable(false).title(function (d) {
-      return d.key + '[' + this.layer + ']: ' + d.value[this.layer];
+    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).controlsUseVisibility(true).brushOn(false).clipPadding(10).mouseZoomable(false).elasticX(true).elasticY(true).renderLabel(this.renderLabel).legend(index$2.legend().x(this.legendX).y(this.legendY)).title(function (d) {
+      return d.key + '[' + stackKeys[+this.layer] + ']: ' + d.value[stackKeys[+this.layer]];
     });
     // stack
     for (var i = 1; i < barNum; i++) {
@@ -34307,18 +34165,14 @@ var FilterStackedBar = { render: function render() {
     }
     // select <-> deselect && redraw
     chart.on('pretransition', function (chart) {
-      chart.selectAll('.krt-dc-filter-stacked rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
-        var key = _multikey(d.x, d.layer);
+      chart.selectAll('rect.bar').classed('stack-deselected', function (d) {
+        var key = _multikey(d.x, stackKeys[+d.layer]);
         return chart.filter() && chart.filters().indexOf(key) === -1;
       }).on('click', function (d) {
-        chart.filter(_multikey(d.x, d.layer));
+        chart.filter(_multikey(d.x, stackKeys[+d.layer]));
         index$2.redrawAll();
       });
     });
-    if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
-      reverseLegendOrder(chart);
-    }
     return chart.render();
   }
 };
@@ -34589,6 +34443,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34689,6 +34557,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34700,6 +34571,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -34727,6 +34600,10 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -34840,9 +34717,9 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
-        } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
+        } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
         } } }, [_vm._v("Next")])]) : _vm._e(), _c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
           _vm.onclick($event);
@@ -35063,29 +34940,6 @@ var DataTable = { render: function render() {
   }
 };
 
-(function () {
-  if (document) {
-    var head = document.head || document.getElementsByTagName('head')[0],
-        style = document.createElement('style'),
-        css = " .reset-all-button a { cursor: pointer; font-weight: bold; } .reset-all-button a:not([href]):not([tabindex]) { color: #fff; } .reset-all-button a:not([href]):not([tabindex]):hover { color: #fff; } .reset-all-button .btn-primary { border-color: #2AAB9F; background-color: #2AAB9F; } .reset-all-button .btn-primary:hover { opacity: .6; color: #fff; border-color: #2AAB9F; background-color: #2AAB9F; } ";style.type = 'text/css';if (style.styleSheet) {
-      style.styleSheet.cssText = css;
-    } else {
-      style.appendChild(document.createTextNode(css));
-    }head.appendChild(style);
-  }
-})();
-
-var resetAllButton = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-all-button" }, [_c('a', { staticClass: "btn btn-primary btn-lg", on: { "click": _vm.resetAll } }, [_vm._v("Reset All")])]);
-  }, staticRenderFns: [],
-  methods: {
-    resetAll: function resetAll() {
-      index$2.filterAll();
-      index$2.renderAll();
-    }
-  }
-};
-
 var components = {
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
@@ -35097,8 +34951,7 @@ var components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
-  'stack-and-rate': compose(StackedLines, RateLine),
-  'reset-all-button': resetAllButton
+  'stack-and-rate': compose(StackedLines, RateLine)
 };
 
 function install(Vue, options) {
@@ -35120,7 +34973,6 @@ var Chart = {
   GeoJP: GeoJP,
   DataTable: DataTable,
   compose: compose,
-  resetAllButton: resetAllButton,
   install: install,
   installedComponents: components
 };
