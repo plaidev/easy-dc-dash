@@ -15,8 +15,9 @@ import {generateExtractor} from '../utils'
 function _splitkey(k) {
   return k.split(',')
 }
-function _extractName(dimensions) {
-  return dimensions.replace(/(\[)|(\s)|(d.)|(\])/g, '')
+function _extractName(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
 }
 const TIME_FORMAT = {
   year: d3.time.format('%Y'),
@@ -37,7 +38,7 @@ export default {
       type: String,
       default: 'seriesChart'
     },
-    dimensions: {
+    dimension: {
       type: String
     },
     dateKey: {
@@ -85,6 +86,7 @@ export default {
       default: ''
     },
     // legend
+    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
     useLegend: {
       type: Boolean,
       default: true
@@ -121,10 +123,10 @@ export default {
   computed: {
     dimensionName: function() {
       if(this.dateKey != undefined) return `${this.seriesKey}(${this.dateKey})`
-      return this.dimensions
+      return this.dimension
     },
     dimensionKeys: function() {
-      return _splitkey(_extractName(this.dimensions))
+      return _splitkey(_extractName(this.dimension))
     },
     seriesKey: function() {
       return this.dimensionKeys[0]
