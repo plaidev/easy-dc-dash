@@ -34,11 +34,11 @@ export default {
     },
     xAxisLabel: {
       type: String,
-      default: 'xAxisLabel'
+      default: ''
     },
     yAxisLabel: {
       type: String,
-      default: 'yAxisLabel'
+      default: ''
     },
     renderLabel: {
       type: Boolean,
