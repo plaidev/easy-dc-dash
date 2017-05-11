@@ -20,10 +20,6 @@ export default {
       type: String,
       default: 'barChart'
     },
-    renderLabel: {
-      type: Boolean,
-      default: true
-    },
     barPadding: {
       type: Number,
       default: 0.1

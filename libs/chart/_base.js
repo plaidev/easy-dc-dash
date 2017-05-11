@@ -41,6 +41,9 @@ export default {
     height: {
       type: Number
     },
+    margins: {
+      type: Object
+    },
     xAxisLabel: {
       type: String,
       default: ''
@@ -57,13 +60,18 @@ export default {
       type: String,
       default: ''
     },
-    margins: {
-      type: Object
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    renderTitle: {
+      type: Boolean,
+      default: true
     },
     useLegend: {
       type: Boolean,
       default: true
-    }
+    },
   },
 
   computed: {
@@ -145,6 +153,10 @@ export default {
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
     if (this.margins) chart.margins(this.margins);
+    chart.xAxisLabel(this.xAxisLabel)
+    chart.yAxisLabel(this.yAxisLabel)
+    chart.renderLabel(this.renderLabel)
+    chart.renderTitle(this.rendertitle)
 
     this.chart = chart;
 

@@ -32,10 +32,6 @@ export default {
     labels: {
       type: Array
     },
-    renderLabel: {
-      type: Boolean,
-      default: true
-    },
     renderHorizontalGridLines: {
       type: Boolean,
       default: true

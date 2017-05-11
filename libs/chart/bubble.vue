@@ -54,15 +54,6 @@ export default {
       type: String,
       default: ''
     },
-    // options
-    renderLabel: {
-      type: Boolean,
-      default: true
-    },
-    renderTitle: {
-      type: Boolean,
-      default: true
-    },
     renderHorizontalGridLines: {
       type: Boolean,
       default: true
