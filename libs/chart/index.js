@@ -1,5 +1,6 @@
 import Base from './_base'
 import {compose} from './_composite'
+import NumberDisplay from './number-display.vue'
 import SegmentPie from './segment-pie.vue'
 import WeekRow from './week-row.vue'
 import ListRow from './list-row.vue'
@@ -11,9 +12,11 @@ import FilterStackedBar from './filter-stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
 import Series from './series.vue'
+import Bubble from './bubble.vue'
 import resetAllButton from './reset-all-button.vue'
 
 const components = {
+  'number-display': NumberDisplay,
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
   'list-row': ListRow,
@@ -25,6 +28,7 @@ const components = {
   'geo-jp': GeoJP,
   'data-table': DataTable,
   'series': Series,
+  'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton
 }
@@ -41,6 +45,7 @@ export default {
   StackedLines: StackedLines,
   WeekRow: WeekRow,
   ListRow: ListRow,
+  NumberDisplay: NumberDisplay,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
   StackedBar: StackedBar,
@@ -48,6 +53,7 @@ export default {
   GeoJP: GeoJP,
   DataTable: DataTable,
   Series: Series,
+  Bubble: Bubble,
   compose: compose,
   resetAllButton: resetAllButton,
   install: install,

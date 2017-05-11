@@ -73,10 +73,23 @@
     ></segment-pie>
   </div>
 
+  <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
+    <number-display
+      reduce="d.pv"
+    ></number-display>
+    <number-display
+      reduce="d.uu"
+    ></number-display>
+    <number-display
+      reduce="d.session_cnt"
+    ></number-display>
+  </div>
+
   <div class="container" style="display: flex; flex-direction: column;">
     <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
+
   <div>
     <list-row
        dimension='d.name'
@@ -93,8 +106,8 @@
     <ordinal-bar
       dimension='d.name'
       reduce='d.pv'
-      :width=768
-      :height=380
+      :width=300
+      :height=250
       x-axis-label='name'
       y-axis-label='pv'
     ></ordinal-bar>
@@ -102,9 +115,9 @@
       dimension='d.name'
       reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
       :labels="['PV', 'セッション数', '離脱数']"
-      :width=768
-      :height=380
-      :legend-x=300
+      :width=300
+      :height=250
+      :legend-x=250
       x-axis-label='name'
       y-axis-label='pv + session_cnt + bounce_cnt'
     ></stacked-bar>
@@ -117,9 +130,9 @@
     <filter-stacked-bar
       dimension="[d.name, d.meta]"
       reduce='d.pv'
-      :width=400
-      :height=400
-      :legend-x=350
+      :width=300
+      :height=250
+      :legend-x=250
       :legend-y=0
     ></filter-stacked-bar>
     <segment-pie
@@ -134,6 +147,16 @@
       dimension="[year, month]"
       reduce="d.session_cnt"
     ></series>
+    <bubble
+      dimension="d.session_end_date"
+      time-scale="month"
+      time-format="%Y-%m"
+      reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+      :width=990
+      :height=250
+      radius-format='%'
+      :max-bubble-relative-size=0.1
+    ></bubble>
   </div>
 
   <div class="container">
