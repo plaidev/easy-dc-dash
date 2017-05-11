@@ -66,11 +66,6 @@ export default {
       default: true
     }
   },
-  data () {
-    return {
-      cfSize: Store.getCfSize({dataset: this.dataset})
-    }
-  },
   computed: {
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
@@ -78,8 +73,10 @@ export default {
       return this.filteredGroup(dim.group().reduceSum(reducer))
     },
     rowNums: function() {
-      if(!this.rows) return this.cfSize
-      return (this.rows > this.cfSize) ? this.cfSize : this.rows
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const size = dim.group().size()
+      if(!this.rows) return size
+      return (this.rows > size) ? size : this.rows
     }
   },
   methods: {
