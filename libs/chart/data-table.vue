@@ -9,7 +9,9 @@
       <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
       <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
     </div>
-    <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
+    <div :style="{width: width+'px', height: height+'px'}">
+      <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
+    </div>
   </div>
 </template>
 
@@ -88,7 +90,7 @@ export default {
     },
     height: {
       type: Number,
-      default: 1000
+      default: 400
     },
     // paging
     useTablePaging: {
@@ -142,7 +144,7 @@ export default {
       return Math.min(end, this.filteredSize)
     },
     firstRow: function() {
-      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     isFirstPage: function() {
@@ -152,7 +154,7 @@ export default {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
     },
     grouping: function() {
-      const dim = Store.registerDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
       const dimensionKey = this.extractDimensionName(this.dimension);
       const grouping = dim.group().reduce(
         (p, v) => {
