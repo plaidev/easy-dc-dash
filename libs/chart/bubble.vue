@@ -210,8 +210,6 @@ export default {
       .yAxisPadding(this.yAxisPadding)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .renderVerticalGridLines(this.renderVerticalGridLines)
-      .renderLabel(this.renderLabel)
-      .renderTitle(this.renderTitle)
       .label((p) => this.formatKey(p.key))
       .title((p) => {
         return `[${this.formatKey(p.key)}]\n`

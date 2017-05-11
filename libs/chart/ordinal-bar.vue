@@ -47,7 +47,6 @@ export default {
     chart
       .barPadding(this.barPadding)
       .outerPadding(this.outerPadding)
-      .renderLabel(this.renderLabel)
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
       .elasticX(true)

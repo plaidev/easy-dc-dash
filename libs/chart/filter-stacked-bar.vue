@@ -137,7 +137,6 @@ export default {
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
       .brushOn(false)
       .clipPadding(10)
-      .mouseZoomable(false)
       .elasticX(true)
       .elasticY(true)
       .mouseZoomable(false)
