@@ -31,15 +31,13 @@ export default {
       type: String,
       default: 'bubbleChart'
     },
-    reduces: {
-      type: String
-    },
     timeScale: {
       type: String
     },
     timeFormat: {
       type: String
     },
+    // labels, formats
     xAxis: {
       type: String,
       default: 'x'
@@ -64,6 +62,7 @@ export default {
       type: String,
       default: ''
     },
+    // options
     renderLabel: {
       type: Boolean,
       default: true
@@ -80,10 +79,6 @@ export default {
       type: Boolean,
       default: true
     },
-    maxBubbleRelativeSize: {
-      type: Number,
-      default: 0.3
-    },
     sortBubbleSize: {
       type: Boolean,
       default: false
@@ -91,6 +86,11 @@ export default {
     elasticRadius: {
       type: Boolean,
       default: false
+    },
+    // styles
+    maxBubbleRelativeSize: {
+      type: Number,
+      default: 0.3
     },
     xAxisPadding: {
       type: Number,
