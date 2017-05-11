@@ -1,5 +1,6 @@
 import Base from './_base'
 import {compose} from './_composite'
+import NumberDisplay from './number-display.vue'
 import SegmentPie from './segment-pie.vue'
 import WeekRow from './week-row.vue'
 import ListRow from './list-row.vue'
@@ -14,6 +15,7 @@ import Bubble from './bubble.vue'
 import resetAllButton from './reset-all-button.vue'
 
 const components = {
+  'number-display': NumberDisplay,
   'segment-pie': SegmentPie,
   'week-row': WeekRow,
   'list-row': ListRow,
@@ -41,6 +43,7 @@ export default {
   StackedLines: StackedLines,
   WeekRow: WeekRow,
   ListRow: ListRow,
+  NumberDisplay: NumberDisplay,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
   StackedBar: StackedBar,
