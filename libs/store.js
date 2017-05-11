@@ -38,6 +38,8 @@ class DashboardStore {
   }
 
   registerDimension(name, method, options={}) {
+    if(!name) return
+
     const {
       dataset = 'default'
     } = options;
@@ -57,7 +59,16 @@ class DashboardStore {
     // TODO: implement
   }
 
+  getCf(options={}) {
+    const {
+      dataset = 'default'
+    } = options;
+    return this._cf[dataset]
+  }
+
   getDimension(name, options={}) {
+    if(!name) return
+
     const {
       dataset = 'default'
     } = options;
