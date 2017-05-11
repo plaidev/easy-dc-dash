@@ -54,34 +54,10 @@ export default {
       type: Boolean,
       default: true
     },
-    useLegend: {
-      type: Boolean,
-      default: true
+    legend: {
+      type: Object,
+      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: false
-    }
   },
   computed: {
     dimensionName: function() {
@@ -202,10 +178,7 @@ export default {
           dc.redrawAll();
         })
     });
-    if(this.useLegend) {
-      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal))
-      reverseLegendOrder(chart)
-    }
+    this.applyLegend({reverseOrder:true})
     return chart.render();
   }
 }
