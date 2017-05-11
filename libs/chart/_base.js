@@ -1,7 +1,7 @@
 import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
-import {generateDomId, generateExtractor} from '../utils'
+import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import ResetButton from './components/reset-button.vue'
 
 export default {
@@ -43,6 +43,10 @@ export default {
     },
     margins: {
       type: Object
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -98,6 +102,16 @@ export default {
       this.chart.filterAll();
       dc.redrawAll();
     },
+    applyLegend: function(options={}) {
+      if(!this.useLegend || !this.legend) return
+
+      const {
+        reverseOrder = false
+      } = options;
+      const l = this.legend
+      this.chart.legend(dc.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal))
+      if(reverseOrder) reverseLegendOrder(this.chart)
+    }
   },
 
   mounted: function() {
