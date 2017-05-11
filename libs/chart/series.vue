@@ -51,28 +51,89 @@ export default {
       type: Number,
       default: 480
     },
+    brushOn: {
+      type: Boolean,
+      default: false
+    },
+    // label
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    seriesLabel: {
+      type: String,
+      default: ''
+    },
+    seriesFormat: {
+      type: String,
+      default: ''
+    },
     xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    xAxisFormat: {
       type: String,
       default: ''
     },
     yAxisLabel: {
       type: String,
       default: ''
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    // legend
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendX: {
+      type: Number,
+      default: 350
+    },
+    legendY: {
+      type: Number,
+      default: 350
+    },
+    legendWidth: {
+      type: Number,
+      default: 140
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 13
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
     dimensionName: function() {
-      if(this.dateKey != undefined) return `${this.xKey}(${this.dateKey})`
+      if(this.dateKey != undefined) return `${this.seriesKey}(${this.dateKey})`
       return this.dimensions
     },
     dimensionKeys: function() {
       return _splitkey(_extractName(this.dimensions))
     },
-    xKey: function() {
+    seriesKey: function() {
       return this.dimensionKeys[0]
     },
-    yKey: function() {
+    xKey: function() {
       return this.dimensionKeys[1]
+    },
+    yKey: function() {
+      return _extractName(this.reduce)
     },
     firstRow: function() {
       const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
@@ -90,14 +151,13 @@ export default {
     },
     grouping: function() {
       const getter = this.getDimensionExtractor;
-      const xInterval = this.getTimeInterval(this.xKey)
-      const yInterval = this.getTimeInterval(this.yKey)
+      const xInterval = this.getTimeInterval(this.seriesKey)
+      const yInterval = this.getTimeInterval(this.xKey)
       if((xInterval && yInterval) === null) {
         return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
       }
       else {
-        const grouping = (d) => [d3.time.year(getter(`${this.dateKey}`)), d3.time.month(getter(`${this.dateKey}`))]
-        // const grouping = (d) => [Number(xInterval(getter(d))), Number(yInterval(getter(d)))]
+        const grouping = (d) => [xInterval(getter(d)), yInterval(getter(d))]
         return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
       }
     }
@@ -112,41 +172,50 @@ export default {
       else return TIME_FORMAT[key]
     },
     formatKey: function(axis, key) {
+      const seriesTimeFormat = this.getTimeFormat(this.seriesKey)
       const xTimeFormat = this.getTimeFormat(this.xKey)
-      const yTimeFormat = this.getTimeFormat(this.yKey)
       const FORMATS = {
-        x: xTimeFormat,
-        y: yTimeFormat
+        series: seriesTimeFormat,
+        x: xTimeFormat
       }
-      if(FORMATS[axis] === null) return key
+      if(FORMATS[axis] === null) return +key
       return Number(FORMATS[axis](key))
     }
   },
   mounted: function() {
     const chart = this.chart;
-    const xAxisLabel = this.xAxisLabel || this.xKey
-    const yAxisLabel = this.xAxisLabel || this.yKey
-    const valueLabel = this.valueLabel || _extractName(this.reduce)
     const all = this.reducer.all()
-    console.log(all);
 
     chart
       .chart((c) => dc.lineChart(c).interpolate('basis'))
-      .brushOn(false)
+      .brushOn(this.brushOn)
+      .renderLabel(this.renderLabel)
       .xAxisLabel(this.xAxisLabel)
       .yAxisLabel(this.yAxisLabel)
       .clipPadding(10)
       .elasticY(true)
       .mouseZoomable(false)
-      // .x(d3.scale.linear().domain(d3.extent(all, (d) => this.formatKey('x', d.key[0]))))
-      .x(d3.scale.linear().domain(d3.extent(all, (d) => console.log(d))))
-      // .seriesAccessor((d) => this.formatKey('x', d.key[0]))
-      // .keyAccessor((d) => this.formatKey('y', d.key[1]))
-      // .valueAccessor((d) => console.log(this.formatKey('x',d.key[0]), this.formatKey('y',d.key[1])))
-      .legend(dc.legend().x(350).y(350).itemHeight(13).gap(5).horizontal(1).legendWidth(140).itemWidth(70))
-    // chart.xAxis().tickFormat((d) => d3.format('d')(d))
-    // chart.xAxis().tickFormat((d) => console.log(d))
-    // chart.xAxis().tickFormat((d) => d)
+      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.formatKey('x', d.key[1]))))
+      .seriesAccessor((d) => this.formatKey('series', d.key[0]))
+      .keyAccessor((d) => this.formatKey('x', d.key[1]))
+      .valueAccessor((d) => +d.value)
+      .title((d) => {
+        return `${this.seriesLabel}[${this.seriesKey}]: ${this.formatKey('series', d.key[0])}\n`
+          + `${this.xAxisLabel}[${this.xKey}]: ${this.formatKey('x', d.key[1])}\n`
+          + `${this.yAxisLabel}[${this.yKey}]: ${d.value}`
+      })
+    chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
+    chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
+    if(this.useLegend) {
+      chart.legend(dc.legend()
+      .x(this.legendX)
+      .y(this.legendY)
+      .gap(this.legendGap)
+      .legendWidth(this.legendWidth)
+      .itemWidth(this.legendItemWidth)
+      .itemHeight(this.legendItemHeight)
+      .horizontal(this.legendHorizontal))
+    }
     return chart.render();
   }
 }
