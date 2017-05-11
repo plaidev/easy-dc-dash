@@ -32,14 +32,6 @@ export default {
     labels: {
       type: Array
     },
-    xAxisLabel: {
-      type: String,
-      default: 'xAxisLabel'
-    },
-    yAxisLabel: {
-      type: String,
-      default: 'yAxisLabel'
-    },
     renderLabel: {
       type: Boolean,
       default: true

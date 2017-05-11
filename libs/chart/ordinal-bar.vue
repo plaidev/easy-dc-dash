@@ -20,14 +20,6 @@ export default {
       type: String,
       default: 'barChart'
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
-    },
-    yAxisLabel: {
-      type: String,
-      default: ''
-    },
     renderLabel: {
       type: Boolean,
       default: true

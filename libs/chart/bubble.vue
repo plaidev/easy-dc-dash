@@ -42,17 +42,9 @@ export default {
       type: String,
       default: 'x'
     },
-    xAxisFormat: {
-      type: String,
-      default: ''
-    },
     yAxis: {
       type: String,
       default: 'y'
-    },
-    yAxisFormat: {
-      type: String,
-      default: ''
     },
     radius: {
       type: String,
@@ -223,6 +215,8 @@ export default {
       .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radius]))))
       .elasticX(true)
       .elasticY(true)
+      .xAxisLabel(this.xAxisLabel)
+      .yAxisLabel(this.yAxisLabel)
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
