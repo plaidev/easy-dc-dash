@@ -140,7 +140,6 @@ export default {
       .mouseZoomable(false)
       .elasticX(true)
       .elasticY(true)
-      .renderLabel(this.renderLabel)
       .mouseZoomable(false)
       .title(function(d) {
         return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
