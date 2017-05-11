@@ -15,8 +15,9 @@ import {generateExtractor} from '../utils'
 function _splitkey(k) {
   return k.split(',')
 }
-function _extractName(dimensions) {
-  return dimensions.replace(/(\[)|(\s)|(d.)|(\])/g, '')
+function _extractName(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
 }
 
 const TIME_FORMAT = {
@@ -38,10 +39,11 @@ export default {
       type: String,
       default: 'heatMap'
     },
+    // TODO: Baseに移動する
     dateKey: {
       type: String
     },
-    dimensions: {
+    dimension: {
       type: String
     },
     width: {
@@ -81,10 +83,10 @@ export default {
   computed: {
     dimensionName: function() {
       if(this.dateKey != undefined) return `${this.xKey}(${this.dateKey})`
-      return this.dimensions
+      return this.dimension
     },
     dimensionKeys: function() {
-      return _splitkey(_extractName(this.dimensions))
+      return _splitkey(_extractName(this.dimension))
     },
     xKey: function() {
       return this.dimensionKeys[0]
