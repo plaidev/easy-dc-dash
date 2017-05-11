@@ -45,8 +45,6 @@ export default {
     const chart = this.chart;
 
     chart
-      .xAxisLabel(this.xAxisLabel)
-      .yAxisLabel(this.yAxisLabel)
       .barPadding(this.barPadding)
       .outerPadding(this.outerPadding)
       .renderLabel(this.renderLabel)
