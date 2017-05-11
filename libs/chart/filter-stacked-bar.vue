@@ -10,7 +10,7 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {generateExtractor, reverseLegendOrder} from '../utils'
+import {generateExtractor} from '../utils'
 
 function _joinkey(k) {
   return k.join(',')

@@ -10,7 +10,7 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins, reverseLegendOrder} from '../utils'
+import {removeEmptyBins} from '../utils'
 
 function _generateReducer(idx=0) {
   return function() {
@@ -60,8 +60,6 @@ export default {
       .clipPadding(10)
       .elasticX(true)
       .elasticY(true)
-      .xAxisLabel(this.xAxisLabel)
-      .yAxisLabel(this.yAxisLabel)
       .renderLabel(this.renderLabel)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .title(function(d) {
