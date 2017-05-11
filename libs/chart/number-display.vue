@@ -1,6 +1,6 @@
 <template>
   <div class="krt-dc-number-display nd-box" :id="id">
-    <span class="nd-box-label"></span>
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel"></span>
   </div>
 </template>
 
@@ -36,8 +36,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const boxLabel = this.boxLabel || this._boxLabel
-    document.getElementsByClassName('nd-box-label')[0].innerHTML = `${boxLabel}`
 
     chart
       .valueAccessor((d) => d.value)
@@ -56,8 +54,8 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 200px;
-  height: 100px;
+  width: 160px;
+  height: 120px;
   background: #2AAB9F;
   border-radius: 5px;
 }

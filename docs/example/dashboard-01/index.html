@@ -73,10 +73,18 @@
     ></segment-pie>
   </div>
 
-  <div class="container">
+  <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
     <number-display
       dimension="d.name"
       reduce="d.pv"
+    ></number-display>
+    <number-display
+      dimension="d.name"
+      reduce="d.uu"
+    ></number-display>
+    <number-display
+      dimension="d.name"
+      reduce="d.session_cnt"
     ></number-display>
   </div>
 
