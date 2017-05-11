@@ -81,6 +81,7 @@ export default {
       ];
       return (p) => {
         const dates = Object.keys(p.value.date_cnt).sort();
+        if (dates.length === 0) return 0
         const min = _ymdFormat.parse(dates[0]);
         const max = d3.time.day.offset(_ymdFormat.parse(dates[dates.length-1]), 1);
         const cnt = d3.time[methodNames[p.key]](min, max).length;
