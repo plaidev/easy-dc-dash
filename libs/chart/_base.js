@@ -41,6 +41,22 @@ export default {
     height: {
       type: Number
     },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
     margins: {
       type: Object
     },

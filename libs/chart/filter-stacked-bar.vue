@@ -38,14 +38,6 @@ export default {
       type: Number,
       default: 600
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
-    },
-    yAxisLabel: {
-      type: String,
-      default: ''
-    },
     removeEmptyRows: {
       type: Boolean,
       default: true
