@@ -150,6 +150,11 @@
       y-axis-format="月"
       :y-border-radius=3
     ></heat-map>
+    <series
+      date-key="d.session_end_date"
+      dimension="[year, month]"
+      reduce="d.session_cnt"
+    ></series>
     <bubble
       dimension="d.session_end_date"
       time-scale="month"
