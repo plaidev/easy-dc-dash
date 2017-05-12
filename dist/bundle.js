@@ -34135,11 +34135,11 @@ var StackedBar = { render: function render() {
     },
     xAxisLabel: {
       type: String,
-      default: 'xAxisLabel'
+      default: ''
     },
     yAxisLabel: {
       type: String,
-      default: 'yAxisLabel'
+      default: ''
     },
     renderLabel: {
       type: Boolean,
@@ -35180,12 +35180,400 @@ var DataTable = { render: function render() {
   }
 })();
 
-var TIME_FORMATS = {
+function _splitkey$1(k) {
+  return k.split(',');
+}
+function _extractName(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
+}
+
+var TIME_FORMAT = {
   year: d3$1.time.format('%Y'),
   month: d3$1.time.format('%m'),
   day: d3$1.time.format('%d')
 };
 var TIME_INTERVALS = {
+  year: d3$1.time.year,
+  month: d3$1.time.month,
+  day: d3$1.time.day
+};
+
+var HeatMap = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'heatMap'
+    },
+    // TODO: Baseに移動する
+    dateKey: {
+      type: String
+    },
+    dimension: {
+      type: String
+    },
+    width: {
+      type: Number,
+      default: 45 * 20 + 80
+    },
+    height: {
+      type: Number,
+      default: 45 * 5 + 40
+    },
+    yBorderRadius: {
+      type: Number,
+      defaulat: 6.75
+    },
+    xAxisLabel: {
+      type: String
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    valueLabel: {
+      type: String
+    },
+    valueFormat: {
+      type: String,
+      default: ''
+    }
+  },
+  computed: {
+    dimensionName: function dimensionName() {
+      if (this.dateKey != undefined) return this.xKey + '(' + this.dateKey + ')';
+      return this.dimension;
+    },
+    dimensionKeys: function dimensionKeys() {
+      return _splitkey$1(_extractName(this.dimension));
+    },
+    xKey: function xKey() {
+      return this.dimensionKeys[0];
+    },
+    yKey: function yKey() {
+      return this.dimensionKeys[1];
+    },
+    firstRow: function firstRow() {
+      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      return dim.top(1)[0];
+    },
+    data: function data() {
+      return this.getDimensionExtractor(this.firstRow);
+    },
+    dataKeys: function dataKeys() {
+      return Object.keys(this.data);
+    },
+    getDimensionExtractor: function getDimensionExtractor() {
+      if (this.dateKey != undefined) return generateExtractor(this.dateKey);
+      return generateExtractor(this.dimensionName);
+    },
+    grouping: function grouping() {
+      var getter = this.getDimensionExtractor;
+      var xInterval = this.getTimeInterval(this.xKey);
+      var yInterval = this.getTimeInterval(this.yKey);
+      if ((xInterval && yInterval) === null) {
+        return Store.registerDimension(this.dimensionName, getter, { dataset: this.dataset });
+      } else {
+        var grouping = function grouping(d) {
+          return [xInterval(getter(d)), yInterval(getter(d))];
+        };
+        return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
+      }
+    }
+  },
+  methods: {
+    getTimeInterval: function getTimeInterval(key) {
+      if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
+    },
+    getTimeFormat: function getTimeFormat(key) {
+      if (this.dateKey === undefined) return null;else return TIME_FORMAT[key];
+    },
+    formatKey: function formatKey(axis, key) {
+      var xTimeFormat = this.getTimeFormat(this.xKey);
+      var yTimeFormat = this.getTimeFormat(this.yKey);
+      var FORMATS = {
+        x: xTimeFormat,
+        y: yTimeFormat
+      };
+      if (FORMATS[axis] === null) return key;
+      return Number(FORMATS[axis](key));
+    }
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    var xAxisLabel = this.xAxisLabel || this.xKey;
+    var yAxisLabel = this.xAxisLabel || this.yKey;
+    var valueLabel = this.valueLabel || _extractName(this.reduce);
+
+    chart.keyAccessor(function (d) {
+      return _this.formatKey('x', d.key[0]);
+    }).valueAccessor(function (d) {
+      return _this.formatKey('y', d.key[1]);
+    }).colorAccessor(function (d) {
+      return +d.value;
+    }).colors(d3$1.scale.category20b()).yBorderRadius(this.yBorderRadius).colsLabel(function (d) {
+      return d + ('' + _this.xAxisFormat);
+    }).rowsLabel(function (d) {
+      return d + ('' + _this.yAxisFormat);
+    }).title(function (d) {
+      return xAxisLabel + ': ' + _this.formatKey('x', d.key[0]) + _this.xAxisFormat + '\n' + (yAxisLabel + ': ' + _this.formatKey('y', d.key[1]) + _this.yAxisFormat + '\n') + (valueLabel + ': ' + +d.value + _this.valueFormat);
+    });
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+function _splitkey$2(k) {
+  return k.split(',');
+}
+function _extractName$1(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
+}
+var TIME_FORMAT$1 = {
+  year: d3$1.time.format('%Y'),
+  month: d3$1.time.format('%m'),
+  day: d3$1.time.format('%d')
+};
+var TIME_INTERVALS$1 = {
+  year: d3$1.time.year,
+  month: d3$1.time.month,
+  day: d3$1.time.day
+};
+
+var Series = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'seriesChart'
+    },
+    dimension: {
+      type: String
+    },
+    dateKey: {
+      type: String
+    },
+    width: {
+      type: Number,
+      default: 768
+    },
+    height: {
+      type: Number,
+      default: 480
+    },
+    brushOn: {
+      type: Boolean,
+      default: false
+    },
+    // label
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    seriesLabel: {
+      type: String,
+      default: ''
+    },
+    seriesFormat: {
+      type: String,
+      default: ''
+    },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    // legend
+    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendX: {
+      type: Number,
+      default: 350
+    },
+    legendY: {
+      type: Number,
+      default: 350
+    },
+    legendWidth: {
+      type: Number,
+      default: 140
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 13
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
+    }
+  },
+  computed: {
+    dimensionName: function dimensionName() {
+      if (this.dateKey != undefined) return this.seriesKey + '(' + this.dateKey + ')';
+      return this.dimension;
+    },
+    dimensionKeys: function dimensionKeys() {
+      return _splitkey$2(_extractName$1(this.dimension));
+    },
+    seriesKey: function seriesKey() {
+      return this.dimensionKeys[0];
+    },
+    xKey: function xKey() {
+      return this.dimensionKeys[1];
+    },
+    yKey: function yKey() {
+      return _extractName$1(this.reduce);
+    },
+    firstRow: function firstRow() {
+      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      return dim.top(1)[0];
+    },
+    data: function data() {
+      return this.getDimensionExtractor(this.firstRow);
+    },
+    dataKeys: function dataKeys() {
+      return Object.keys(this.data);
+    },
+    getDimensionExtractor: function getDimensionExtractor() {
+      if (this.dateKey != undefined) return generateExtractor(this.dateKey);
+      return generateExtractor(this.dimensionName);
+    },
+    grouping: function grouping() {
+      var getter = this.getDimensionExtractor;
+      var xInterval = this.getTimeInterval(this.seriesKey);
+      var yInterval = this.getTimeInterval(this.xKey);
+      if ((xInterval && yInterval) === null) {
+        return Store.registerDimension(this.dimensionName, getter, { dataset: this.dataset });
+      } else {
+        var grouping = function grouping(d) {
+          return [xInterval(getter(d)), yInterval(getter(d))];
+        };
+        return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
+      }
+    }
+  },
+  methods: {
+    getTimeInterval: function getTimeInterval(key) {
+      if (this.dateKey === undefined) return null;else return TIME_INTERVALS$1[key];
+    },
+    getTimeFormat: function getTimeFormat(key) {
+      if (this.dateKey === undefined) return null;else return TIME_FORMAT$1[key];
+    },
+    formatKey: function formatKey(axis, key) {
+      var seriesTimeFormat = this.getTimeFormat(this.seriesKey);
+      var xTimeFormat = this.getTimeFormat(this.xKey);
+      var FORMATS = {
+        series: seriesTimeFormat,
+        x: xTimeFormat
+      };
+      if (FORMATS[axis] === null) return +key;
+      return Number(FORMATS[axis](key));
+    }
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    var all = this.reducer.all();
+
+    chart.chart(function (c) {
+      return index$2.lineChart(c).interpolate('basis');
+    }).brushOn(this.brushOn).renderLabel(this.renderLabel).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).clipPadding(10).elasticY(true).mouseZoomable(false).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+      return _this.formatKey('x', d.key[1]);
+    }))).seriesAccessor(function (d) {
+      return _this.formatKey('series', d.key[0]);
+    }).keyAccessor(function (d) {
+      return _this.formatKey('x', d.key[1]);
+    }).valueAccessor(function (d) {
+      return +d.value;
+    }).title(function (d) {
+      return _this.seriesLabel + '[' + _this.seriesKey + ']: ' + _this.formatKey('series', d.key[0]) + '\n' + (_this.xAxisLabel + '[' + _this.xKey + ']: ' + _this.formatKey('x', d.key[1]) + '\n') + (_this.yAxisLabel + '[' + _this.yKey + ']: ' + d.value);
+    });
+    chart.xAxis().tickFormat(function (d) {
+      return d + ('' + _this.xAxisFormat);
+    });
+    chart.yAxis().tickFormat(function (d) {
+      return d + ('' + _this.yAxisFormat);
+    });
+    if (this.useLegend) {
+      chart.legend(index$2.legend().x(this.legendX).y(this.legendY).gap(this.legendGap).legendWidth(this.legendWidth).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+    }
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var TIME_FORMATS = {
+  year: d3$1.time.format('%Y'),
+  month: d3$1.time.format('%m'),
+  day: d3$1.time.format('%d')
+};
+var TIME_INTERVALS$2 = {
   year: d3$1.time.year,
   month: d3$1.time.month,
   day: d3$1.time.day
@@ -35357,7 +35745,7 @@ var Bubble = { render: function render() {
       }
     },
     getTimeInterval: function getTimeInterval() {
-      if (this.timeScale === undefined) return null;else return TIME_INTERVALS[this.timeScale];
+      if (this.timeScale === undefined) return null;else return TIME_INTERVALS$2[this.timeScale];
     },
     getTimeFormat: function getTimeFormat() {
       if (this.timeScale === undefined) return null;
@@ -35440,6 +35828,8 @@ var components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
+  'heat-map': HeatMap,
+  'series': Series,
   'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton
@@ -35464,6 +35854,8 @@ var Chart = {
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
+  HeatMap: HeatMap,
+  Series: Series,
   Bubble: Bubble,
   compose: compose,
   resetAllButton: resetAllButton,
