@@ -11,6 +11,7 @@ import StackedBar from './stacked-bar.vue'
 import FilterStackedBar from './filter-stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
+import Series from './series.vue'
 import Bubble from './bubble.vue'
 import resetAllButton from './reset-all-button.vue'
 
@@ -26,6 +27,7 @@ const components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
+  'series': Series,
   'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton
@@ -50,6 +52,7 @@ export default {
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
+  Series: Series,
   Bubble: Bubble,
   compose: compose,
   resetAllButton: resetAllButton,
