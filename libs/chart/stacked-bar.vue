@@ -10,7 +10,7 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins} from '../utils'
+import {combineGroups, removeEmptyBins} from '../utils'
 
 function _generateReducer(idx=0) {
   return function() {
@@ -43,30 +43,45 @@ export default {
     removeEmptyRows: {
       type: Boolean,
       default: true
+    },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
-    reducer: _generateReducer(0)
+    combinedGroup: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const _reducer = this.getReducerExtractor;
+      const groups = [];
+      for (let i=0; i<this.labels.length; i++) {
+        groups.push(dim.group().reduceSum((d) => _reducer(d)[i]))
+      }
+      return combineGroups(groups)
+    }
   },
   mounted: function() {
     const chart = this.chart;
-    const barNum = this.labels.length
 
     chart
-      .group(this.reducer, this.labels[0])
+      .group(this.combinedGroup, this.labels[0], (d) => d.value[0])
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
       .brushOn(false)
       .clipPadding(10)
-      .elasticX(true)
-      .elasticY(true)
+      .elasticX(this.elasticX)
+      .elasticY(this.elasticY)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .title(function(d) {
         return d.key + '[' + this.layer + ']: ' + d.value
       })
     // stack
-    for (let i=1; i<barNum; i++) {
-      chart.stack(_generateReducer(i).apply(this), this.labels[i]);
+    for (let i=1; i<this.labels.length; i++) {
+      chart.stack(this.combinedGroup, this.labels[i], (d) => d.value[i]);
     }
     this.applyLegend({reverseOrder:true})
     return chart.render();
