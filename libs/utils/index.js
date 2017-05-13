@@ -49,6 +49,30 @@ export function generateExtractor (rule) {
   return // else
 }
 
+// https://github.com/dc-js/dc.js/wiki/FAQ#combine-groups
+export function combineGroups(sourceGroups) {
+    return {
+        all: function() {
+            const alls = sourceGroups.map(function(g) { return g.all(); });
+            const gm = {};
+            alls.forEach(function(a, i) {
+                a.forEach(function(b) {
+                    if(!gm[b.key]) {
+                        gm[b.key] = new Array(sourceGroups.length);
+                        for(let j=0; j<sourceGroups.length; ++j)
+                            gm[b.key][j] = 0;
+                    }
+                    gm[b.key][i] = b.value;
+                });
+            });
+            const ret = [];
+            for(let k in gm)
+                ret.push({key: k, value: gm[k]});
+            return ret;
+        }
+    };
+}
+
 // https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
 export function removeEmptyBins(sourceGroup) {
   return {
