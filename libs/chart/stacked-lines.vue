@@ -9,14 +9,7 @@
 import d3 from 'd3'
 import Base from './_base'
 import Store from '../store'
-
-function _generateReducer(idx=0) {
-  return function() {
-    const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-    const _reducer = this.getReducerExtractor;
-    return dim.group().reduceSum((d) => _reducer(d)[idx]);
-  }
-}
+import {combineGroups} from '../utils'
 
 export default {
   extends: Base,
@@ -29,7 +22,16 @@ export default {
   },
 
   computed: {
-    reducer: _generateReducer(0)
+    combinedGroup: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const _reducer = this.getReducerExtractor;
+      const lineNum = _reducer(dim.top(1)[0]).length;
+      const groups = [];
+      for (let i=0; i<lineNum; i++) {
+        groups.push(dim.group().reduceSum((d) => _reducer(d)[i]))
+      }
+      return combineGroups(groups)
+    }
   },
 
   mounted: function() {
@@ -39,12 +41,12 @@ export default {
     const dim = this.grouping;
     const _reducer = this.getReducerExtractor;
     const lineNum = _reducer(dim.top(1)[0]).length;
-
     chart
+      .group(this.combinedGroup, '0', (d) => d.value[0])
       .renderArea(true)
 
     for (let i=1; i<lineNum; i++) {
-      chart.stack(_generateReducer(i).apply(this));
+      chart.stack(this.combinedGroup, ''+i, (d) => d.value[i]);
     }
 
     return chart.render()
