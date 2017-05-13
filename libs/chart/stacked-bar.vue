@@ -12,15 +12,6 @@ import Base from './_base'
 import Store from '../store'
 import {combineGroups, removeEmptyBins} from '../utils'
 
-function _generateReducer(idx=0) {
-  return function() {
-    const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-    const _reducer = this.getReducerExtractor;
-    const group = dim.group().reduceSum((d) => _reducer(d)[idx]);
-    return this.removeEmptyRows ? removeEmptyBins(group) : group
-  }
-}
-
 export default {
   extends: Base,
 
