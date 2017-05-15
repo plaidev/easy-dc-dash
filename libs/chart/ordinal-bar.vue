@@ -20,6 +20,14 @@ export default {
       type: String,
       default: 'barChart'
     },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
     barPadding: {
       type: Number,
       default: 0.1
@@ -49,8 +57,8 @@ export default {
       .outerPadding(this.outerPadding)
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
-      .elasticX(true)
-      .elasticY(true)
+      .elasticX(this.elasticX)
+      .elasticY(this.elasticY)
     return chart.render();
   }
 }

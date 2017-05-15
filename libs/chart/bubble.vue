@@ -70,7 +70,19 @@ export default {
       type: Boolean,
       default: false
     },
+    elasticX: {
+      type: Boolean,
+      defualt: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
     // styles
+    transitionDuration: {
+      type: Number,
+      default: 1500
+    },
     maxBubbleRelativeSize: {
       type: Number,
       default: 0.3
@@ -193,7 +205,7 @@ export default {
     const chart = this.chart;
     const all = this.reducer.all()
 
-    chart.transitionDuration(1500)
+    chart.transitionDuration(this.transitionDuration)
       .colors(d3.scale.category10())
       .keyAccessor((p) => this.extractValue(p.value[this.xAxis]))
       .valueAccessor((p) => this.extractValue(p.value[this.yAxis]))
@@ -204,8 +216,8 @@ export default {
       .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxis]))))
       .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxis]))))
       .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radius]))))
-      .elasticX(true)
-      .elasticY(true)
+      .elasticX(this.elasticX)
+      .elasticY(this.elasticY)
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
