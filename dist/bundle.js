@@ -24650,30 +24650,45 @@ function generateDomId() {
   return 'id-' + generateUUID();
 }
 
-// String(js): <data-table columns="{key: d.key}"></data-table>
-// Object: <data-table :columns="{key: "key"}"></data-table>
-// Array: <data-table :columns="["key"]"></data-table>
-// Function: <data-table :columns="customParser"></data-table>
+// Array, Object:
+//   String(js): <data-table columns="{key: d.key}"></data-table>
+//   Function: <data-table :columns="customParser"></data-table>
+// Object:
+//   Object: <data-table :columns="{key: "key"}"></data-table>
+// Array:
+//   Array: <xxx :columns="["key"]"></xxx>
+//   CSV: <xxx dimension="d1,d2"></xxx>
 function generateExtractor(rule) {
   if (typeof rule === 'function' || rule instanceof Function) {
     return rule;
   } else if (typeof rule === "string" || rule instanceof String) {
-    return new Function('d', 'const v = ' + rule + '; return v === null? "": v;');
+    if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
+      var keys = rule.split(',');
+      return function (d) {
+        var row = [];
+        keys.forEach(function (k) {
+          row.push(d[k]);
+        });
+        return row;
+      };
+    } else {
+      return new Function('d', 'const v = ' + rule + '; return v === null? "": v;');
+    }
   } else if (rule instanceof Array) {
     return function (d) {
-      row = {};
+      var row = [];
       rule.forEach(function (k) {
-        row[k] = d[rule[k]];
+        row.push(d[k]);
       });
-      return row === null ? '' : row;
+      return row;
     };
   } else if (rule instanceof Object) {
     return function (d) {
-      row = {};
+      var row = {};
       Object.keys(rule).forEach(function (k) {
         row[k] = d[rule[k]];
       });
-      return row === null ? '' : row;
+      return row;
     };
   }
 
@@ -33700,6 +33715,111 @@ var SegmentPie = { render: function render() {
   }
 })();
 
+var MultiDimensionPie = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-multidim-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    dimension: {
+      type: String
+    },
+    chartType: {
+      type: String,
+      default: 'pieChart'
+    },
+    height: {
+      type: Number,
+      default: 160
+    },
+    width: {
+      type: Number,
+      default: 200
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendX: {
+      type: Number,
+      default: 0
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
+    }
+  },
+
+  computed: {
+    grouping: function grouping() {
+      var getter = this.getDimensionExtractor;
+      var grouping = function grouping(d) {
+        return getter(d).join(',');
+      };
+      return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
+    }
+  },
+
+  methods: {
+    segmentLabel: function segmentLabel(segmentId) {
+      var label = segmentId;
+      if (this.labels && segmentId in this.labels) {
+        label = this.labels[segmentId];
+      } else {
+        label = Store.getLabel(segmentId);
+      }
+      return label;
+    }
+  },
+
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    chart.label(function (d) {
+      return _this.segmentLabel(d.key);
+    });
+    if (this.useLegend) {
+      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+    }
+    return chart.render();
+  },
+
+  destroyed: function destroyed() {
+    Store.unregisterDimension(this.dimension, { dataset: this.dataset });
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
 var _weekFormat = d3$1.time.format("%w");
 var _ymdFormat = d3$1.time.format("%Y-%m-%d");
 
@@ -35819,6 +35939,7 @@ var resetAllButton = { render: function render() {
 var components = {
   'number-display': NumberDisplay,
   'segment-pie': SegmentPie,
+  'multidim-pie': MultiDimensionPie,
   'week-row': WeekRow,
   'list-row': ListRow,
   'rate-line': RateLine,
