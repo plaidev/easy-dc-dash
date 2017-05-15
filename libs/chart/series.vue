@@ -56,6 +56,10 @@ export default {
       type: Boolean,
       default: false
     },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
     // label
     renderLabel: {
       type: Boolean,
@@ -195,7 +199,7 @@ export default {
       .xAxisLabel(this.xAxisLabel)
       .yAxisLabel(this.yAxisLabel)
       .clipPadding(10)
-      .elasticY(true)
+      .elasticY(this.elasticY)
       .mouseZoomable(false)
       .x(d3.scale.linear().domain(d3.extent(all, (d) => this.formatKey('x', d.key[1]))))
       .seriesAccessor((d) => this.formatKey('series', d.key[0]))

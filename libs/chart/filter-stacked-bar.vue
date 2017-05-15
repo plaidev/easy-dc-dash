@@ -42,10 +42,18 @@ export default {
       type: Boolean,
       default: true
     },
+    elasticX: {
+      type: Boolean,
+      default: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
     legend: {
       type: Object,
       default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
-    },
+    }
   },
   computed: {
     dimensionName: function() {
@@ -137,8 +145,8 @@ export default {
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
       .brushOn(false)
       .clipPadding(10)
-      .elasticX(true)
-      .elasticY(true)
+      .elasticX(this.elasticX)
+      .elasticY(this.elasticY)
       .mouseZoomable(false)
       .title(function(d) {
         return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
