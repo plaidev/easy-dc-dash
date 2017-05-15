@@ -4,6 +4,11 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
+function _extractReduceKey(reduce) {
+  // FIXME: Replace if there is a better way
+  return reduce.match(/d.\w*/g)
+}
+
 export function compose(Left, Right) {
 
   const ComponentObject = {
@@ -36,7 +41,14 @@ export function compose(Left, Right) {
         default: true
       }
     },
-
+    computed: {
+      _labels: function() {
+        return this.labels || this.reduceKeys
+      },
+      reduceKeys: function() {
+        return _extractReduceKey(this.reduce)
+      }
+    },
     mounted: function() {
 
       // TODO: refactoring.
@@ -58,7 +70,7 @@ export function compose(Left, Right) {
             const _reducer = generateExtractor(this.reduce);
             const lines = _reducer(dim.top(1)[0])[0]
             const lineNum = Array.isArray(lines) ? lines.length : 1
-            return this.labels.slice(0, lineNum)
+            return this._labels.slice(0, lineNum)
           }
         },
         propsData: {
@@ -84,7 +96,7 @@ export function compose(Left, Right) {
             const _reducer = generateExtractor(this.reduce);
             const lines = _reducer(dim.top(1)[0])[1]
             const lineNum = Array.isArray(lines) ? lines.length : 1
-            return this.labels.slice(-lineNum)
+            return this._labels.slice(-lineNum)
           }
         },
         propsData: {
