@@ -14,6 +14,7 @@ import Store from '../store'
 
 const _weekFormat = d3.time.format("%w")
 const _ymdFormat = d3.time.format("%Y-%m-%d")
+const _week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default {
   extends: Base,
@@ -94,18 +95,12 @@ export default {
     const chart = this.chart;
 
     chart
-      .title(function(d) {
-        return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key]
-      })
-      .label(function(d) {
-        return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key]
-      })
+      .title((d) => _week[d.key])
+      .label((d) => _week[d.key])
+      .keyAccessor((d) => _week[d.key])
       .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
       .x(d3.scale.linear().domain([0, 7]))
       .elasticX(true);
-
-      //.y(d3.scale.linear().domain([500, 5000]))
-
     return chart.render();
   }
 }
