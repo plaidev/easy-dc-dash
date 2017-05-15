@@ -11,7 +11,7 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
-import {_ymdFormat, _yearFormat, _monthFormat, _dayFormat, _yearInterval, _monthInterval, _dayInterval} from '../utils/time-format'
+import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
 function _splitkey(k) {
   return k.split(',')
@@ -19,16 +19,6 @@ function _splitkey(k) {
 function _extractName(dimension) {
   // FIXME: Replace if there is a better way
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
-}
-const TIME_FORMAT = {
-  year: _yearFormat,
-  month: _monthFormat,
-  day: _dayFormat
-}
-const TIME_INTERVALS = {
-  year: _yearInterval,
-  month: _monthInterval,
-  day: _dayInterval
 }
 
 export default {
@@ -176,7 +166,7 @@ export default {
     },
     getTimeFormat: function(key) {
       if(this.dateKey === undefined) return null
-      else return TIME_FORMAT[key]
+      else return TIME_FORMATS[key]
     },
     formatKey: function(axis, key) {
       const seriesTimeFormat = this.getTimeFormat(this.seriesKey)

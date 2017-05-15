@@ -11,18 +11,8 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
-import {_ymdFormat, _yearFormat, _monthFormat, _dayFormat, _yearInterval, _monthInterval, _dayInterval} from '../utils/time-format'
+import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
-const TIME_FORMAT = {
-  year: _yearFormat,
-  month: _monthFormat,
-  day: _dayFormat
-}
-const TIME_INTERVALS = {
-  year: _yearInterval,
-  month: _monthInterval,
-  day: _dayInterval
-}
 
 export default {
   extends: Base,
@@ -80,10 +70,6 @@ export default {
       default: true
     },
     // styles
-    transitionDuration: {
-      type: Number,
-      default: 1500
-    },
     maxBubbleRelativeSize: {
       type: Number,
       default: 0.3
@@ -206,7 +192,8 @@ export default {
     const chart = this.chart;
     const all = this.reducer.all()
 
-    chart.transitionDuration(this.transitionDuration)
+    chart
+      .transitionDuration(this.transitionDuration)
       .colors(d3.scale.category10())
       .keyAccessor((p) => this.extractValue(p.value[this.xAxis]))
       .valueAccessor((p) => this.extractValue(p.value[this.yAxis]))
@@ -233,7 +220,7 @@ export default {
     chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
     if(this.timeScale) {
-      const format = this.timeFormat ? d3.time.format(this.timeFormat) : TIME_FORMAT[this.timeScale]
+      const format = this.timeFormat ? d3.time.format(this.timeFormat) : TIME_FORMATS[this.timeScale]
       chart.filterPrinter(filters => {
         return filters.map(f => format(f));
       });

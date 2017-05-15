@@ -1,6 +1,9 @@
 <template>
-  <div class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', background: boxColor, color: fontColor, fontSize: boxFontSize+'px'}">
-    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: labelFontSize+'px'}"></span>
+  <div v-if="fillBoxColor" class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', background: themeColor, fontSize: fontSize*4+'px'}">
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: fontSize+'px'}"></span>
+  </div>
+  <div v-else class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', color: themeColor,  borderColor: themeColor, fontSize: fontSize*4+'px'}">
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: fontSize+'px'}"></span>
   </div>
 </template>
 
@@ -24,21 +27,17 @@ export default {
       type: Number,
       default: 120
     },
-    boxColor: {
+    themeColor: {
       type: String,
-      default: '#2AAB9F'
+      default:'#2AAB9F'
     },
-    fontColor: {
-      type: String,
-      default: '#FFF'
+    fillBoxColor: {
+      type: Boolean,
+      default: true
     },
-    labelFontSize: {
+    fontSize: {
       type: Number,
       default: 12
-    },
-    boxFontSize: {
-      type: Number,
-      default: 48
     },
     boxLabel: {
       type: String
@@ -78,6 +77,10 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
+  border: 2px solid;
+  background: #FFF;
+  color: #FFF;
 }
 .nd-box span.number-display {
   font-weight: bold;

@@ -10,7 +10,7 @@ import d3 from "d3"
 
 import Base from './_base'
 import Store from '../store'
-import {_ymdFormat, _weekFormat} from '../utils/time-format'
+import {ymdFormat, weekFormat} from '../utils/time-format'
 
 const _week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -38,7 +38,7 @@ export default {
     },
     grouping: function() {
       const getter = this.getDimensionExtractor;
-      const grouping = (d) => Number(_weekFormat(getter(d)))
+      const grouping = (d) => Number(weekFormat(getter(d)))
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
@@ -49,7 +49,7 @@ export default {
 
       return dim.group().reduce(
         (p, v) => {
-          const key = _ymdFormat(getter(v));
+          const key = ymdFormat(getter(v));
           const value = reducer(v);
           p.value += value;
           if (!p.date_cnt[key]) p.date_cnt[key] = 0;
@@ -57,7 +57,7 @@ export default {
           return p;
         },
         (p, v) => {
-          const key = _ymdFormat(getter(v));
+          const key = ymdFormat(getter(v));
           const value = reducer(v);
           p.value -= value;
           p.date_cnt[key]--;
@@ -81,8 +81,8 @@ export default {
       return (p) => {
         const dates = Object.keys(p.value.date_cnt).sort();
         if (dates.length === 0) return 0
-        const min = _ymdFormat.parse(dates[0]);
-        const max = d3.time.day.offset(_ymdFormat.parse(dates[dates.length-1]), 1);
+        const min = ymdFormat.parse(dates[0]);
+        const max = d3.time.day.offset(ymdFormat.parse(dates[dates.length-1]), 1);
         const cnt = d3.time[methodNames[p.key]](min, max).length;
         return cnt > 0 ? p.value.value / cnt: 0;
       }

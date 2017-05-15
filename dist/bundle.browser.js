@@ -24831,6 +24831,10 @@ var Base = {
     useLegend: {
       type: Boolean,
       default: true
+    },
+    transitionDuration: {
+      type: Number,
+      default: 1500
     }
   },
 
@@ -24912,7 +24916,7 @@ var Base = {
     if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel);
     if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel);
     chart.renderLabel(this.renderLabel);
-    chart.renderTitle(this.rendertitle);
+    chart.renderTitle(this.renderTitle);
 
     this.chart = chart;
 
@@ -33627,7 +33631,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; } .nd-box span.number-display { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 5px; border: 2px solid; background: #FFF; color: #FFF; } .nd-box span.number-display { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33636,7 +33640,7 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', background: _vm.boxColor, color: _vm.fontColor, fontSize: _vm.boxFontSize + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.labelFontSize + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.fillBoxColor ? _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', background: _vm.themeColor, fontSize: _vm.fontSize * 4 + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]) : _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', color: _vm.themeColor, borderColor: _vm.themeColor, fontSize: _vm.fontSize * 4 + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
@@ -33652,21 +33656,17 @@ var NumberDisplay = { render: function render() {
       type: Number,
       default: 120
     },
-    boxColor: {
+    themeColor: {
       type: String,
       default: '#2AAB9F'
     },
-    fontColor: {
-      type: String,
-      default: '#FFF'
+    fillBoxColor: {
+      type: Boolean,
+      default: true
     },
-    labelFontSize: {
+    fontSize: {
       type: Number,
       default: 12
-    },
-    boxFontSize: {
-      type: Number,
-      default: 48
     },
     boxLabel: {
       type: String
@@ -33914,15 +33914,29 @@ var MultiDimensionPie = { render: function render() {
   }
 };
 
-var _ymdFormat = d3.time.format('%Y-%m-%d');
-var _ymFormat = d3.time.format('%Y-%m');
-var _yearFormat = d3.time.format('%Y');
-var _monthFormat = d3.time.format('%m');
-var _weekFormat = d3.time.format('%w');
-var _dayFormat = d3.time.format('%d');
-var _yearInterval = d3.time.year;
-var _monthInterval = d3.time.month;
-var _dayInterval = d3.time.day;
+var ymdFormat = d3$1.time.format('%Y-%m-%d');
+var ymFormat = d3$1.time.format('%Y-%m');
+var yearFormat = d3$1.time.format('%Y');
+var monthFormat = d3$1.time.format('%m');
+var weekFormat = d3$1.time.format('%w');
+var dayFormat = d3$1.time.format('%d');
+
+var yearInterval = d3$1.time.year;
+var monthInterval = d3$1.time.month;
+var dayInterval = d3$1.time.day;
+
+var TIME_FORMATS = {
+  ymdFormat: ymdFormat,
+  ymFormat: ymFormat,
+  year: yearFormat,
+  month: monthFormat,
+  day: dayFormat
+};
+var TIME_INTERVALS = {
+  year: yearInterval,
+  month: monthInterval,
+  day: dayInterval
+};
 
 (function () {
   if (document) {
@@ -33967,7 +33981,7 @@ var WeekRow = { render: function render() {
     grouping: function grouping() {
       var getter = this.getDimensionExtractor;
       var grouping = function grouping(d) {
-        return Number(_weekFormat(getter(d)));
+        return Number(weekFormat(getter(d)));
       };
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
@@ -33978,14 +33992,14 @@ var WeekRow = { render: function render() {
       var date_cnt = {};
 
       return dim.group().reduce(function (p, v) {
-        var key = _ymdFormat(getter(v));
+        var key = ymdFormat(getter(v));
         var value = reducer(v);
         p.value += value;
         if (!p.date_cnt[key]) p.date_cnt[key] = 0;
         p.date_cnt[key]++;
         return p;
       }, function (p, v) {
-        var key = _ymdFormat(getter(v));
+        var key = ymdFormat(getter(v));
         var value = reducer(v);
         p.value -= value;
         p.date_cnt[key]--;
@@ -34005,8 +34019,8 @@ var WeekRow = { render: function render() {
       return function (p) {
         var dates = Object.keys(p.value.date_cnt).sort();
         if (dates.length === 0) return 0;
-        var min = _ymdFormat.parse(dates[0]);
-        var max = d3$1.time.day.offset(_ymdFormat.parse(dates[dates.length - 1]), 1);
+        var min = ymdFormat.parse(dates[0]);
+        var max = d3$1.time.day.offset(ymdFormat.parse(dates[dates.length - 1]), 1);
         var cnt = d3$1.time[methodNames[p.key]](min, max).length;
         return cnt > 0 ? p.value.value / cnt : 0;
       };
@@ -34507,7 +34521,7 @@ var FilterStackedBar = { render: function render() {
       return function (d) {
         var v = extractor(d);
         if (_this.scale === 'time') {
-          v[0] = _ymdFormat(v[0]);
+          v[0] = ymdFormat(v[0]);
         }
         return _joinkey(v);
       };
@@ -34556,7 +34570,7 @@ var FilterStackedBar = { render: function render() {
           // then produce multivalue key/value pairs
           return Object.keys(m).map(function (k) {
             var key = k;
-            if (_this2.scale === 'time') key = _ymdFormat.parse(k);
+            if (_this2.scale === 'time') key = ymdFormat.parse(k);
             return { key: key, value: m[k] };
           });
         }
@@ -34591,12 +34605,12 @@ var FilterStackedBar = { render: function render() {
     chart.on('pretransition', function (chart) {
       chart.selectAll('.krt-dc-filter-stacked rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
         var x = d.x;
-        if (_this3.scale === 'time') x = _ymdFormat(x);
+        if (_this3.scale === 'time') x = ymdFormat(x);
         var key = _multikey(x, d.layer);
         return chart.filter() && chart.filters().indexOf(key) === -1;
       }).on('click', function (d) {
         var x = d.x;
-        if (_this3.scale === 'time') x = _ymdFormat(x);
+        if (_this3.scale === 'time') x = ymdFormat(x);
         chart.filter(_multikey(x, d.layer));
         index$2.redrawAll();
       });
@@ -35366,17 +35380,6 @@ function _extractName(dimension) {
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
 }
 
-var TIME_FORMAT = {
-  year: _yearFormat,
-  month: _monthFormat,
-  day: _dayFormat
-};
-var TIME_INTERVALS = {
-  year: _yearInterval,
-  month: _monthInterval,
-  day: _dayInterval
-};
-
 var HeatMap = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
@@ -35477,7 +35480,7 @@ var HeatMap = { render: function render() {
       if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
     },
     getTimeFormat: function getTimeFormat(key) {
-      if (this.dateKey === undefined) return null;else return TIME_FORMAT[key];
+      if (this.dateKey === undefined) return null;else return TIME_FORMATS[key];
     },
     formatKey: function formatKey(axis, key) {
       var xTimeFormat = this.getTimeFormat(this.xKey);
@@ -35515,7 +35518,7 @@ var HeatMap = { render: function render() {
       chart.filterPrinter(function (filters) {
         return filters.map(function (filter) {
           return filter.map(function (f, i) {
-            return '' + TIME_FORMAT[_this.dimensionKeys[i]](f);
+            return '' + TIME_FORMATS[_this.dimensionKeys[i]](f);
           }).join(',').replace(/\,/, '-');
         });
       });
@@ -35543,16 +35546,6 @@ function _extractName$1(dimension) {
   // FIXME: Replace if there is a better way
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
 }
-var TIME_FORMAT$1 = {
-  year: _yearFormat,
-  month: _monthFormat,
-  day: _dayFormat
-};
-var TIME_INTERVALS$1 = {
-  year: _yearInterval,
-  month: _monthInterval,
-  day: _dayInterval
-};
 
 var Series = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
@@ -35699,10 +35692,10 @@ var Series = { render: function render() {
   },
   methods: {
     getTimeInterval: function getTimeInterval(key) {
-      if (this.dateKey === undefined) return null;else return TIME_INTERVALS$1[key];
+      if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
     },
     getTimeFormat: function getTimeFormat(key) {
-      if (this.dateKey === undefined) return null;else return TIME_FORMAT$1[key];
+      if (this.dateKey === undefined) return null;else return TIME_FORMATS[key];
     },
     formatKey: function formatKey(axis, key) {
       var seriesTimeFormat = this.getTimeFormat(this.seriesKey);
@@ -35758,17 +35751,6 @@ var Series = { render: function render() {
     }head.appendChild(style);
   }
 })();
-
-var TIME_FORMAT$2 = {
-  year: _yearFormat,
-  month: _monthFormat,
-  day: _dayFormat
-};
-var TIME_INTERVALS$2 = {
-  year: _yearInterval,
-  month: _monthInterval,
-  day: _dayInterval
-};
 
 var Bubble = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-bubble-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
@@ -35830,10 +35812,6 @@ var Bubble = { render: function render() {
       default: true
     },
     // styles
-    transitionDuration: {
-      type: Number,
-      default: 1500
-    },
     maxBubbleRelativeSize: {
       type: Number,
       default: 0.3
@@ -35931,7 +35909,7 @@ var Bubble = { render: function render() {
       }
     },
     getTimeInterval: function getTimeInterval() {
-      if (this.timeScale === undefined) return null;else return TIME_INTERVALS$2[this.timeScale];
+      if (this.timeScale === undefined) return null;else return TIME_INTERVALS[this.timeScale];
     },
     getTimeFormat: function getTimeFormat() {
       if (this.timeScale === undefined) return null;
@@ -35976,7 +35954,7 @@ var Bubble = { render: function render() {
       return v + ('' + _this3.yAxisFormat);
     });
     if (this.timeScale) {
-      var format = this.timeFormat ? d3$1.time.format(this.timeFormat) : TIME_FORMAT$2[this.timeScale];
+      var format = this.timeFormat ? d3$1.time.format(this.timeFormat) : TIME_FORMATS[this.timeScale];
       chart.filterPrinter(function (filters) {
         return filters.map(function (f) {
           return format(f);
