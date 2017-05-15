@@ -86,7 +86,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const spaceForScales = 70;
 
     chart
       .x(d3.scale[this.scale]())
@@ -97,7 +96,6 @@ export default {
       .titleLabelOffsetX(this.titleLabelOffsetX)
       .renderTitleLabel(this.renderTitleLabel)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
-      .fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums)
       .ordering((d) => this.descending ? -d.value : d.value)
     return chart.render();
   }
