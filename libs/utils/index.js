@@ -13,36 +13,52 @@ export function generateDomId() {
 }
 
 
-// String(js): <data-table columns="{key: d.key}"></data-table>
-// Object: <data-table :columns="{key: "key"}"></data-table>
-// Array: <data-table :columns="["key"]"></data-table>
-// Function: <data-table :columns="customParser"></data-table>
+// Array, Object:
+//   String(js): <data-table columns="{key: d.key}"></data-table>
+//   Function: <data-table :columns="customParser"></data-table>
+// Object:
+//   Object: <data-table :columns="{key: "key"}"></data-table>
+// Array:
+//   Array: <xxx :columns="["key"]"></xxx>
+//   CSV: <xxx dimension="d1,d2"></xxx>
 export function generateExtractor (rule) {
   if (typeof rule === 'function' || rule instanceof Function) {
     return rule
   }
 
   else if (typeof rule === "string" || rule instanceof String) {
-    return new Function('d', `const v = ${rule}; return v === null? "": v;`)
+    if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
+      const keys = rule.split(',')
+      return (d) => {
+        const row = []
+        keys.forEach((k) => {
+          row.push(d[k])
+        })
+        return row
+      }
+    }
+    else {
+      return new Function('d', `const v = ${rule}; return v === null? "": v;`)
+    }
   }
 
   else if (rule instanceof Array) {
     return (d) => {
-      row = {}
+      const row = []
       rule.forEach((k) => {
-        row[k] = d[rule[k]]
+        row.push(d[k])
       })
-      return row === null? '': row;
+      return row
     }
   }
 
   else if (rule instanceof Object) {
     return (d) => {
-      row = {}
+      const row = {}
       Object.keys(rule).forEach((k) => {
         row[k] = d[rule[k]]
       })
-      return row === null? '': row;
+      return row
     }
   }
 

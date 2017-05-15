@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0/dc.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
+  </head>
+
+
+  <body>
+
+    <multidim-pie
+      dimension="d1,d2"
+      reduce="v">
+    </multidim-pie>
+
+    <multidim-pie
+      dimension="d1"
+      reduce="v">
+    </multidim-pie>
+
+    <multidim-pie
+      dimension="d2"
+      reduce="v">
+    </multidim-pie>
+
+    <script type="text/javascript">
+      EasyDC.Store.registerData([
+        {d1: 'a', d2: true, v: 1+11},
+        {d1: 'a', d2: false, v: 2+7},
+        {d1: 'b', d2: true, v: 4+5},
+        {d1: 'b', d2: false, v: 8+3},
+      ])
+
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>

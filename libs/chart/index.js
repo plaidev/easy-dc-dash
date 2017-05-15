@@ -2,6 +2,7 @@ import Base from './_base'
 import {compose} from './_composite'
 import NumberDisplay from './number-display.vue'
 import SegmentPie from './segment-pie.vue'
+import MultiDimensionPie from './multi-dimension-pie.vue'
 import WeekRow from './week-row.vue'
 import ListRow from './list-row.vue'
 import RateLine from './rate-line.vue'
@@ -19,6 +20,7 @@ import resetAllButton from './reset-all-button.vue'
 const components = {
   'number-display': NumberDisplay,
   'segment-pie': SegmentPie,
+  'multidim-pie': MultiDimensionPie,
   'week-row': WeekRow,
   'list-row': ListRow,
   'rate-line': RateLine,
