@@ -11208,8 +11208,6 @@ var d3$1 = createCommonjsModule(function (module) {
     d3.xml = d3_xhrType(function (request) {
       return request.responseXML;
     });
-    console.log(typeof undefined === "function" && undefined.amd, 'object' === "object" && module.exports);
-
     if (typeof undefined === "function" && undefined.amd) this.d3 = d3, undefined(d3);else if ('object' === "object" && module.exports) module.exports = d3;else this.d3 = d3;
   }();
 });
@@ -24360,10 +24358,8 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    
+    //# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24441,9 +24437,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.setAttribute('download', filename);
   pom.click();
 }
-
-//-------------------------------------
-
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -24650,34 +24643,82 @@ function generateDomId() {
   return 'id-' + generateUUID();
 }
 
-// String(js): <data-table columns="{key: d.key}"></data-table>
-// Object: <data-table :columns="{key: "key"}"></data-table>
-// Array: <data-table :columns="["key"]"></data-table>
-// Function: <data-table :columns="customParser"></data-table>
+// Array, Object:
+//   String(js): <data-table columns="{key: d.key}"></data-table>
+//   Function: <data-table :columns="customParser"></data-table>
+// Object:
+//   Object: <data-table :columns="{key: "key"}"></data-table>
+// Array:
+//   Array: <xxx :columns="["key"]"></xxx>
+//   CSV: <xxx dimension="d1,d2"></xxx>
 function generateExtractor(rule) {
   if (typeof rule === 'function' || rule instanceof Function) {
     return rule;
   } else if (typeof rule === "string" || rule instanceof String) {
-    return new Function('d', 'const v = ' + rule + '; return v === null? "": v;');
+    if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
+      var keys = rule.split(',');
+      return function (d) {
+        var row = [];
+        keys.forEach(function (k) {
+          row.push(d[k]);
+        });
+        return row;
+      };
+    } else {
+      return new Function('d', 'const v = ' + rule + '; return v === null? "": v;');
+    }
   } else if (rule instanceof Array) {
     return function (d) {
-      row = {};
+      var row = [];
       rule.forEach(function (k) {
-        row[k] = d[rule[k]];
+        row.push(d[k]);
       });
-      return row === null ? '' : row;
+      return row;
     };
   } else if (rule instanceof Object) {
     return function (d) {
-      row = {};
+      var row = {};
       Object.keys(rule).forEach(function (k) {
         row[k] = d[rule[k]];
       });
-      return row === null ? '' : row;
+      return row;
     };
   }
 
   return; // else
+}
+
+// https://github.com/dc-js/dc.js/wiki/FAQ#combine-groups
+function combineGroups(sourceGroups) {
+  return {
+    all: function all() {
+      var alls = sourceGroups.map(function (g) {
+        return g.all();
+      });
+      // Object型がkeyになっている場合に ret.push({key: k, value:gm[k]}) のkeyがString型になってしまうのを防ぐ
+      // ret.push({key: objKeys[k], value: gm[k]});
+      var objKeys = {};
+      var gm = {};
+      alls.forEach(function (a, i) {
+        a.forEach(function (b) {
+          if (!gm[b.key]) {
+            gm[b.key] = new Array(sourceGroups.length);
+            for (var j = 0; j < sourceGroups.length; ++j) {
+              gm[b.key][j] = 0;
+            }
+          }
+          gm[b.key][i] = b.value;
+          for (var k in gm) {
+            if (!objKeys[k]) objKeys[k] = b.key;
+          }
+        });
+      });
+      var ret = [];
+      for (var k in gm) {
+        ret.push({ key: objKeys[k], value: gm[k] });
+      }return ret;
+    }
+  };
 }
 
 // https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
@@ -24761,6 +24802,34 @@ var Base = {
     },
     margins: {
       type: Object
+    },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    renderTitle: {
+      type: Boolean,
+      default: true
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -24814,6 +24883,18 @@ var Base = {
     removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
       this.chart.filterAll();
       index$2.redrawAll();
+    },
+    applyLegend: function applyLegend() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      if (!this.useLegend || !this.legend) return;
+
+      var _options$reverseOrder = options.reverseOrder,
+          reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
+
+      var l = this.legend;
+      this.chart.legend(index$2.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal));
+      if (reverseOrder) reverseLegendOrder(this.chart);
     }
   },
 
@@ -24827,6 +24908,10 @@ var Base = {
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
     if (this.margins) chart.margins(this.margins);
+    if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel);
+    if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel);
+    chart.renderLabel(this.renderLabel);
+    chart.renderTitle(this.rendertitle);
 
     this.chart = chart;
 
@@ -33429,6 +33514,19 @@ function compose(Left, Right) {
       height: {
         type: Number,
         default: 240
+      },
+      legend: {
+        type: Object,
+        default: function _default() {
+          return { x: 0, y: 0, gap: 5, width: 800, itemWidth: 70, itemHeight: 12, horizontal: true };
+        }
+      },
+      labels: {
+        type: Array
+      },
+      elasticY: {
+        type: Boolean,
+        default: true
       }
     },
 
@@ -33448,6 +33546,13 @@ function compose(Left, Right) {
               var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[0];
             };
+          },
+          labels: function labels() {
+            var dim = Store.getDimension(_this.dimensionName, _this.getDimensionExtractor, { dataset: _this.dataset });
+            var _reducer = generateExtractor(_this.reduce);
+            var lines = _reducer(dim.top(1)[0])[0];
+            var lineNum = Array.isArray(lines) ? lines.length : 1;
+            return _this.labels.slice(0, lineNum);
           }
         },
         propsData: {
@@ -33467,6 +33572,13 @@ function compose(Left, Right) {
               var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[1];
             };
+          },
+          labels: function labels() {
+            var dim = Store.getDimension(_this.dimensionName, _this.getDimensionExtractor, { dataset: _this.dataset });
+            var _reducer = generateExtractor(_this.reduce);
+            var lines = _reducer(dim.top(1)[0])[1];
+            var lineNum = Array.isArray(lines) ? lines.length : 1;
+            return _this.labels.slice(-lineNum);
           }
         },
         propsData: {
@@ -33481,15 +33593,11 @@ function compose(Left, Right) {
       var dim = this.grouping;
       var composite = this.chart;
 
-      composite.width(this.width).height(this.height).margins({
-        top: 30,
-        right: 50,
-        bottom: 25,
-        left: 40
-      }).dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
+      composite.dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
       //.rightY(scale.linear().domain([0, 1]))
-      .elasticY(true);
+      .elasticY(this.elasticY);
 
+      this.applyLegend();
       return composite.render();
     },
 
@@ -33506,7 +33614,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; height: 120px; background: #2AAB9F; border-radius: 5px; } .nd-box .nd-box-label { color: #FFF; font-size: 12px; } .nd-box span.number-display { color: #FFF; font-weight: bold; font-size: 48px; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; } .nd-box span.number-display { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33515,13 +33623,37 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', background: _vm.boxColor, color: _vm.fontColor, fontSize: _vm.boxFontSize + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.labelFontSize + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
     chartType: {
       type: String,
       default: 'numberDisplay'
+    },
+    width: {
+      type: Number,
+      default: 160
+    },
+    height: {
+      type: Number,
+      default: 120
+    },
+    boxColor: {
+      type: String,
+      default: '#2AAB9F'
+    },
+    fontColor: {
+      type: String,
+      default: '#FFF'
+    },
+    labelFontSize: {
+      type: Number,
+      default: 12
+    },
+    boxFontSize: {
+      type: Number,
+      default: 48
     },
     boxLabel: {
       type: String
@@ -33595,33 +33727,11 @@ var SegmentPie = { render: function render() {
       type: Number,
       default: 200
     },
-    useLegend: {
-      type: Boolean,
-      default: true
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
+    legend: {
+      type: Object,
+      default: function _default() {
+        return { x: 0, y: 0, gap: 5, width: 200, itemWidth: 70, itemHeight: 12, horizontal: true };
+      }
     }
   },
 
@@ -33663,6 +33773,109 @@ var SegmentPie = { render: function render() {
         label = this.labels[segmentId];
       } else if (this.segments instanceof Object && this.segments[segmentId]) {
         label = this.segments[segmentId];
+      } else {
+        label = Store.getLabel(segmentId);
+      }
+      return label;
+    }
+  },
+
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    chart.label(function (d) {
+      return _this.segmentLabel(d.key);
+    });
+    this.applyLegend();
+    return chart.render();
+  },
+
+  destroyed: function destroyed() {
+    Store.unregisterDimension(this.dimension, { dataset: this.dataset });
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var MultiDimensionPie = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-multidim-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    dimension: {
+      type: String
+    },
+    chartType: {
+      type: String,
+      default: 'pieChart'
+    },
+    height: {
+      type: Number,
+      default: 160
+    },
+    width: {
+      type: Number,
+      default: 200
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendX: {
+      type: Number,
+      default: 0
+    },
+    legendY: {
+      type: Number,
+      default: 0
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 12
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
+    }
+  },
+
+  computed: {
+    grouping: function grouping() {
+      var getter = this.getDimensionExtractor;
+      var grouping = function grouping(d) {
+        return getter(d).join(',');
+      };
+      return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
+    }
+  },
+
+  methods: {
+    segmentLabel: function segmentLabel(segmentId) {
+      var label = segmentId;
+      if (this.labels && segmentId in this.labels) {
+        label = this.labels[segmentId];
       } else {
         label = Store.getLabel(segmentId);
       }
@@ -33785,7 +33998,7 @@ var WeekRow = { render: function render() {
       return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
     }).label(function (d) {
       return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
-    }).ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).renderTitle(true).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
+    }).ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
 
     //.y(d3.scale.linear().domain([500, 5000]))
 
@@ -33828,10 +34041,6 @@ var ListRow = { render: function render() {
     scale: {
       type: String,
       default: 'linear'
-    },
-    elasticX: {
-      type: Boolean,
-      default: true
     },
     // display limit
     rows: {
@@ -33895,7 +34104,7 @@ var ListRow = { render: function render() {
     var chart = this.chart;
     var spaceForScales = 70;
 
-    chart.height(this.height).x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(this.elasticX).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).titleLabelOffsetX(this.titleLabelOffsetX).renderTitleLabel(this.renderTitleLabel).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums).ordering(function (d) {
+    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).titleLabelOffsetX(this.titleLabelOffsetX).renderTitleLabel(this.renderTitleLabel).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums).ordering(function (d) {
       return _this2.descending ? -d.value : d.value;
     });
     return chart.render();
@@ -33964,7 +34173,7 @@ var RateLine = { render: function render() {
   },
 
   mounted: function mounted() {
-    return this.chart.render();
+    return this.chart.group(this.reducer, this.labels[0]).render();
   }
 };
 
@@ -33979,18 +34188,6 @@ var RateLine = { render: function render() {
     }head.appendChild(style);
   }
 })();
-
-function _generateReducer() {
-  var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-
-  return function () {
-    var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-    var _reducer = this.getReducerExtractor;
-    return dim.group().reduceSum(function (d) {
-      return _reducer(d)[idx];
-    });
-  };
-}
 
 var StackedLines = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
@@ -34007,23 +34204,46 @@ var StackedLines = { render: function render() {
   },
 
   computed: {
-    reducer: _generateReducer(0)
+    combinedGroup: function combinedGroup() {
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var _reducer = this.getReducerExtractor;
+      var lineNum = _reducer(dim.top(1)[0]).length;
+      var groups = [];
+
+      var _loop = function _loop(i) {
+        groups.push(dim.group().reduceSum(function (d) {
+          return _reducer(d)[i];
+        }));
+      };
+
+      for (var i = 0; i < lineNum; i++) {
+        _loop(i);
+      }
+      return combineGroups(groups);
+    }
   },
 
   mounted: function mounted() {
-    var chart = this.chart;
+    var _this = this;
 
-    // 超手抜き
-    var dim = this.grouping;
+    var chart = this.chart;
+    var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
     var _reducer = this.getReducerExtractor;
     var lineNum = _reducer(dim.top(1)[0]).length;
 
-    chart.renderArea(true);
+    chart.group(this.combinedGroup, this.labels[0], function (d) {
+      return d.value[0];
+    }).renderArea(true);
+
+    var _loop2 = function _loop2(i) {
+      chart.stack(_this.combinedGroup, _this.labels[i], function (d) {
+        return d.value[i];
+      });
+    };
 
     for (var i = 1; i < lineNum; i++) {
-      chart.stack(_generateReducer(i).apply(this));
+      _loop2(i);
     }
-
     return chart.render();
   }
 };
@@ -34052,15 +34272,11 @@ var OrdinalBar = { render: function render() {
       type: String,
       default: 'barChart'
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
+    elasticX: {
+      type: Boolean,
+      default: true
     },
-    yAxisLabel: {
-      type: String,
-      default: ''
-    },
-    renderLabel: {
+    elasticY: {
       type: Boolean,
       default: true
     },
@@ -34088,7 +34304,7 @@ var OrdinalBar = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).barPadding(this.barPadding).outerPadding(this.outerPadding).renderLabel(this.renderLabel).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(true).elasticY(true);
+    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY);
     return chart.render();
   }
 };
@@ -34105,19 +34321,6 @@ var OrdinalBar = { render: function render() {
   }
 })();
 
-function _generateReducer$1() {
-  var idx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-
-  return function () {
-    var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-    var _reducer = this.getReducerExtractor;
-    var group = dim.group().reduceSum(function (d) {
-      return _reducer(d)[idx];
-    });
-    return this.removeEmptyRows ? removeEmptyBins(group) : group;
-  };
-}
-
 var StackedBar = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
@@ -34133,73 +34336,69 @@ var StackedBar = { render: function render() {
     labels: {
       type: Array
     },
-    xAxisLabel: {
-      type: String,
-      default: 'xAxisLabel'
-    },
-    yAxisLabel: {
-      type: String,
-      default: 'yAxisLabel'
-    },
-    renderLabel: {
-      type: Boolean,
-      default: true
-    },
     renderHorizontalGridLines: {
       type: Boolean,
       default: true
     },
-    useLegend: {
+    legend: {
+      type: Object,
+      default: function _default() {
+        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
+      }
+    },
+    removeEmptyRows: {
       type: Boolean,
       default: true
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
+    elasticX: {
       type: Boolean,
-      default: false
+      default: true
     },
-    removeEmptyRows: {
+    elasticY: {
       type: Boolean,
       default: true
     }
   },
   computed: {
-    reducer: _generateReducer$1(0)
+    combinedGroup: function combinedGroup() {
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var _reducer = this.getReducerExtractor;
+      var groups = [];
+
+      var _loop = function _loop(i) {
+        groups.push(dim.group().reduceSum(function (d) {
+          return _reducer(d)[i];
+        }));
+      };
+
+      for (var i = 0; i < this.labels.length; i++) {
+        _loop(i);
+      }
+      return combineGroups(groups);
+    }
   },
   mounted: function mounted() {
-    var chart = this.chart;
-    var barNum = this.labels.length;
+    var _this = this;
 
-    chart.group(this.reducer, this.labels[0]).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(true).elasticY(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).renderLabel(this.renderLabel).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
+    var chart = this.chart;
+
+    chart.group(this.combinedGroup, this.labels[0], function (d) {
+      return d.value[0];
+    }).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
       return d.key + '[' + this.layer + ']: ' + d.value;
     });
     // stack
-    for (var i = 1; i < barNum; i++) {
-      chart.stack(_generateReducer$1(i).apply(this), this.labels[i]);
+
+    var _loop2 = function _loop2(i) {
+      chart.stack(_this.combinedGroup, _this.labels[i], function (d) {
+        return d.value[i];
+      });
+    };
+
+    for (var i = 1; i < this.labels.length; i++) {
+      _loop2(i);
     }
-    if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
-      reverseLegendOrder(chart);
-    }
+    this.applyLegend({ reverseOrder: true });
     return chart.render();
   }
 };
@@ -34246,49 +34445,23 @@ var FilterStackedBar = { render: function render() {
       type: Number,
       default: 600
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
-    },
-    yAxisLabel: {
-      type: String,
-      default: ''
-    },
     removeEmptyRows: {
       type: Boolean,
       default: true
     },
-    renderLabel: {
+    elasticX: {
       type: Boolean,
       default: true
     },
-    useLegend: {
+    elasticY: {
       type: Boolean,
       default: true
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: false
+    legend: {
+      type: Object,
+      default: function _default() {
+        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
+      }
     }
   },
   computed: {
@@ -34376,7 +34549,7 @@ var FilterStackedBar = { render: function render() {
 
     if (!this.scale) chart.x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal);else chart.xUnits(d3$1.time.days); // FIXME
 
-    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).mouseZoomable(false).elasticX(true).elasticY(true).renderLabel(this.renderLabel).mouseZoomable(false).title(function (d) {
+    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).mouseZoomable(false).title(function (d) {
       return d.key + '[' + this.layer + ']: ' + d.value[this.layer];
     });
     // stack
@@ -34397,10 +34570,7 @@ var FilterStackedBar = { render: function render() {
         index$2.redrawAll();
       });
     });
-    if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
-      reverseLegendOrder(chart);
-    }
+    this.applyLegend({ reverseOrder: true });
     return chart.render();
   }
 };
@@ -34671,20 +34841,6 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34785,9 +34941,6 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
-// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
-// point sequences are identified. The topology can then be subsequently deduped
-// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34799,8 +34952,6 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
-
-// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -34828,10 +34979,6 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
-
-// Constructs the TopoJSON Topology for the specified hash of features.
-// Each object in the specified hash must be a GeoJSON object,
-// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -35180,12 +35327,404 @@ var DataTable = { render: function render() {
   }
 })();
 
-var TIME_FORMATS = {
+function _splitkey$1(k) {
+  return k.split(',');
+}
+function _extractName(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
+}
+
+var TIME_FORMAT = {
   year: d3$1.time.format('%Y'),
   month: d3$1.time.format('%m'),
   day: d3$1.time.format('%d')
 };
 var TIME_INTERVALS = {
+  year: d3$1.time.year,
+  month: d3$1.time.month,
+  day: d3$1.time.day
+};
+
+var HeatMap = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'heatMap'
+    },
+    // TODO: Baseに移動する
+    dateKey: {
+      type: String
+    },
+    dimension: {
+      type: String
+    },
+    width: {
+      type: Number,
+      default: 45 * 20 + 80
+    },
+    height: {
+      type: Number,
+      default: 45 * 5 + 40
+    },
+    yBorderRadius: {
+      type: Number,
+      defaulat: 6.75
+    },
+    xAxisLabel: {
+      type: String
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    valueLabel: {
+      type: String
+    },
+    valueFormat: {
+      type: String,
+      default: ''
+    }
+  },
+  computed: {
+    dimensionName: function dimensionName() {
+      if (this.dateKey != undefined) return this.xKey + '(' + this.dateKey + ')';
+      return this.dimension;
+    },
+    dimensionKeys: function dimensionKeys() {
+      return _splitkey$1(_extractName(this.dimension));
+    },
+    xKey: function xKey() {
+      return this.dimensionKeys[0];
+    },
+    yKey: function yKey() {
+      return this.dimensionKeys[1];
+    },
+    firstRow: function firstRow() {
+      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      return dim.top(1)[0];
+    },
+    data: function data() {
+      return this.getDimensionExtractor(this.firstRow);
+    },
+    dataKeys: function dataKeys() {
+      return Object.keys(this.data);
+    },
+    getDimensionExtractor: function getDimensionExtractor() {
+      if (this.dateKey != undefined) return generateExtractor(this.dateKey);
+      return generateExtractor(this.dimensionName);
+    },
+    grouping: function grouping() {
+      var getter = this.getDimensionExtractor;
+      var xInterval = this.getTimeInterval(this.xKey);
+      var yInterval = this.getTimeInterval(this.yKey);
+      if ((xInterval && yInterval) === null) {
+        return Store.registerDimension(this.dimensionName, getter, { dataset: this.dataset });
+      } else {
+        var grouping = function grouping(d) {
+          return [xInterval(getter(d)), yInterval(getter(d))];
+        };
+        return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
+      }
+    }
+  },
+  methods: {
+    getTimeInterval: function getTimeInterval(key) {
+      if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
+    },
+    getTimeFormat: function getTimeFormat(key) {
+      if (this.dateKey === undefined) return null;else return TIME_FORMAT[key];
+    },
+    formatKey: function formatKey(axis, key) {
+      var xTimeFormat = this.getTimeFormat(this.xKey);
+      var yTimeFormat = this.getTimeFormat(this.yKey);
+      var FORMATS = {
+        x: xTimeFormat,
+        y: yTimeFormat
+      };
+      if (FORMATS[axis] === null) return key;
+      return Number(FORMATS[axis](key));
+    }
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    var xAxisLabel = this.xAxisLabel || this.xKey;
+    var yAxisLabel = this.xAxisLabel || this.yKey;
+    var valueLabel = this.valueLabel || _extractName(this.reduce);
+
+    chart.keyAccessor(function (d) {
+      return _this.formatKey('x', d.key[0]);
+    }).valueAccessor(function (d) {
+      return _this.formatKey('y', d.key[1]);
+    }).colorAccessor(function (d) {
+      return +d.value;
+    }).colors(d3$1.scale.category20b()).yBorderRadius(this.yBorderRadius).colsLabel(function (d) {
+      return d + ('' + _this.xAxisFormat);
+    }).rowsLabel(function (d) {
+      return d + ('' + _this.yAxisFormat);
+    }).title(function (d) {
+      return xAxisLabel + ': ' + _this.formatKey('x', d.key[0]) + _this.xAxisFormat + '\n' + (yAxisLabel + ': ' + _this.formatKey('y', d.key[1]) + _this.yAxisFormat + '\n') + (valueLabel + ': ' + +d.value + _this.valueFormat);
+    });
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+function _splitkey$2(k) {
+  return k.split(',');
+}
+function _extractName$1(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
+}
+var TIME_FORMAT$1 = {
+  year: d3$1.time.format('%Y'),
+  month: d3$1.time.format('%m'),
+  day: d3$1.time.format('%d')
+};
+var TIME_INTERVALS$1 = {
+  year: d3$1.time.year,
+  month: d3$1.time.month,
+  day: d3$1.time.day
+};
+
+var Series = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'seriesChart'
+    },
+    dimension: {
+      type: String
+    },
+    dateKey: {
+      type: String
+    },
+    width: {
+      type: Number,
+      default: 768
+    },
+    height: {
+      type: Number,
+      default: 480
+    },
+    brushOn: {
+      type: Boolean,
+      default: false
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
+    // label
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    seriesLabel: {
+      type: String,
+      default: ''
+    },
+    seriesFormat: {
+      type: String,
+      default: ''
+    },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    // legend
+    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    legendX: {
+      type: Number,
+      default: 350
+    },
+    legendY: {
+      type: Number,
+      default: 350
+    },
+    legendWidth: {
+      type: Number,
+      default: 140
+    },
+    legendItemWidth: {
+      type: Number,
+      default: 70
+    },
+    legendItemHeight: {
+      type: Number,
+      default: 13
+    },
+    legendGap: {
+      type: Number,
+      default: 5
+    },
+    legendHorizontal: {
+      type: Boolean,
+      default: true
+    }
+  },
+  computed: {
+    dimensionName: function dimensionName() {
+      if (this.dateKey != undefined) return this.seriesKey + '(' + this.dateKey + ')';
+      return this.dimension;
+    },
+    dimensionKeys: function dimensionKeys() {
+      return _splitkey$2(_extractName$1(this.dimension));
+    },
+    seriesKey: function seriesKey() {
+      return this.dimensionKeys[0];
+    },
+    xKey: function xKey() {
+      return this.dimensionKeys[1];
+    },
+    yKey: function yKey() {
+      return _extractName$1(this.reduce);
+    },
+    firstRow: function firstRow() {
+      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      return dim.top(1)[0];
+    },
+    data: function data() {
+      return this.getDimensionExtractor(this.firstRow);
+    },
+    dataKeys: function dataKeys() {
+      return Object.keys(this.data);
+    },
+    getDimensionExtractor: function getDimensionExtractor() {
+      if (this.dateKey != undefined) return generateExtractor(this.dateKey);
+      return generateExtractor(this.dimensionName);
+    },
+    grouping: function grouping() {
+      var getter = this.getDimensionExtractor;
+      var xInterval = this.getTimeInterval(this.seriesKey);
+      var yInterval = this.getTimeInterval(this.xKey);
+      if ((xInterval && yInterval) === null) {
+        return Store.registerDimension(this.dimensionName, getter, { dataset: this.dataset });
+      } else {
+        var grouping = function grouping(d) {
+          return [xInterval(getter(d)), yInterval(getter(d))];
+        };
+        return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
+      }
+    }
+  },
+  methods: {
+    getTimeInterval: function getTimeInterval(key) {
+      if (this.dateKey === undefined) return null;else return TIME_INTERVALS$1[key];
+    },
+    getTimeFormat: function getTimeFormat(key) {
+      if (this.dateKey === undefined) return null;else return TIME_FORMAT$1[key];
+    },
+    formatKey: function formatKey(axis, key) {
+      var seriesTimeFormat = this.getTimeFormat(this.seriesKey);
+      var xTimeFormat = this.getTimeFormat(this.xKey);
+      var FORMATS = {
+        series: seriesTimeFormat,
+        x: xTimeFormat
+      };
+      if (FORMATS[axis] === null) return +key;
+      return Number(FORMATS[axis](key));
+    }
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    var all = this.reducer.all();
+
+    chart.chart(function (c) {
+      return index$2.lineChart(c).interpolate('basis');
+    }).brushOn(this.brushOn).renderLabel(this.renderLabel).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).clipPadding(10).elasticY(this.elasticY).mouseZoomable(false).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+      return _this.formatKey('x', d.key[1]);
+    }))).seriesAccessor(function (d) {
+      return _this.formatKey('series', d.key[0]);
+    }).keyAccessor(function (d) {
+      return _this.formatKey('x', d.key[1]);
+    }).valueAccessor(function (d) {
+      return +d.value;
+    }).title(function (d) {
+      return _this.seriesLabel + '[' + _this.seriesKey + ']: ' + _this.formatKey('series', d.key[0]) + '\n' + (_this.xAxisLabel + '[' + _this.xKey + ']: ' + _this.formatKey('x', d.key[1]) + '\n') + (_this.yAxisLabel + '[' + _this.yKey + ']: ' + d.value);
+    });
+    chart.xAxis().tickFormat(function (d) {
+      return d + ('' + _this.xAxisFormat);
+    });
+    chart.yAxis().tickFormat(function (d) {
+      return d + ('' + _this.yAxisFormat);
+    });
+    if (this.useLegend) {
+      chart.legend(index$2.legend().x(this.legendX).y(this.legendY).gap(this.legendGap).legendWidth(this.legendWidth).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+    }
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var TIME_FORMATS = {
+  year: d3$1.time.format('%Y'),
+  month: d3$1.time.format('%m'),
+  day: d3$1.time.format('%d')
+};
+var TIME_INTERVALS$2 = {
   year: d3$1.time.year,
   month: d3$1.time.month,
   day: d3$1.time.day
@@ -35214,17 +35753,9 @@ var Bubble = { render: function render() {
       type: String,
       default: 'x'
     },
-    xAxisFormat: {
-      type: String,
-      default: ''
-    },
     yAxis: {
       type: String,
       default: 'y'
-    },
-    yAxisFormat: {
-      type: String,
-      default: ''
     },
     radius: {
       type: String,
@@ -35233,15 +35764,6 @@ var Bubble = { render: function render() {
     radiusFormat: {
       type: String,
       default: ''
-    },
-    // options
-    renderLabel: {
-      type: Boolean,
-      default: true
-    },
-    renderTitle: {
-      type: Boolean,
-      default: true
     },
     renderHorizontalGridLines: {
       type: Boolean,
@@ -35259,7 +35781,19 @@ var Bubble = { render: function render() {
       type: Boolean,
       default: false
     },
+    elasticX: {
+      type: Boolean,
+      defualt: true
+    },
+    elasticY: {
+      type: Boolean,
+      default: true
+    },
     // styles
+    transitionDuration: {
+      type: Number,
+      default: 1500
+    },
     maxBubbleRelativeSize: {
       type: Number,
       default: 0.3
@@ -35357,7 +35891,7 @@ var Bubble = { render: function render() {
       }
     },
     getTimeInterval: function getTimeInterval() {
-      if (this.timeScale === undefined) return null;else return TIME_INTERVALS[this.timeScale];
+      if (this.timeScale === undefined) return null;else return TIME_INTERVALS$2[this.timeScale];
     },
     getTimeFormat: function getTimeFormat() {
       if (this.timeScale === undefined) return null;
@@ -35378,7 +35912,7 @@ var Bubble = { render: function render() {
     var chart = this.chart;
     var all = this.reducer.all();
 
-    chart.transitionDuration(1500).colors(d3$1.scale.category10()).keyAccessor(function (p) {
+    chart.transitionDuration(this.transitionDuration).colors(d3$1.scale.category10()).keyAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.xAxis]);
     }).valueAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.yAxis]);
@@ -35390,7 +35924,7 @@ var Bubble = { render: function render() {
       return _this3.extractValue(d.value[_this3.yAxis]);
     }))).r(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
       return _this3.extractValue(d.value[_this3.radius]);
-    }))).elasticX(true).elasticY(true).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding).renderHorizontalGridLines(this.renderHorizontalGridLines).renderVerticalGridLines(this.renderVerticalGridLines).renderLabel(this.renderLabel).renderTitle(this.renderTitle).label(function (p) {
+    }))).elasticX(this.elasticX).elasticY(this.elasticY).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding).renderHorizontalGridLines(this.renderHorizontalGridLines).renderVerticalGridLines(this.renderVerticalGridLines).label(function (p) {
       return _this3.formatKey(p.key);
     }).title(function (p) {
       return '[' + _this3.formatKey(p.key) + ']\n' + (_this3.xAxis + ': ' + _this3.extractValue(p.value[_this3.xAxis]) + _this3.xAxisFormat + '\n') + (_this3.yAxis + ': ' + _this3.extractValue(p.value[_this3.yAxis]) + _this3.yAxisFormat + '\n') + (_this3.radius + ': ' + _this3.extractValue(p.value[_this3.radius]) + _this3.radiusFormat);
@@ -35431,6 +35965,7 @@ var resetAllButton = { render: function render() {
 var components = {
   'number-display': NumberDisplay,
   'segment-pie': SegmentPie,
+  'multidim-pie': MultiDimensionPie,
   'week-row': WeekRow,
   'list-row': ListRow,
   'rate-line': RateLine,
@@ -35440,6 +35975,8 @@ var components = {
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
+  'heat-map': HeatMap,
+  'series': Series,
   'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton
@@ -35464,6 +36001,8 @@ var Chart = {
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
+  HeatMap: HeatMap,
+  Series: Series,
   Bubble: Bubble,
   compose: compose,
   resetAllButton: resetAllButton,
