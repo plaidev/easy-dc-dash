@@ -158,6 +158,8 @@
 //-------------------
 // デザインをカスタマイズしたコンポーネント
 
+const _ymdFormat = d3.time.format('%Y-%m-%d')
+
 const DateVolumeChart = {
   extends: EasyDC.Chart.Base,
   mounted: function() {
@@ -179,6 +181,13 @@ const DateVolumeChart = {
       .xUnits(d3.time.days)
       .yAxis().ticks(0)
 
+    this.chart.filterPrinter(filters => {
+      return filters.map(filter => {
+        return filter.map(f => {
+          return `[${_ymdFormat(f)}]`
+        }).join(',').replace(/\,/, ' ~ ')
+      });
+    });
     this.chart.render()
   }
 }

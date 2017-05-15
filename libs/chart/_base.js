@@ -72,6 +72,10 @@ export default {
       type: Boolean,
       default: true
     },
+    transitionDuration: {
+      type: Number,
+      default: 1500
+    }
   },
 
   computed: {
@@ -156,7 +160,7 @@ export default {
     if(this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
     if(this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
     chart.renderLabel(this.renderLabel)
-    chart.renderTitle(this.rendertitle)
+    chart.renderTitle(this.renderTitle)
 
     this.chart = chart;
 
