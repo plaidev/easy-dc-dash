@@ -36,19 +36,16 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
-
-    // 超手抜き
-    const dim = this.grouping;
+    const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
     const _reducer = this.getReducerExtractor;
     const lineNum = _reducer(dim.top(1)[0]).length;
+
     chart
-      .group(this.combinedGroup, '0', (d) => d.value[0])
+      .group(this.combinedGroup, this.labels[0], (d) => d.value[0])
       .renderArea(true)
-
     for (let i=1; i<lineNum; i++) {
-      chart.stack(this.combinedGroup, ''+i, (d) => d.value[i]);
+      chart.stack(this.combinedGroup, this.labels[i], (d) => d.value[i]);
     }
-
     return chart.render()
   }
 }
