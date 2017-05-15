@@ -57,7 +57,7 @@ export function compose(Left, Right) {
             const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
             const _reducer = generateExtractor(this.reduce);
             const lines = _reducer(dim.top(1)[0])[0]
-            const lineNum = if(Array.isArray(lines)) ? lines.length : 1
+            const lineNum = Array.isArray(lines) ? lines.length : 1
             return this.labels.slice(0, lineNum)
           }
         },
@@ -83,7 +83,7 @@ export function compose(Left, Right) {
             const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
             const _reducer = generateExtractor(this.reduce);
             const lines = _reducer(dim.top(1)[0])[1]
-            const lineNum = if(Array.isArray(lines)) ? lines.length : 1
+            const lineNum = Array.isArray(lines) ? lines.length : 1
             return this.labels.slice(-lineNum)
           }
         },
