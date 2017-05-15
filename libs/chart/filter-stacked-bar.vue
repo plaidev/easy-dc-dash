@@ -11,6 +11,7 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {_ymdFormat} from '../utils/time-format'
 
 function _joinkey(k) {
   return k.join(',')
@@ -65,7 +66,7 @@ export default {
       return (d) => {
         const v = extractor(d)
         if (this.scale === 'time') {
-          v[0] = d3.time.format('%Y-%m-%d')(v[0])
+          v[0] = _ymdFormat(v[0])
         }
         return _joinkey(v)
       }
@@ -113,7 +114,7 @@ export default {
             return Object.keys(m).map((k) => {
                 let key = k
                 if (this.scale === 'time')
-                  key = d3.time.format('%Y-%m-%d').parse(k)
+                  key = _ymdFormat.parse(k)
                 return {key, value: m[k]};
             });
           }
@@ -161,13 +162,13 @@ export default {
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
           let x = d.x;
-          if (this.scale === 'time') x = d3.time.format('%Y-%m-%d')(x)
+          if (this.scale === 'time') x = _ymdFormat(x)
           const key = _multikey(x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
           let x = d.x;
-          if (this.scale === 'time') x = d3.time.format('%Y-%m-%d')(x)
+          if (this.scale === 'time') x = _ymdFormat(x)
           chart.filter(_multikey(x, d.layer));
           dc.redrawAll();
         })

@@ -10,10 +10,8 @@ import d3 from "d3"
 
 import Base from './_base'
 import Store from '../store'
+import {_ymdFormat, _weekFormat} from '../utils/time-format'
 
-
-const _weekFormat = d3.time.format("%w")
-const _ymdFormat = d3.time.format("%Y-%m-%d")
 const _week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default {
