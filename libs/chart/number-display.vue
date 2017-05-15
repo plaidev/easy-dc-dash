@@ -1,9 +1,9 @@
 <template>
-  <div v-if="fillBoxColor" class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', background: themeColor, fontSize: fontSize*4+'px'}">
-    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: fontSize+'px'}"></span>
+  <div v-if="fillBoxColor" class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', background: themeColor, fontSize: fontSize+'px'}">
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: (fontSize/4)+'px'}"></span>
   </div>
-  <div v-else class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', color: themeColor,  borderColor: themeColor, fontSize: fontSize*4+'px'}">
-    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: fontSize+'px'}"></span>
+  <div v-else class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', color: themeColor,  borderColor: themeColor, fontSize: fontSize+'px'}">
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: (fontSize/4)+'px'}"></span>
   </div>
 </template>
 
@@ -37,7 +37,7 @@ export default {
     },
     fontSize: {
       type: Number,
-      default: 12
+      default: 48
     },
     boxLabel: {
       type: String
