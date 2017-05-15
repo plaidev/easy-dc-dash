@@ -12,6 +12,7 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
+const _ymdFormat = d3.time.format('%Y-%m-%d')
 function _splitkey(k) {
   return k.split(',')
 }
@@ -160,6 +161,15 @@ export default {
                  + `${yAxisLabel}: ${this.formatKey('y', d.key[1])}${this.yAxisFormat}\n`
                  + `${valueLabel}: ${+d.value}${this.valueFormat}`
       })
+    if(this.dateKey) {
+      chart.filterPrinter(filters => {
+        return filters.map(filter => {
+          return filter.map(f => {
+            return `[${_ymdFormat(f)}]`
+          }).join(',').replace(/\,/, ' ~ ')
+        });
+      });
+    }
     return chart.render();
   }
 }
