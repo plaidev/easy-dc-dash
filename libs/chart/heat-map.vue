@@ -11,8 +11,8 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {_ymdFormat, _yearFormat, _monthFormat, _dayFormat, _yearInterval, _monthInterval, _dayInterval} from '../utils/time-format'
 
-const _ymdFormat = d3.time.format('%Y-%m-%d')
 function _splitkey(k) {
   return k.split(',')
 }
@@ -22,14 +22,14 @@ function _extractName(dimension) {
 }
 
 const TIME_FORMAT = {
-  year: d3.time.format('%Y'),
-  month: d3.time.format('%m'),
-  day: d3.time.format('%d')
+  year: _yearFormat,
+  month: _monthFormat,
+  day: _dayFormat
 }
 const TIME_INTERVALS = {
-  year: d3.time.year,
-  month: d3.time.month,
-  day: d3.time.day
+  year: _yearInterval,
+  month: _monthInterval,
+  day: _dayInterval
 }
 
 export default {
@@ -164,9 +164,9 @@ export default {
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {
-          return filter.map(f => {
-            return `[${_ymdFormat(f)}]`
-          }).join(',').replace(/\,/, ' ~ ')
+          return filter.map((f,i) => {
+            return `${TIME_FORMAT[this.dimensionKeys[i]](f)}`
+          }).join(',').replace(/\,/, '-')
         });
       });
     }

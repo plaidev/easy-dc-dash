@@ -33495,6 +33495,11 @@ var vue = createCommonjsModule(function (module, exports) {
   });
 });
 
+function _extractReduceKey(reduce) {
+  // FIXME: Replace if there is a better way
+  return reduce.match(/d.\w*/g);
+}
+
 function compose(Left, Right) {
 
   var ComponentObject = {
@@ -33529,7 +33534,14 @@ function compose(Left, Right) {
         default: true
       }
     },
-
+    computed: {
+      _labels: function _labels() {
+        return this.labels || this.reduceKeys;
+      },
+      reduceKeys: function reduceKeys() {
+        return _extractReduceKey(this.reduce);
+      }
+    },
     mounted: function mounted() {
       var _this = this;
 
@@ -33552,7 +33564,7 @@ function compose(Left, Right) {
             var _reducer = generateExtractor(_this.reduce);
             var lines = _reducer(dim.top(1)[0])[0];
             var lineNum = Array.isArray(lines) ? lines.length : 1;
-            return _this.labels.slice(0, lineNum);
+            return _this._labels.slice(0, lineNum);
           }
         },
         propsData: {
@@ -33578,7 +33590,7 @@ function compose(Left, Right) {
             var _reducer = generateExtractor(_this.reduce);
             var lines = _reducer(dim.top(1)[0])[1];
             var lineNum = Array.isArray(lines) ? lines.length : 1;
-            return _this.labels.slice(-lineNum);
+            return _this._labels.slice(-lineNum);
           }
         },
         propsData: {
@@ -33901,6 +33913,16 @@ var MultiDimensionPie = { render: function render() {
   }
 };
 
+var _ymdFormat = d3.time.format('%Y-%m-%d');
+var _ymFormat = d3.time.format('%Y-%m');
+var _yearFormat = d3.time.format('%Y');
+var _monthFormat = d3.time.format('%m');
+var _weekFormat = d3.time.format('%w');
+var _dayFormat = d3.time.format('%d');
+var _yearInterval = d3.time.year;
+var _monthInterval = d3.time.month;
+var _dayInterval = d3.time.day;
+
 (function () {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
@@ -33913,8 +33935,7 @@ var MultiDimensionPie = { render: function render() {
   }
 })();
 
-var _weekFormat = d3$1.time.format("%w");
-var _ymdFormat = d3$1.time.format("%Y-%m-%d");
+var _week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 var WeekRow = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
@@ -33995,13 +34016,12 @@ var WeekRow = { render: function render() {
     var chart = this.chart;
 
     chart.title(function (d) {
-      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
+      return _week[d.key];
     }).label(function (d) {
-      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.key];
+      return _week[d.key];
+    }).keyAccessor(function (d) {
+      return _week[d.key];
     }).ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
-
-    //.y(d3.scale.linear().domain([500, 5000]))
-
     return chart.render();
   }
 };
@@ -34102,9 +34122,8 @@ var ListRow = { render: function render() {
     var _this2 = this;
 
     var chart = this.chart;
-    var spaceForScales = 70;
 
-    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).titleLabelOffsetX(this.titleLabelOffsetX).renderTitleLabel(this.renderTitleLabel).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums).ordering(function (d) {
+    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).titleLabelOffsetX(this.titleLabelOffsetX).renderTitleLabel(this.renderTitleLabel).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
       return _this2.descending ? -d.value : d.value;
     });
     return chart.render();
@@ -34321,6 +34340,11 @@ var OrdinalBar = { render: function render() {
   }
 })();
 
+function _extractReduceKey$1(reduce) {
+  // FIXME: Replace if there is a better way
+  return reduce.match(/d.\w*/g);
+}
+
 var StackedBar = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
@@ -34371,10 +34395,16 @@ var StackedBar = { render: function render() {
         }));
       };
 
-      for (var i = 0; i < this.labels.length; i++) {
+      for (var i = 0; i < this._labels.length; i++) {
         _loop(i);
       }
       return combineGroups(groups);
+    },
+    reduceKeys: function reduceKeys() {
+      return _extractReduceKey$1(this.reduce);
+    },
+    _labels: function _labels() {
+      return this.labels || this.reduceKeys;
     }
   },
   mounted: function mounted() {
@@ -34382,7 +34412,7 @@ var StackedBar = { render: function render() {
 
     var chart = this.chart;
 
-    chart.group(this.combinedGroup, this.labels[0], function (d) {
+    chart.group(this.combinedGroup, this._labels[0], function (d) {
       return d.value[0];
     }).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
       return d.key + '[' + this.layer + ']: ' + d.value;
@@ -34390,12 +34420,12 @@ var StackedBar = { render: function render() {
     // stack
 
     var _loop2 = function _loop2(i) {
-      chart.stack(_this.combinedGroup, _this.labels[i], function (d) {
+      chart.stack(_this.combinedGroup, _this._labels[i], function (d) {
         return d.value[i];
       });
     };
 
-    for (var i = 1; i < this.labels.length; i++) {
+    for (var i = 1; i < this._labels.length; i++) {
       _loop2(i);
     }
     this.applyLegend({ reverseOrder: true });
@@ -34476,7 +34506,7 @@ var FilterStackedBar = { render: function render() {
       return function (d) {
         var v = extractor(d);
         if (_this.scale === 'time') {
-          v[0] = d3$1.time.format('%Y-%m-%d')(v[0]);
+          v[0] = _ymdFormat(v[0]);
         }
         return _joinkey(v);
       };
@@ -34525,7 +34555,7 @@ var FilterStackedBar = { render: function render() {
           // then produce multivalue key/value pairs
           return Object.keys(m).map(function (k) {
             var key = k;
-            if (_this2.scale === 'time') key = d3$1.time.format('%Y-%m-%d').parse(k);
+            if (_this2.scale === 'time') key = _ymdFormat.parse(k);
             return { key: key, value: m[k] };
           });
         }
@@ -34560,12 +34590,12 @@ var FilterStackedBar = { render: function render() {
     chart.on('pretransition', function (chart) {
       chart.selectAll('.krt-dc-filter-stacked rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
         var x = d.x;
-        if (_this3.scale === 'time') x = d3$1.time.format('%Y-%m-%d')(x);
+        if (_this3.scale === 'time') x = _ymdFormat(x);
         var key = _multikey(x, d.layer);
         return chart.filter() && chart.filters().indexOf(key) === -1;
       }).on('click', function (d) {
         var x = d.x;
-        if (_this3.scale === 'time') x = d3$1.time.format('%Y-%m-%d')(x);
+        if (_this3.scale === 'time') x = _ymdFormat(x);
         chart.filter(_multikey(x, d.layer));
         index$2.redrawAll();
       });
@@ -35336,14 +35366,14 @@ function _extractName(dimension) {
 }
 
 var TIME_FORMAT = {
-  year: d3$1.time.format('%Y'),
-  month: d3$1.time.format('%m'),
-  day: d3$1.time.format('%d')
+  year: _yearFormat,
+  month: _monthFormat,
+  day: _dayFormat
 };
 var TIME_INTERVALS = {
-  year: d3$1.time.year,
-  month: d3$1.time.month,
-  day: d3$1.time.day
+  year: _yearInterval,
+  month: _monthInterval,
+  day: _dayInterval
 };
 
 var HeatMap = { render: function render() {
@@ -35480,6 +35510,15 @@ var HeatMap = { render: function render() {
     }).title(function (d) {
       return xAxisLabel + ': ' + _this.formatKey('x', d.key[0]) + _this.xAxisFormat + '\n' + (yAxisLabel + ': ' + _this.formatKey('y', d.key[1]) + _this.yAxisFormat + '\n') + (valueLabel + ': ' + +d.value + _this.valueFormat);
     });
+    if (this.dateKey) {
+      chart.filterPrinter(function (filters) {
+        return filters.map(function (filter) {
+          return filter.map(function (f, i) {
+            return '' + TIME_FORMAT[_this.dimensionKeys[i]](f);
+          }).join(',').replace(/\,/, '-');
+        });
+      });
+    }
     return chart.render();
   }
 };
@@ -35504,14 +35543,14 @@ function _extractName$1(dimension) {
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
 }
 var TIME_FORMAT$1 = {
-  year: d3$1.time.format('%Y'),
-  month: d3$1.time.format('%m'),
-  day: d3$1.time.format('%d')
+  year: _yearFormat,
+  month: _monthFormat,
+  day: _dayFormat
 };
 var TIME_INTERVALS$1 = {
-  year: d3$1.time.year,
-  month: d3$1.time.month,
-  day: d3$1.time.day
+  year: _yearInterval,
+  month: _monthInterval,
+  day: _dayInterval
 };
 
 var Series = { render: function render() {
@@ -35719,15 +35758,15 @@ var Series = { render: function render() {
   }
 })();
 
-var TIME_FORMATS = {
-  year: d3$1.time.format('%Y'),
-  month: d3$1.time.format('%m'),
-  day: d3$1.time.format('%d')
+var TIME_FORMAT$2 = {
+  year: _yearFormat,
+  month: _monthFormat,
+  day: _dayFormat
 };
 var TIME_INTERVALS$2 = {
-  year: d3$1.time.year,
-  month: d3$1.time.month,
-  day: d3$1.time.day
+  year: _yearInterval,
+  month: _monthInterval,
+  day: _dayInterval
 };
 
 var Bubble = { render: function render() {
@@ -35935,6 +35974,14 @@ var Bubble = { render: function render() {
     chart.yAxis().tickFormat(function (v) {
       return v + ('' + _this3.yAxisFormat);
     });
+    if (this.timeScale) {
+      var format = this.timeFormat ? d3$1.time.format(this.timeFormat) : TIME_FORMAT$2[this.timeScale];
+      chart.filterPrinter(function (filters) {
+        return filters.map(function (f) {
+          return format(f);
+        });
+      });
+    }
     return chart.render();
   }
 };
