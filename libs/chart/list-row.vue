@@ -89,7 +89,6 @@ export default {
     const spaceForScales = 70;
 
     chart
-      .height(this.height)
       .x(d3.scale[this.scale]())
       .gap(this.gap)
       .elasticX(true)

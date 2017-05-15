@@ -30,6 +30,10 @@ export function compose(Left, Right) {
       },
       labels: {
         type: Array
+      },
+      elasticY: {
+        type: Boolean,
+        default: true
       }
     },
 
@@ -96,13 +100,6 @@ export function compose(Left, Right) {
       const composite = this.chart;
 
       composite
-        .width(this.width).height(this.height)
-        .margins({
-          top: 30,
-          right: 50,
-          bottom: 25,
-          left: 40
-        })
         .dimension(dim)
         .compose([
           Left.mounted.apply(leftInstance),
@@ -111,7 +108,7 @@ export function compose(Left, Right) {
         .renderHorizontalGridLines(true)
         .brushOn(false)
         //.rightY(scale.linear().domain([0, 1]))
-        .elasticY(true)
+        .elasticY(this.elasticY)
 
       this.applyLegend()
       return composite.render();
