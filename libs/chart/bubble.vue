@@ -193,7 +193,6 @@ export default {
     const all = this.reducer.all()
 
     chart
-      .transitionDuration(this.transitionDuration)
       .colors(d3.scale.category10())
       .keyAccessor((p) => this.extractValue(p.value[this.xAxis]))
       .valueAccessor((p) => this.extractValue(p.value[this.yAxis]))

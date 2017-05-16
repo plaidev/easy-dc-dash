@@ -74,7 +74,7 @@ export default {
     },
     transitionDuration: {
       type: Number,
-      default: 1500
+      default: 750
     }
   },
 
@@ -159,8 +159,11 @@ export default {
     if (this.margins) chart.margins(this.margins);
     if(this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
     if(this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
-    chart.renderLabel(this.renderLabel)
-    chart.renderTitle(this.renderTitle)
+
+    chart
+      .renderLabel(this.renderLabel)
+      .renderTitle(this.renderTitle)
+      .transitionDuration(this.transitionDuration)
 
     this.chart = chart;
 
