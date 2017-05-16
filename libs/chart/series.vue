@@ -141,13 +141,13 @@ export default {
     },
     grouping: function() {
       const getter = this.dimensionExtractor;
-      const xInterval = this.getTimeInterval(this.seriesKey)
-      const yInterval = this.getTimeInterval(this.xKey)
+      const yInterval = this.getTimeInterval(this.seriesKey)
+      const xInterval = this.getTimeInterval(this.xKey)
       if((xInterval && yInterval) === null) {
         return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
       }
       else {
-        const grouping = (d) => [xInterval(getter(d)), yInterval(getter(d))]
+        const grouping = (d) => [yInterval(getter(d)), xInterval(getter(d))]
         return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
       }
     }
