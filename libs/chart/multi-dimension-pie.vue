@@ -62,7 +62,9 @@ export default {
     grouping: function() {
       const getter = this.dimensionExtractor;
       const grouping = (d) => {
-        return getter(d).join(',');
+        let v = getter(d);
+        if (!(v instanceof Array)) v = [v];
+        return v.join(',');
       }
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
     }
