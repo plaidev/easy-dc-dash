@@ -132,15 +132,8 @@ export default {
     yKey: function() {
       return _extractName(this.reduce)
     },
-    firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      return dim.top(1)[0]
-    },
-    data: function() {
-      return (this.dimensionExtractor)(this.firstRow)
-    },
     dataKeys: function() {
-      return Object.keys(this.data)
+      return Object.keys(this.dimensionExtractor({}))
     },
     dimensionExtractor: function() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey)
