@@ -12,8 +12,6 @@ import Base from './_base'
 import Store from '../store'
 import {ymdFormat, weekFormat} from '../utils/time-format'
 
-const _week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
 export default {
   extends: Base,
 
@@ -29,6 +27,9 @@ export default {
     width: {
       type: Number,
       default: 200
+    },
+    labels: {
+      default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
     }
   },
 
@@ -91,18 +92,10 @@ export default {
     }
   },
 
-  methods: {
-    printSigleFilter: function(filter) {
-      return _week[filter]
-    }
-  },
-
   mounted: function() {
     const chart = this.chart;
 
     chart
-      .title((d) => _week[d.key])
-      .label((d) => _week[d.key])
       .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
       .x(d3.scale.linear().domain([0, 7]))
       .elasticX(true);
