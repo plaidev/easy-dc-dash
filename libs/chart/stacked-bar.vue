@@ -52,7 +52,7 @@ export default {
   computed: {
     combinedGroup: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const _reducer = this.getReducerExtractor;
+      const _reducer = this.reducerExtractor;
       const groups = [];
       for (let i=0; i<this._labels.length; i++) {
         groups.push(dim.group().reduceSum((d) => _reducer(d)[i]))

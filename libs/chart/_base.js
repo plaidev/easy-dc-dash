@@ -85,19 +85,19 @@ export default {
     dimensionName: function() {
       return this.dimension;
     },
-    getDimensionExtractor: function() {
+    dimensionExtractor: function() {
       return generateExtractor(this.dimension)
     },
-    getReducerExtractor: function() {
+    reducerExtractor: function() {
       return generateExtractor(this.reduce)
     },
     grouping: function() {
-      const grouping = this.getDimensionExtractor;
+      const grouping = this.dimensionExtractor;
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.getReducerExtractor;
+      const reducer = this.reducerExtractor;
       return dim.group().reduceSum(reducer)
     },
     accessor: function() {
@@ -105,12 +105,12 @@ export default {
     },
     min: function() {
       const dim = this.grouping;
-      const dimExtractor = this.getDimensionExtractor;
+      const dimExtractor = this.dimensionExtractor;
       return dimExtractor(dim.bottom(1)[0]);
     },
     max: function() {
       const dim = this.grouping;
-      const dimExtractor = this.getDimensionExtractor;
+      const dimExtractor = this.dimensionExtractor;
       return dimExtractor(dim.top(1)[0]);
     },
     xScale: function() {

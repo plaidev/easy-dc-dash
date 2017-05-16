@@ -37,14 +37,14 @@ export default {
       return `week(${this.dimension})`
     },
     grouping: function() {
-      const getter = this.getDimensionExtractor;
+      const getter = this.dimensionExtractor;
       const grouping = (d) => Number(weekFormat(getter(d)))
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const getter = this.getDimensionExtractor;
-      const reducer = this.getReducerExtractor;
+      const getter = this.dimensionExtractor;
+      const reducer = this.reducerExtractor;
       const date_cnt = {};
 
       return dim.group().reduce(
@@ -74,7 +74,7 @@ export default {
     },
     accessor: function() {
       const dim = this.grouping;
-      const dimExtractor = this.getDimensionExtractor;
+      const dimExtractor = this.dimensionExtractor;
       const methodNames = [
         'sundays', 'mondays', 'tuesdays', 'wednesdays', 'thursdays', 'fridays', 'saturdays'
       ];

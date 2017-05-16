@@ -133,21 +133,21 @@ export default {
       return _extractName(this.reduce)
     },
     firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     data: function() {
-      return (this.getDimensionExtractor)(this.firstRow)
+      return (this.dimensionExtractor)(this.firstRow)
     },
     dataKeys: function() {
       return Object.keys(this.data)
     },
-    getDimensionExtractor: function() {
+    dimensionExtractor: function() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey)
       return generateExtractor(this.dimensionName)
     },
     grouping: function() {
-      const getter = this.getDimensionExtractor;
+      const getter = this.dimensionExtractor;
       const xInterval = this.getTimeInterval(this.seriesKey)
       const yInterval = this.getTimeInterval(this.xKey)
       if((xInterval && yInterval) === null) {

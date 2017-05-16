@@ -24,7 +24,7 @@ export default {
   computed: {
     combinedGroup: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const _reducer = this.getReducerExtractor;
+      const _reducer = this.reducerExtractor;
       const lineNum = _reducer(dim.top(1)[0]).length;
       const groups = [];
       for (let i=0; i<lineNum; i++) {
@@ -37,7 +37,7 @@ export default {
   mounted: function() {
     const chart = this.chart;
     const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-    const _reducer = this.getReducerExtractor;
+    const _reducer = this.reducerExtractor;
     const lineNum = _reducer(dim.top(1)[0]).length;
 
     chart

@@ -65,7 +65,7 @@ export default {
   computed: {
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.getReducerExtractor;
+      const reducer = this.reducerExtractor;
       return this.filteredGroup(dim.group().reduceSum(reducer))
     },
     rowNums: function() {

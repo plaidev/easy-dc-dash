@@ -89,27 +89,27 @@ export default {
       return this.dimension
     },
     data: function() {
-      return (this.getReducerExtractor)(this.firstRow)
+      return (this.reducerExtractor)(this.firstRow)
     },
     dataKeys: function() {
       return Object.keys(this.data)
     },
     firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     grouping: function() {
-      const getter = this.getDimensionExtractor;
+      const getter = this.dimensionExtractor;
       const interval = this.getTimeInterval()
       const grouping = (interval === null) ? getter : (d) => interval(getter(d))
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
       const dimensionKey = this.extractDimensionName(this.dimension);
       return dim.group().reduce(
         (p, v) => {
-          const vals = this.getReducerExtractor(v);
+          const vals = this.reducerExtractor(v);
           this.dataKeys.forEach((k) => {
             if (typeof(p[k]) === 'string' && typeof(vals[k]) === 'string') {
               p[k] = vals[k]
@@ -125,7 +125,7 @@ export default {
           return p;
         },
         (p, v) => {
-          const vals = this.getReducerExtractor(v);
+          const vals = this.reducerExtractor(v);
           this.dataKeys.forEach((k) => {
             if (k === dimensionKey) {
               p[k] = vals[k]
