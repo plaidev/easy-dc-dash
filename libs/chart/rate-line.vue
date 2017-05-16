@@ -6,7 +6,6 @@
 
 <script lang='js'>
 
-import d3 from "d3"
 import Base from './_base'
 import Store from '../store'
 

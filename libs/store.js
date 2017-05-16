@@ -1,4 +1,3 @@
-import d3 from 'd3'
 import crossfilter from 'crossfilter'
 import dc from 'dc'
 import {downloadCSV} from './utils/blob-csv'
