@@ -60,24 +60,24 @@ export default {
     dimensionName: function() {
       return this.dimension
     },
-    getDimensionExtractor: function() {
+    dimensionExtractor: function() {
       const extractor = generateExtractor(this.dimension)
       // TODO: dateに限ってしまっているのを修正、unitを作るか...
       return (d) => {
         const v = extractor(d)
         if (this.scale === 'time') {
-          v[0] = ymdFormat(v[0])
+          v[0] = d3.time.format('%Y-%m-%d')(v[0])
         }
         return _joinkey(v)
       }
     },
     grouping: function() {
-      const grouping = this.getDimensionExtractor
+      const grouping = this.dimensionExtractor
       return Store.registerDimension(this.dimensionName, grouping, {dataest: this.dataset});
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.getReducerExtractor;
+      const reducer = this.reducerExtractor;
       const group = dim.group().reduceSum(reducer)
       return this.stackSecond(group);
     },

@@ -50,7 +50,7 @@ export default {
   computed: {
     reducer: function() {
       const cf = Store.getCf({dataset: this.dataset});
-      const reducer = this.getReducerExtractor;
+      const reducer = this.reducerExtractor;
       return cf.groupAll().reduceSum(reducer)
     },
     _boxLabel: function() {

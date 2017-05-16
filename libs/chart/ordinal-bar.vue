@@ -44,7 +44,7 @@ export default {
   computed: {
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.getReducerExtractor;
+      const reducer = this.reducerExtractor;
       const group = dim.group().reduceSum(reducer)
       return this.removeEmptyRows ? removeEmptyBins(group) : group
     }

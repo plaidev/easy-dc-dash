@@ -85,21 +85,21 @@ export default {
       return this.dimensionKeys[1]
     },
     firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     data: function() {
-      return (this.getDimensionExtractor)(this.firstRow)
+      return (this.dimensionExtractor)(this.firstRow)
     },
     dataKeys: function() {
       return Object.keys(this.data)
     },
-    getDimensionExtractor: function() {
+    dimensionExtractor: function() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey)
       return generateExtractor(this.dimensionName)
     },
     grouping: function() {
-      const getter = this.getDimensionExtractor;
+      const getter = this.dimensionExtractor;
       const xInterval = this.getTimeInterval(this.xKey)
       const yInterval = this.getTimeInterval(this.yKey)
       if((xInterval && yInterval) === null) {

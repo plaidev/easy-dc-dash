@@ -60,7 +60,7 @@ export default {
 
   computed: {
     grouping: function() {
-      const getter = this.getDimensionExtractor;
+      const getter = this.dimensionExtractor;
       const grouping = (d) => {
         return getter(d).join(',');
       }

@@ -59,14 +59,14 @@ export function compose(Left, Right) {
           parent: () => {
             return this.chart;
           },
-          getReducerExtractor: () => {
+          reducerExtractor: () => {
             return (d) => {
               const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[0];
             }
           },
           labels: () => {
-            const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+            const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
             const _reducer = generateExtractor(this.reduce);
             const lines = _reducer(dim.top(1)[0])[0]
             const lineNum = Array.isArray(lines) ? lines.length : 1
@@ -85,14 +85,14 @@ export function compose(Left, Right) {
           parent: () => {
             return this.chart;
           },
-          getReducerExtractor: () => {
+          reducerExtractor: () => {
             return (d) => {
               const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[1];
             }
           },
           labels: () => {
-            const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+            const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
             const _reducer = generateExtractor(this.reduce);
             const lines = _reducer(dim.top(1)[0])[1]
             const lineNum = Array.isArray(lines) ? lines.length : 1

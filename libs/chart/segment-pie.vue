@@ -47,7 +47,7 @@ export default {
     },
     grouping: function() {
       const segments = this.segmentIds;
-      const getter = this.getDimensionExtractor;
+      const getter = this.dimensionExtractor;
       const grouping = (d) => {
         const segs = getter(d).split(',');
         const idx = segments.findIndex((segment) => {
