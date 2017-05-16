@@ -77,7 +77,6 @@ export default {
       default: 750
     },
     labels: {
-      type: Object
     }
   },
 
@@ -137,18 +136,30 @@ export default {
       if(!this.useLegend || !this.legend) return
 
       const {
+        indexLabel = false,
         reverseOrder = false
       } = options;
+
       const l = this.legend
-      this.chart.legend(dc.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal))
-      if(reverseOrder) reverseLegendOrder(this.chart)
-      l
+      
+      const legendInstance = dc.legend()
+        .x(l.x).y(l.y)
+        .gap(l.gap).legendWidth(l.width)
+        .itemWidth(l.itemWidth).itemHeight(l.itemHeight)
+        .horizontal(l.horizontal)
         .legendText((d, i) => {
-          return Store.getLabel(d.key, {
-            dataset: this.dataset,
-            chartName: this.id
-          })
+          const k = indexLabel? i: d.name;
+          return this.getLabel(k)
         })
+
+      this.chart.legend(legendInstance)
+      if(reverseOrder) reverseLegendOrder(this.chart)
+    },
+    getLabel: function(key) {
+      return Store.getLabel(key, {
+        dataset: this.dataset,
+        chartName: this.id
+      })
     }
   },
 
@@ -160,10 +171,15 @@ export default {
       {volume: this.volume}
     );
 
-    if (this.labels) Store.setLabels(this.labels, {
-      dataset: this.dataset,
-      chartName: this.id
-    })
+    if (this.labels) {
+      let labels = this.labels;
+      if (typeof this.labels === 'string' || this.labels instanceof String) 
+        labels = this.labels.split(',');
+      Store.setLabels(labels, {
+        dataset: this.dataset,
+        chartName: this.id
+      })
+    }
 
     if (this.grouping) chart.dimension(this.grouping);
     if (this.reducer) chart.group(this.reducer);
@@ -172,26 +188,20 @@ export default {
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
     if (this.margins) chart.margins(this.margins);
-    if(this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
-    if(this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
+    if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
+    if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
 
     chart
       .renderLabel(this.renderLabel)
       .renderTitle(this.renderTitle)
       .transitionDuration(this.transitionDuration)
       .label((d) => {
-        return Store.getLabel(d.key, {
-          dataset: this.dataset,
-          chartName: this.id
-        })
+        return this.getLabel(d.key)
       })
       .filterPrinter((filters) => {
         return filters
           .map((filter) => {
-            return Store.getLabel(dc.printers.filter(filter), {
-              dataset: this.dataset,
-              chartName: this.id
-            })
+            return this.getLabel(dc.printers.filter(filter))
           })
           .join(', ')
       })
