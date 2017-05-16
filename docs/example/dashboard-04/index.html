@@ -35,10 +35,10 @@
   <body>
   <easy-dc-dataset
     csv='./dataset.csv'
-    date-fields="session_end_date"
-    int-fields="pv,bounce_cnt,session_cnt"
-    date-format="%Y-%m-%dT%H:%M:%S.%LZ"
-    labels="セグメント,PV,UU,セッション数,セッション毎平均PV数,セッション毎平均時間,離脱数,コンバーション数,最終PV時間"
+    date-fields="date"
+    date-format="%Y-%m-%dT00:00:00.000Z"
+    int-fields="talk_count,send_count,reply_count"
+    labels=""
   ></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
@@ -50,84 +50,51 @@
   </div>
 
   <div class="container" style="display: flex; flex-direction: row;">
-    <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
-    <!-- Object segments -->
-    <segment-pie
-      dimention='d.segments'
-      :segments="referrerSegments"
-      reduce='d.pv'></segment-pie>
-
-    <!-- Array and label Object -->
-    <segment-pie
-      dimension='d.segments'
-      :segments="deviceSegments"
-      :labels="deviceSegmentLabels"
-      reduce='d.pv'
-    ></segment-pie>
-
-    <!-- segment CSV and Store.setLabels({...}) -->
-    <segment-pie
-      dimension='d.segments'
-      segments='5890222d3601a6183b69f15a,5890222d3601a6183b69f15c,5890222d3601a6183b69f15e,5890222d3601a6183b69f160'
-      reduce='d.pv'
-    ></segment-pie>
+    <week-row dimension='d.date' reduce='d.send_count'></week-row>
   </div>
-
   <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
-    <!--
-      :width=160
-      :height=120
-      :theme-color="#2AAB9F"
-      :fill-box-color=true
-      :font-size=48
-    -->
     <number-display
-      reduce="d.pv"
+      reduce="d.talk_count"
     ></number-display>
     <number-display
-      reduce="d.uu"
-      :fill-box-color=false
+      reduce="d.reply_count"
     ></number-display>
     <number-display
-      reduce="d.session_cnt"
+      reduce="d.send_count"
     ></number-display>
   </div>
 
   <div class="container" style="display: flex; flex-direction: column;">
-    <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
-    <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
+    <stack-and-rate scale='time' dimension='d.date' volume='date-volume-chart' reduce='[[d.talk_count, d.send_count, d.reply_count], {count: d.talk_count, value: d.send_count}]' :labels="['a','b','c','d']"></stack-and-rate>
+    <volume-chart scale='time' dimension='d.date' reduce='d.talk_count' id='date-volume-chart'></volume-chart>
   </div>
 
   <div>
     <list-row
-       dimension='d.name'
-       reduce='d.pv'
-       :descending=true
-       :height=400
-       :width=200
-       :gap=10
-       :rows=6
+      dimension='d.name'
+      reduce='d.talk_count'
+      :descending=true
+      :height=600
+      :width=200
+      :gap=10
+      :rows=20
     ></list-row>
   </div>
 
   <div class="container" style="display: flex; flex-direction: row;">
     <ordinal-bar
       dimension='d.name'
-      reduce='d.pv'
+      reduce='d.talk_count'
       :width=300
       :height=250
-      x-axis-label='name'
-      y-axis-label='pv'
     ></ordinal-bar>
     <stacked-bar
       dimension='d.name'
-      reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
-      :labels="['PV', 'セッション数', '離脱数']"
+      reduce='[d.talk_count, d.send_count, d.reply_count]'
+      :labels="['送返信', '送信', '返信']"
       :width=300
       :height=250
       :legend-x=250
-      x-axis-label='name'
-      y-axis-label='pv + session_cnt + bounce_cnt'
     ></stacked-bar>
   </div>
 
@@ -136,41 +103,36 @@
             -> x-axis(name), y-axis(meta)
     -->
     <filter-stacked-bar
-      dimension="[d.name, d.meta]"
-      reduce='d.pv'
+      dimension="[d.name, d.app_name]"
+      reduce='d.talk_count'
       :width=300
       :height=250
       :legend-x=250
       :legend-y=0
     ></filter-stacked-bar>
-    <segment-pie
-      dimension='d.name'
-      segments="a,b,c,d,e,f"
-      reduce='d.pv'></segment-pie>
   </div>
 
   <div class="container">
     <heat-map
-      date-key='d.session_end_date'
+      date-key='d.date'
       dimension="[year, month]"
-      reduce="d.pv"
+      reduce="d.talk_count"
       x-axis-format="年"
       y-axis-format="月"
       :y-border-radius=3
     ></heat-map>
     <series
-      date-key="d.session_end_date"
+      date-key="d.date"
       dimension="[year, month]"
-      reduce="d.session_cnt"
+      reduce="d.send_count"
     ></series>
     <bubble
-      dimension="d.session_end_date"
+      dimension="d.date"
       time-scale="month"
       time-format="%Y-%m"
-      reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+      reduce="{x: d.talk_count, y: d.reply_count, radius: d.send_count}"
       :width=990
       :height=250
-      radius-format='%'
       :max-bubble-relative-size=0.1
     ></bubble>
   </div>
@@ -178,7 +140,7 @@
   <div class="container">
     <data-table
       dimension="d.name"
-      columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+      columns="{name: d.name, talk_count: d.talk_count, send_count: d.send_count, reply_count: d.reply_count}"
       sort-by="name"
       order="descending"
       :width=1000
@@ -197,6 +159,7 @@
 // デザインをカスタマイズしたコンポーネント
 
 const _ymdFormat = d3.time.format('%Y-%m-%d')
+
 const DateVolumeChart = {
   extends: EasyDC.Chart.Base,
   mounted: function() {
@@ -230,20 +193,6 @@ const DateVolumeChart = {
 }
 
 
-//--------------------
-
-EasyDC.Store.setLabels({
-  bounce_rate: '離脱率',
-
-  // repeat segment labels
-  "5890222d3601a6183b69f15a": '初回来訪',
-  "5890222d3601a6183b69f15c": '来訪2回',
-  "5890222d3601a6183b69f15e": '来訪3回',
-  "5890222d3601a6183b69f160": '来訪4回以上'
-})
-
-
-//-------------------
 // メイン
 
 function run(content) {
@@ -257,26 +206,6 @@ function run(content) {
       'volume-chart': DateVolumeChart // 追加のコンポーネント
     }
   });
-}
-
-const deviceSegments = {
-  "5890222d3601a6183b69f151": 'SP',
-  "5890222d3601a6183b69f14f": 'PC'
-}
-
-const bindData = {
-  deviceSegments: Object.keys(deviceSegments),
-  deviceSegmentLabels: deviceSegments,
-  referrerSegments: {
-    "5890222d3601a6183b69f153": 'search',
-    "58902caa7048639a5ba53b17": 'newspicks',
-    "58902d517048639a5ba53b26": 'facebook',
-    "58902e8c7048639a5ba53b3a": 'twitter'
-  }
-}
-
-for (let k in bindData) {
-  EasyDC.Store.setBindData(k, bindData[k])
 }
 
 EasyDC.run(true, run)

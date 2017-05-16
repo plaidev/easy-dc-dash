@@ -20,15 +20,11 @@ export default {
       type: String,
       default: 'barChart'
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
+    elasticX: {
+      type: Boolean,
+      default: true
     },
-    yAxisLabel: {
-      type: String,
-      default: ''
-    },
-    renderLabel: {
+    elasticY: {
       type: Boolean,
       default: true
     },
@@ -57,15 +53,12 @@ export default {
     const chart = this.chart;
 
     chart
-      .xAxisLabel(this.xAxisLabel)
-      .yAxisLabel(this.yAxisLabel)
       .barPadding(this.barPadding)
       .outerPadding(this.outerPadding)
-      .renderLabel(this.renderLabel)
       .x(d3.scale.ordinal())
       .xUnits(dc.units.ordinal)
-      .elasticX(true)
-      .elasticY(true)
+      .elasticX(this.elasticX)
+      .elasticY(this.elasticY)
     return chart.render();
   }
 }

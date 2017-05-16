@@ -1,7 +1,13 @@
 import Vue from 'vue/dist/vue.js'
 import d3 from 'd3'
 import Base from './_base'
+import Store from '../store'
 import {generateExtractor} from '../utils'
+
+function _extractReduceKey(reduce) {
+  // FIXME: Replace if there is a better way
+  return reduce.match(/d.\w*/g)
+}
 
 export function compose(Left, Right) {
 
@@ -22,9 +28,27 @@ export function compose(Left, Right) {
       height: {
         type: Number,
         default: 240
+      },
+      legend: {
+        type: Object,
+        default: () => {return {x:0, y:0, gap: 5, width: 800, itemWidth: 70, itemHeight: 12, horizontal: true}}
+      },
+      labels: {
+        type: Array
+      },
+      elasticY: {
+        type: Boolean,
+        default: true
       }
     },
-
+    computed: {
+      _labels: function() {
+        return this.labels || this.reduceKeys
+      },
+      reduceKeys: function() {
+        return _extractReduceKey(this.reduce)
+      }
+    },
     mounted: function() {
 
       // TODO: refactoring.
@@ -40,6 +64,13 @@ export function compose(Left, Right) {
               const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[0];
             }
+          },
+          labels: () => {
+            const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+            const _reducer = generateExtractor(this.reduce);
+            const lines = _reducer(dim.top(1)[0])[0]
+            const lineNum = Array.isArray(lines) ? lines.length : 1
+            return this._labels.slice(0, lineNum)
           }
         },
         propsData: {
@@ -59,6 +90,13 @@ export function compose(Left, Right) {
               const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[1];
             }
+          },
+          labels: () => {
+            const dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, {dataset: this.dataset});
+            const _reducer = generateExtractor(this.reduce);
+            const lines = _reducer(dim.top(1)[0])[1]
+            const lineNum = Array.isArray(lines) ? lines.length : 1
+            return this._labels.slice(-lineNum)
           }
         },
         propsData: {
@@ -74,13 +112,6 @@ export function compose(Left, Right) {
       const composite = this.chart;
 
       composite
-        .width(this.width).height(this.height)
-        .margins({
-          top: 30,
-          right: 50,
-          bottom: 25,
-          left: 40
-        })
         .dimension(dim)
         .compose([
           Left.mounted.apply(leftInstance),
@@ -89,8 +120,9 @@ export function compose(Left, Right) {
         .renderHorizontalGridLines(true)
         .brushOn(false)
         //.rightY(scale.linear().domain([0, 1]))
-        .elasticY(true)
+        .elasticY(this.elasticY)
 
+      this.applyLegend()
       return composite.render();
     },
 
