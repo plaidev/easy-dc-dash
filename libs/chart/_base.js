@@ -6,7 +6,10 @@ import ResetButton from './components/reset-button.vue'
 
 export default {
 
-  template: `<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>`,
+  template: `<div class="krt-dc-component" :id="id">
+              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+              <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
+            </div>`,
 
   components: {
     'reset-button': ResetButton
@@ -28,6 +31,10 @@ export default {
     chartType: {
       type: String,
       default: 'barChart'
+    },
+    title: {
+      type: String,
+      default: ''
     },
     volume: {
       type: String
