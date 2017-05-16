@@ -56,6 +56,7 @@ export default {
 
   mounted: function() {
     return this.chart
+      .group(this.reducer, this.labels[0])
       .render()
   }
 }

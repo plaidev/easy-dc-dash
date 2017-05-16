@@ -1,6 +1,9 @@
 <template>
-  <div class="krt-dc-number-display nd-box" :id="id">
-    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel"></span>
+  <div v-if="fillBoxColor" class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', background: themeColor, fontSize: fontSize+'px'}">
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: (fontSize/4)+'px'}"></span>
+  </div>
+  <div v-else class="krt-dc-number-display nd-box" :id="id" :style="{width: width+'px', height: height+'px', color: themeColor,  borderColor: themeColor, fontSize: fontSize+'px'}">
+    <span class="nd-box-label" v-text="this.boxLabel || this._boxLabel" :style="{fontSize: (fontSize/4)+'px'}"></span>
   </div>
 </template>
 
@@ -15,6 +18,26 @@ export default {
     chartType: {
       type: String,
       default: 'numberDisplay'
+    },
+    width: {
+      type: Number,
+      default: 160
+    },
+    height: {
+      type: Number,
+      default: 120
+    },
+    themeColor: {
+      type: String,
+      default:'#2AAB9F'
+    },
+    fillBoxColor: {
+      type: Boolean,
+      default: true
+    },
+    fontSize: {
+      type: Number,
+      default: 48
     },
     boxLabel: {
       type: String
@@ -54,18 +77,12 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 160px;
-  height: 120px;
-  background: #2AAB9F;
   border-radius: 5px;
-}
-.nd-box .nd-box-label {
+  border: 2px solid;
+  background: #FFF;
   color: #FFF;
-  font-size: 12px;
 }
 .nd-box span.number-display {
-  color: #FFF;
   font-weight: bold;
-  font-size: 48px;
 }
 </style>

@@ -65,13 +65,41 @@ export function generateExtractor (rule) {
   return // else
 }
 
+// https://github.com/dc-js/dc.js/wiki/FAQ#combine-groups
+export function combineGroups(sourceGroups) {
+  return {
+    all: () => {
+      const alls = sourceGroups.map((g) => g.all());
+      // Object型がkeyになっている場合に ret.push({key: k, value:gm[k]}) のkeyがString型になってしまうのを防ぐ
+      // ret.push({key: _keys[k], value: gm[k]});
+      const _keys = {};
+      const gm = {};
+      alls.forEach((a, i) => {
+        a.forEach((b) => {
+          if(!gm[b.key]) {
+            gm[b.key] = new Array(sourceGroups.length);
+            for(let j=0; j<sourceGroups.length; ++j)
+              gm[b.key][j] = 0;
+          }
+          gm[b.key][i] = b.value;
+          for(let k in gm)
+            if(!_keys[k])
+              _keys[k] = b.key;
+        });
+      });
+      const ret = [];
+      for(let k in gm)
+        ret.push({key: _keys[k], value: gm[k]});
+      return ret;
+    }
+  };
+}
+
 // https://github.com/dc-js/dc.js/wiki/FAQ#remove-empty-bins
 export function removeEmptyBins(sourceGroup) {
   return {
-    all:function () {
-      return sourceGroup.all().filter(function(d) {
-        return d.value != 0;
-      });
+    all: () => {
+      return sourceGroup.all().filter((d) => d.value != 0)
     }
   };
 }

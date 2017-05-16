@@ -10,7 +10,8 @@ import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {generateExtractor, reverseLegendOrder} from '../utils'
+import {generateExtractor} from '../utils'
+import {ymdFormat} from '../utils/time-format'
 
 function _joinkey(k) {
   return k.join(',')
@@ -38,49 +39,21 @@ export default {
       type: Number,
       default: 600
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
-    },
-    yAxisLabel: {
-      type: String,
-      default: ''
-    },
     removeEmptyRows: {
       type: Boolean,
       default: true
     },
-    renderLabel: {
+    elasticX: {
       type: Boolean,
       default: true
     },
-    useLegend: {
+    elasticY: {
       type: Boolean,
       default: true
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: false
+    legend: {
+      type: Object,
+      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     }
   },
   computed: {
@@ -93,7 +66,7 @@ export default {
       return (d) => {
         const v = extractor(d)
         if (this.scale === 'time') {
-          v[0] = d3.time.format('%Y-%m-%d')(v[0])
+          v[0] = ymdFormat(v[0])
         }
         return _joinkey(v)
       }
@@ -141,7 +114,7 @@ export default {
             return Object.keys(m).map((k) => {
                 let key = k
                 if (this.scale === 'time')
-                  key = d3.time.format('%Y-%m-%d').parse(k)
+                  key = ymdFormat.parse(k)
                 return {key, value: m[k]};
             });
           }
@@ -173,10 +146,8 @@ export default {
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
       .brushOn(false)
       .clipPadding(10)
-      .mouseZoomable(false)
-      .elasticX(true)
-      .elasticY(true)
-      .renderLabel(this.renderLabel)
+      .elasticX(this.elasticX)
+      .elasticY(this.elasticY)
       .mouseZoomable(false)
       .title(function(d) {
         return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
@@ -191,21 +162,18 @@ export default {
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
           let x = d.x;
-          if (this.scale === 'time') x = d3.time.format('%Y-%m-%d')(x)
+          if (this.scale === 'time') x = ymdFormat(x)
           const key = _multikey(x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
           let x = d.x;
-          if (this.scale === 'time') x = d3.time.format('%Y-%m-%d')(x)
+          if (this.scale === 'time') x = ymdFormat(x)
           chart.filter(_multikey(x, d.layer));
           dc.redrawAll();
         })
     });
-    if(this.useLegend) {
-      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal))
-      reverseLegendOrder(chart)
-    }
+    this.applyLegend({reverseOrder:true})
     return chart.render();
   }
 }

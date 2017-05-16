@@ -1,7 +1,7 @@
 import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
-import {generateDomId, generateExtractor} from '../utils'
+import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import ResetButton from './components/reset-button.vue'
 
 export default {
@@ -43,6 +43,38 @@ export default {
     },
     margins: {
       type: Object
+    },
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    xAxisFormat: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisFormat: {
+      type: String,
+      default: ''
+    },
+    renderLabel: {
+      type: Boolean,
+      default: true
+    },
+    renderTitle: {
+      type: Boolean,
+      default: true
+    },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    transitionDuration: {
+      type: Number,
+      default: 1500
     }
   },
 
@@ -98,6 +130,16 @@ export default {
       this.chart.filterAll();
       dc.redrawAll();
     },
+    applyLegend: function(options={}) {
+      if(!this.useLegend || !this.legend) return
+
+      const {
+        reverseOrder = false
+      } = options;
+      const l = this.legend
+      this.chart.legend(dc.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal))
+      if(reverseOrder) reverseLegendOrder(this.chart)
+    }
   },
 
   mounted: function() {
@@ -115,6 +157,10 @@ export default {
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
     if (this.margins) chart.margins(this.margins);
+    if(this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
+    if(this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
+    chart.renderLabel(this.renderLabel)
+    chart.renderTitle(this.renderTitle)
 
     this.chart = chart;
 

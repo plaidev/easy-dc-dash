@@ -30,10 +30,6 @@ export default {
       type: String,
       default: 'linear'
     },
-    elasticX: {
-      type: Boolean,
-      default: true
-    },
     // display limit
     rows: {
       type: Number
@@ -90,19 +86,16 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const spaceForScales = 70;
 
     chart
-      .height(this.height)
       .x(d3.scale[this.scale]())
       .gap(this.gap)
-      .elasticX(this.elasticX)
+      .elasticX(true)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
       .titleLabelOffsetX(this.titleLabelOffsetX)
       .renderTitleLabel(this.renderTitleLabel)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
-      .fixedBarHeight((this.height - (this.rowNums + 1) * this.gap - spaceForScales) / this.rowNums)
       .ordering((d) => this.descending ? -d.value : d.value)
     return chart.render();
   }

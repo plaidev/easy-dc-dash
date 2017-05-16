@@ -11,6 +11,7 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
 function _splitkey(k) {
   return k.split(',')
@@ -18,17 +19,6 @@ function _splitkey(k) {
 function _extractName(dimension) {
   // FIXME: Replace if there is a better way
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
-}
-
-const TIME_FORMAT = {
-  year: d3.time.format('%Y'),
-  month: d3.time.format('%m'),
-  day: d3.time.format('%d')
-}
-const TIME_INTERVALS = {
-  year: d3.time.year,
-  month: d3.time.month,
-  day: d3.time.day
 }
 
 export default {
@@ -128,7 +118,7 @@ export default {
     },
     getTimeFormat: function(key) {
       if(this.dateKey === undefined) return null
-      else return TIME_FORMAT[key]
+      else return TIME_FORMATS[key]
     },
     formatKey: function(axis, key) {
       const xTimeFormat = this.getTimeFormat(this.xKey)
@@ -160,6 +150,15 @@ export default {
                  + `${yAxisLabel}: ${this.formatKey('y', d.key[1])}${this.yAxisFormat}\n`
                  + `${valueLabel}: ${+d.value}${this.valueFormat}`
       })
+    if(this.dateKey) {
+      chart.filterPrinter(filters => {
+        return filters.map(filter => {
+          return filter.map((f,i) => {
+            return `${TIME_FORMATS[this.dimensionKeys[i]](f)}`
+          }).join(',').replace(/\,/, '-')
+        });
+      });
+    }
     return chart.render();
   }
 }
