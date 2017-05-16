@@ -27,7 +27,10 @@ export function generateExtractor (rule) {
   }
 
   else if (typeof rule === "string" || rule instanceof String) {
-    if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
+    if (/^[a-zA-Z0-9\$_]+$/g.test(rule)) {
+      return (d) => d[rule]
+    }
+    else if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
       const keys = rule.split(',')
       return (d) => {
         const row = []
