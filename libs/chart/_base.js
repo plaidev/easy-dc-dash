@@ -75,6 +75,9 @@ export default {
     transitionDuration: {
       type: Number,
       default: 750
+    },
+    labels: {
+      type: Object
     }
   },
 
@@ -139,6 +142,13 @@ export default {
       const l = this.legend
       this.chart.legend(dc.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal))
       if(reverseOrder) reverseLegendOrder(this.chart)
+      l
+        .legendText((d, i) => {
+          return Store.getLabel(d.key, {
+            dataset: this.dataset,
+            chartName: this.id
+          })
+        })
     }
   },
 
@@ -149,6 +159,11 @@ export default {
       this.chartType,
       {volume: this.volume}
     );
+
+    if (this.labels) Store.setLabels(this.labels, {
+      dataset: this.dataset,
+      chartName: this.id
+    })
 
     if (this.grouping) chart.dimension(this.grouping);
     if (this.reducer) chart.group(this.reducer);
@@ -164,6 +179,22 @@ export default {
       .renderLabel(this.renderLabel)
       .renderTitle(this.renderTitle)
       .transitionDuration(this.transitionDuration)
+      .label((d) => {
+        return Store.getLabel(d.key, {
+          dataset: this.dataset,
+          chartName: this.id
+        })
+      })
+      .filterPrinter((filters) => {
+        return filters
+          .map((filter) => {
+            return Store.getLabel(dc.printers.filter(filter), {
+              dataset: this.dataset,
+              chartName: this.id
+            })
+          })
+          .join(', ')
+      })
 
     this.chart = chart;
 
