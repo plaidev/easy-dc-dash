@@ -180,11 +180,12 @@
   <div class="container">
     <data-table
       dimension="d.name"
-      columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+      columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
       sort-by="name"
       order="descending"
+      link-column='link'
       :width=1000
-      :height=1000
+      :height=300
       :use-table-paging=true
       :offset=0
       :rows-per-page=5

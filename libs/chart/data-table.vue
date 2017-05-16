@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
     <div class="table-paging" v-if="this.useTablePaging">
       <!--
         {{this.filteredDataSize}} selected out of {{this.cfSize}} records
@@ -83,6 +84,9 @@ export default {
       type: String,
       default: 'descending'
     },
+    linkColumn: {
+      type: String
+    },
     // chart style
     width: {
       type: Number,
@@ -152,6 +156,9 @@ export default {
     },
     isLastPage: function() {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
+    },
+    linkColNum: function() {
+      return this.colsKeys.findIndex((elem) => this.linkColumn === elem)
     },
     grouping: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
@@ -236,11 +243,19 @@ export default {
       })
       return schema
     },
+    setFormat: function(d, key, idx) {
+      if(this.linkColumn && this.linkColNum === idx) return this.insertLink(d.value[key])
+      else if(d.value[key].per) return d.value[key].per
+      else return d.value[key]
+    },
+    insertLink: function(v) {
+      return `<a href=${v}>${v}</a>`
+    },
     setColumnSettings: function() {
-      this.colsKeys.forEach((k) => {
+      this.colsKeys.forEach((k, i) => {
         this.columnSettings.push({
           label: Store.getLabel(k, {dataset: this.dataset}),
-          format: (d) => d.value[k].per !== undefined ? d.value[k].per : d.value[k]
+          format: (d) => this.setFormat(d, k, i)
         })
       })
     },
