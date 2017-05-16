@@ -70,26 +70,20 @@ export default {
     }
   },
 
-  methods: {
-    segmentLabel: function(segmentId) {
-      let label = segmentId;
-      if (this.labels && segmentId in this.labels) {
-        label = this.labels[segmentId]
-      }
-      else {
-        label = Store.getLabel(segmentId)
-      }
-      return label;
-    }
-  },
-
   mounted: function() {
     const chart = this.chart;
-    chart
-      .label((d) => this.segmentLabel(d.key))
+
     if(this.useLegend) {
-      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal))
+      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal)
+        .legendText((d, i) => {
+          return Store.getLabel(d.name, {
+            dataset: this.dataset,
+            chartName: this.id
+          })
+        })
+      )
     }
+
     return chart.render()
   },
 
