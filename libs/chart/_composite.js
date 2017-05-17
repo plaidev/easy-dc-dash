@@ -3,10 +3,13 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
-function _extractReduceKey(reduce) {
-  // FIXME: Replace if there is a better way
-  return reduce.match(/d.\w*/g)
+function _getReduceKeySuper(Component) {
+  if (!Component) return;
+  if (Component.methods && Component.methods.getReduceKey)
+    return Component.methods.getReduceKey
+  return _getReduceKeySuper(Component.extends)
 }
+
 
 export function compose(Left, Right) {
 
@@ -35,20 +38,9 @@ export function compose(Left, Right) {
         type: Object,
         default: () => {return {x:0, y:0, gap: 5, width: 800, itemWidth: 70, itemHeight: 12, horizontal: true}}
       },
-      labels: {
-        type: Array
-      },
       elasticY: {
         type: Boolean,
         default: true
-      }
-    },
-    computed: {
-      _labels: function() {
-        return this.labels || this.reduceKeys
-      },
-      reduceKeys: function() {
-        return _extractReduceKey(this.reduce)
       }
     },
     mounted: function() {
@@ -66,18 +58,19 @@ export function compose(Left, Right) {
               const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[0];
             }
-          },
-          labels: () => {
-            const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-            const _reducer = generateExtractor(this.reduce);
-            const lines = _reducer(dim.top(1)[0])[0]
-            const lineNum = Array.isArray(lines) ? lines.length : 1
-            return this._labels.slice(0, lineNum)
+          }
+        },
+        methods: {
+          getReduceKey: function(idx) {
+            const s = _getReduceKeySuper(Right);
+            if (!s) return 'l'
+            return 'l:' + s.apply(this, [idx])
           }
         },
         propsData: {
           dimension: this.dimension,
-          scale: this.scale
+          scale: this.scale,
+          legend: false
         }
       })
 
@@ -93,17 +86,18 @@ export function compose(Left, Right) {
               return _reducer(d)[1];
             }
           },
-          labels: () => {
-            const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-            const _reducer = generateExtractor(this.reduce);
-            const lines = _reducer(dim.top(1)[0])[1]
-            const lineNum = Array.isArray(lines) ? lines.length : 1
-            return this._labels.slice(-lineNum)
+        },
+        methods: {
+          getReduceKey: function(idx) {
+            const s = _getReduceKeySuper(Right);
+            if (!s) return 'r'
+            return 'r:' + s.apply(this, [idx])
           }
         },
         propsData: {
           dimension: this.dimension,
-          scale: this.scale
+          scale: this.scale,
+          legend: false
         }
       })
 
@@ -123,8 +117,15 @@ export function compose(Left, Right) {
         .brushOn(false)
         //.rightY(scale.linear().domain([0, 1]))
         .elasticY(this.elasticY)
+        .shareColors(true)
 
-      this.applyLegend()
+      // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
+      // legendは配列として受け取り、番号で割り当てる
+      // lines系なら問題ない。
+      // TODO: bubbleチャート系だとうまくいかないかもしれない。
+      // legendの利用有無も含めて再検討必要
+      this.applyLegend({indexLabel: true})
+
       return composite.render();
     },
 
