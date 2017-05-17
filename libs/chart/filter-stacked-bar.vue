@@ -1,7 +1,7 @@
 <template>
   <div class="krt-dc-filter-stacked" :id="id">
-    <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
 </template>
 

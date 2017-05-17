@@ -1,7 +1,7 @@
 <template>
   <div class="krt-dc-series-chart" :id="id">
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
 </template>
 
