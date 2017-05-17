@@ -46,10 +46,10 @@ export default {
     const lineNum = _reducer(dim.top(1)[0]).length;
 
     chart
-      .group(this.combinedGroup, Store.getLabel(0), (d) => d.value[0])
+      .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), (d) => d.value[0])
       .renderArea(true)
     for (let i=1; i<lineNum; i++) {
-      chart.stack(this.combinedGroup, Store.getLabel(i), (d) => d.value[i]);
+      chart.stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), (d) => d.value[i]);
     }
     return chart.render()
   }
