@@ -178,6 +178,7 @@ export default {
     },
     getReduceKey: function(idx) {
       return this.reduceKeys && this.reduceKeys[idx] || idx
+    },
     getTimeInterval: function(key) {
       if((this.dateKey || this.timeScale) === undefined) return null
       else return TIME_INTERVALS[key]
