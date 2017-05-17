@@ -102,6 +102,9 @@ export default {
       const reducer = this.reducerExtractor;
       return dim.group().reduceSum(reducer)
     },
+    reduceKeys: function() {
+      return []
+    },
     accessor: function() {
       return null;
     },
@@ -123,6 +126,7 @@ export default {
       else scale = d3.scale[this.scale];
 
       if (!scale) return null;
+
       return scale().domain([this.min, this.max])
     }
   },
@@ -160,6 +164,9 @@ export default {
         dataset: this.dataset,
         chartName: this.id
       })
+    },
+    getReduceKey: function(idx) {
+      return this.reduceKeys && this.reduceKeys[idx] || undefined
     }
   },
 
@@ -182,7 +189,9 @@ export default {
     }
 
     if (this.grouping) chart.dimension(this.grouping);
-    if (this.reducer) chart.group(this.reducer);
+    if (this.reducer) {
+      chart.group(this.reducer, this.getReduceKey(0));
+    }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
