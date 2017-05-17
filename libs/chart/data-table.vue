@@ -157,8 +157,8 @@ export default {
     isLastPage: function() {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
     },
-    linkColNum: function() {
-      return this.colsKeys.findIndex((elem) => this.linkColumn === elem)
+    linkCol: function() {
+      return this.linkColumn.replace(/\s/g, '').split(',')
     },
     grouping: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
@@ -243,8 +243,10 @@ export default {
       })
       return schema
     },
-    setFormat: function(d, key, idx) {
-      if(this.linkColumn && this.linkColNum === idx) return this.insertLink(d.value[key])
+    setFormat: function(d, key) {
+      if(this.linkCol && this.linkCol.includes(key)) {
+        return this.insertLink(d.value[key])
+      }
       else if(d.value[key].per) return d.value[key].per
       else return d.value[key]
     },
@@ -252,10 +254,10 @@ export default {
       return `<a href=${v}>${v}</a>`
     },
     setColumnSettings: function() {
-      this.colsKeys.forEach((k, i) => {
+      this.colsKeys.forEach((k) => {
         this.columnSettings.push({
           label: Store.getLabel(k, {dataset: this.dataset}),
-          format: (d) => this.setFormat(d, k, i)
+          format: (d) => this.setFormat(d, k)
         })
       })
     },
