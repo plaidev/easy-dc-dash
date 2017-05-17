@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
     <div class="table-paging" v-if="this.useTablePaging">
       <!--
         {{this.filteredDataSize}} selected out of {{this.cfSize}} records

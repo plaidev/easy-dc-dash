@@ -1,7 +1,7 @@
 <template>
   <div class="krt-dc-heat-map" :id="id">
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
 </template>
 
@@ -109,14 +109,6 @@ export default {
     }
   },
   methods: {
-    getTimeInterval: function(key) {
-      if(this.dateKey === undefined) return null
-      else return TIME_INTERVALS[key]
-    },
-    getTimeFormat: function(key) {
-      if(this.dateKey === undefined) return null
-      else return TIME_FORMATS[key]
-    },
     formatKey: function(axis, key) {
       const xTimeFormat = this.getTimeFormat(this.xKey)
       const yTimeFormat = this.getTimeFormat(this.yKey)
