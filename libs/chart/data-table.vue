@@ -294,6 +294,11 @@ export default {
         const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
         this.filteredDataSize = dim.groupAll().value()
         this.filteredSize = this.grouping.size()
+        const ths = d3.selectAll('th.dc-table-head')
+        ths
+          .append('i')
+            .attr('class', 'fa fa-sort')
+            .style('margin-left', '3px')
       })
     this.updateTable()
     return chart.render();
@@ -305,5 +310,8 @@ export default {
 .container {
   display: flex;
   flex-direction: column;
+}
+th.dc-table-head {
+  cursor: pointer
 }
 </style>
