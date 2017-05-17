@@ -86,6 +86,8 @@ export default {
     transitionDuration: {
       type: Number,
       default: 750
+    },
+    labels: {
     }
   },
 
@@ -111,6 +113,9 @@ export default {
       const reducer = this.reducerExtractor;
       return dim.group().reduceSum(reducer)
     },
+    reduceKeys: function() {
+      return []
+    },
     accessor: function() {
       return null;
     },
@@ -132,6 +137,7 @@ export default {
       else scale = d3.scale[this.scale];
 
       if (!scale) return null;
+
       return scale().domain([this.min, this.max])
     }
   },
@@ -145,12 +151,33 @@ export default {
       if(!this.useLegend || !this.legend) return
 
       const {
+        indexLabel = false,
         reverseOrder = false
       } = options;
+
       const l = this.legend
-      this.chart.legend(dc.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal))
+      
+      const legendInstance = dc.legend()
+        .x(l.x).y(l.y)
+        .gap(l.gap).legendWidth(l.width)
+        .itemWidth(l.itemWidth).itemHeight(l.itemHeight)
+        .horizontal(l.horizontal)
+        .legendText((d, i) => {
+          const k = indexLabel? i: d.name;
+          return this.getLabel(k)
+        })
+
+      this.chart.legend(legendInstance)
       if(reverseOrder) reverseLegendOrder(this.chart)
     },
+    getLabel: function(key) {
+      return Store.getLabel(key, {
+        dataset: this.dataset,
+        chartName: this.id
+      })
+    },
+    getReduceKey: function(idx) {
+      return this.reduceKeys && this.reduceKeys[idx] || idx
     getTimeInterval: function(key) {
       if((this.dateKey || this.timeScale) === undefined) return null
       else return TIME_INTERVALS[key]
@@ -170,20 +197,42 @@ export default {
       {volume: this.volume}
     );
 
+    if (this.labels) {
+      let labels = this.labels;
+      if (typeof this.labels === 'string' || this.labels instanceof String) 
+        labels = this.labels.split(',');
+      Store.setLabels(labels, {
+        dataset: this.dataset,
+        chartName: this.id
+      })
+    }
+
     if (this.grouping) chart.dimension(this.grouping);
-    if (this.reducer) chart.group(this.reducer);
+    if (this.reducer) {
+      chart.group(this.reducer, this.getReduceKey(0));
+    }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
     if (this.height) chart.height(this.height);
     if (this.margins) chart.margins(this.margins);
-    if(this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
-    if(this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
+    if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
+    if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
 
     chart
       .renderLabel(this.renderLabel)
       .renderTitle(this.renderTitle)
       .transitionDuration(this.transitionDuration)
+      .label((d) => {
+        return this.getLabel(d.key)
+      })
+      .filterPrinter((filters) => {
+        return filters
+          .map((filter) => {
+            return this.getLabel(dc.printers.filter(filter))
+          })
+          .join(', ')
+      })
 
     this.chart = chart;
 

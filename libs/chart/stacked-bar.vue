@@ -13,10 +13,6 @@ import Base from './_base'
 import Store from '../store'
 import {combineGroups, removeEmptyBins} from '../utils'
 
-function _extractReduceKey(reduce) {
-  // FIXME: Replace if there is a better way
-  return reduce.match(/d.\w*/g)
-}
 
 export default {
   extends: Base,
@@ -55,24 +51,26 @@ export default {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const _reducer = this.reducerExtractor;
       const groups = [];
-      for (let i=0; i<this._labels.length; i++) {
+      for (let i=0; i<this.reduceKeys.length; i++) {
         groups.push(dim.group().reduceSum((d) => _reducer(d)[i]))
       }
       return combineGroups(groups)
     },
-    reduceKeys: function() {
-      return _extractReduceKey(this.reduce)
+    reducer: function() {
+      return null; // disable default reducer
     },
-    _labels: function() {
-      return this.labels || this.reduceKeys
+    xScale: function() {
+      return Base.computed.xScale.apply(this) || d3.scale.ordinal()
+    },
+    reduceKeys: function() {
+      return Object.keys(this.reducerExtractor({}))
     }
   },
   mounted: function() {
     const chart = this.chart;
 
     chart
-      .group(this.combinedGroup, this._labels[0], (d) => d.value[0])
-      .x(d3.scale.ordinal())
+      .group(this.combinedGroup, this.getLabel(0), (d) => d.value[0])
       .xUnits(dc.units.ordinal)
       .brushOn(false)
       .clipPadding(10)
@@ -83,8 +81,8 @@ export default {
         return d.key + '[' + this.layer + ']: ' + d.value
       })
     // stack
-    for (let i=1; i<this._labels.length; i++) {
-      chart.stack(this.combinedGroup, this._labels[i], (d) => d.value[i]);
+    for (let i=1; i<this.reduceKeys.length; i++) {
+      chart.stack(this.combinedGroup, this.getLabel(i), (d) => d.value[i]);
     }
     this.applyLegend({reverseOrder:true})
     return chart.render();

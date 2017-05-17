@@ -17,7 +17,12 @@ class DashboardStore {
     this._dimensions = {
       default: {}
     };
-    this._labels = {};
+
+    this._labels = {
+      default: {
+        '': {} // チャート固有でない辞書
+      }
+    };
   }
 
   setBindData(name, data) {
@@ -114,25 +119,46 @@ class DashboardStore {
 
   setLabels(labels, options={}) {
     const {
-      dataset = 'default'
+      dataset = 'default',
+      chartName = ''
     } = options;
     if (!this._labels[dataset]) this._labels[dataset] = {};
-    Object.assign(this._labels[dataset], labels);
+    if (!this._labels[dataset][chartName]) this._labels[dataset][chartName] = {};
+    Object.assign(this._labels[dataset][chartName], labels);
   }
 
   getLabel(k, options={}) {
     const {
-      dataset = 'default'
+      dataset = 'default',
+      chartName = ''
     } = options;
-    return (this._labels[dataset][k] !== undefined) ? this._labels[dataset][k]: k;
+    const labels = this._labels[dataset];
+    if (!labels) return k;
+    // チャート固有の辞書からの探索
+    if (labels[chartName] && labels[chartName][k] !== undefined)
+      return labels[chartName][k];
+    // チャート固有でないの辞書からの探索
+    else if (labels[''] && labels[''][k] !== undefined)
+      return labels[''][k];
+    return k
   }
 
   getKeyByLabel(label, options={}) {
     const {
-      dataset = 'default'
+      dataset = 'default',
+      chartName = ''
     } = options;
-    for (let k in this._labels[dataset]) {
-      if (this._labels[dataset][k] === label) return k
+    // chart固有辞書からの探索
+    if (this._labels[dataset] && this._labels[dataset][chartName]) {
+      for (let k in this._labels[dataset][chartName]) {
+        if (this._labels[dataset][chartName][k] === label) return k
+      }
+    }
+    // chart固有でない辞書からの探索
+    if (this._labels[dataset] && this._labels[dataset]['']) {
+      for (let k in this._labels[dataset]['']) {
+        if (this._labels[dataset][''][k] === label) return k
+      }
     }
     return null
   }
