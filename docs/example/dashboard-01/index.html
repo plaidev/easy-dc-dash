@@ -94,7 +94,12 @@
   </div>
 
   <div class="container" style="display: flex; flex-direction: column;">
-    <stack-and-rate scale='time' dimension='d.session_end_date' volume='date-volume-chart' reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'></stack-and-rate>
+    <stack-and-rate
+      scale='time'
+      dimension='d.session_end_date'
+      volume='date-volume-chart'
+      reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
+      labels='直帰,非直帰,直帰率'></stack-and-rate>
     <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
   </div>
 
