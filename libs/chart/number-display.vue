@@ -52,7 +52,21 @@ export default {
     reducer: function() {
       const cf = Store.getCf({dataset: this.dataset});
       const reducer = this.reducerExtractor;
-      return cf.groupAll().reduceSum(reducer)
+      return cf.groupAll().reduce(
+        (p,v) => {
+          const val = reducer(v);
+          (typeof val === 'number' || val instanceof Number) ? p.value += val : p.value++
+          return p;
+        },
+        (p, v) => {
+          const val = reducer(v);
+          (typeof val === 'number' || val instanceof Number) ? p.value -= val : p.value--
+          return p;
+        },
+        () => {
+          return {value: 0}
+        }
+      )
     },
     _boxLabel: function() {
       return this.reduce.replace(/d\./, '')
@@ -62,7 +76,7 @@ export default {
     const chart = this.chart;
 
     chart
-      .valueAccessor((d) => d)
+      .valueAccessor((d) => d.value)
       .formatNumber(d3.format(this.numberFormat))
       .html({
         none:"<span class=\"number-display\">0</span>"

@@ -2,11 +2,15 @@ import d3 from 'd3'
 import dc from 'dc'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
+import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 import ResetButton from './components/reset-button.vue'
 
 export default {
 
-  template: `<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>`,
+  template: `<div class="krt-dc-component" :id="id">
+              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+              <div v-text="title" style="font-size:24px; text-align:center;"></div>
+            </div>`,
 
   components: {
     'reset-button': ResetButton
@@ -28,6 +32,13 @@ export default {
     chartType: {
       type: String,
       default: 'barChart'
+    },
+    title: {
+      type: String,
+      default: ''
+    },
+    dateKey: {
+      type: String
     },
     volume: {
       type: String
@@ -167,6 +178,14 @@ export default {
     },
     getReduceKey: function(idx) {
       return this.reduceKeys && this.reduceKeys[idx] || idx
+    getTimeInterval: function(key) {
+      if((this.dateKey || this.timeScale) === undefined) return null
+      else return TIME_INTERVALS[key]
+    },
+    getTimeFormat: function(key) {
+      if((this.dateKey || this.timeScale) === undefined) return null
+      else if (this.timeFormat) return d3.time.format(this.timeFormat)
+      else return TIME_FORMATS[key]
     }
   },
 

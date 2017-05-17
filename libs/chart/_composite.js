@@ -16,7 +16,10 @@ export function compose(Left, Right) {
   const ComponentObject = {
     extends: Base,
 
-    template: `<div class="krt-dc-composite" :id="id"></div>`,
+    template: `<div class="krt-dc-composite" :id="id">
+                <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+                <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
+              </div>`,
 
     props: {
       chartType: {
