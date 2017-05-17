@@ -1,6 +1,7 @@
 <template>
   <div class="krt-dc-week-row" :id="id">
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
 </template>
 
