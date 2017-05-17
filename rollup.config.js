@@ -5,7 +5,7 @@ import babel        from 'rollup-plugin-babel'
 import vue          from 'rollup-plugin-vue'
 import replace      from 'rollup-plugin-replace'
 import sourcemaps   from 'rollup-plugin-sourcemaps'
-
+import css          from 'rollup-plugin-css-only'
 
 export default {
 
@@ -41,6 +41,10 @@ export default {
     // .vueのrequire
     vue({
       css: true // dynamically inject
+    }),
+
+    css({
+      output: 'dist/bundle.css'
     }),
 
     // ES5に変換。.babelrcは別途用意済み
