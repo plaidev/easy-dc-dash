@@ -166,7 +166,7 @@ export default {
       })
     },
     getReduceKey: function(idx) {
-      return this.reduceKeys && this.reduceKeys[idx] || undefined
+      return this.reduceKeys && this.reduceKeys[idx] || idx
     }
   },
 
