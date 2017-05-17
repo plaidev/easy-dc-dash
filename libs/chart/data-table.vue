@@ -22,6 +22,8 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
+import 'bootstrap/dist/css/bootstrap.css'
+import 'font-awesome/css/font-awesome.css'
 
 function _valueAccessor(d, k) {
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
