@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
     <div class="table-paging" v-if="this.useTablePaging">
       <!--
         {{this.filteredDataSize}} selected out of {{this.cfSize}} records
@@ -83,6 +84,9 @@ export default {
       type: String,
       default: 'descending'
     },
+    linkColumn: {
+      type: String
+    },
     // chart style
     width: {
       type: Number,
@@ -152,6 +156,9 @@ export default {
     },
     isLastPage: function() {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
+    },
+    linkCol: function() {
+      return this.linkColumn.replace(/\s/g, '').split(',')
     },
     grouping: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
@@ -236,11 +243,21 @@ export default {
       })
       return schema
     },
+    setFormat: function(d, key) {
+      if(this.linkCol && this.linkCol.includes(key)) {
+        return this.insertLink(d.value[key])
+      }
+      else if(d.value[key].per) return d.value[key].per
+      else return d.value[key]
+    },
+    insertLink: function(v) {
+      return `<a href=${v}>${v}</a>`
+    },
     setColumnSettings: function() {
       this.colsKeys.forEach((k) => {
         this.columnSettings.push({
           label: Store.getLabel(k, {dataset: this.dataset}),
-          format: (d) => d.value[k].per !== undefined ? d.value[k].per : d.value[k]
+          format: (d) => this.setFormat(d, k)
         })
       })
     },
@@ -277,6 +294,11 @@ export default {
         const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
         this.filteredDataSize = dim.groupAll().value()
         this.filteredSize = this.grouping.size()
+        const ths = d3.selectAll('th.dc-table-head')
+        ths
+          .append('i')
+            .attr('class', 'fa fa-sort')
+            .style('margin-left', '3px')
       })
     this.updateTable()
     return chart.render();
@@ -288,5 +310,8 @@ export default {
 .container {
   display: flex;
   flex-direction: column;
+}
+th.dc-table-head {
+  cursor: pointer
 }
 </style>

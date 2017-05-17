@@ -1,6 +1,7 @@
 <template>
   <div class="krt-dc-bubble-chart" :id="id">
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
 </template>
 
@@ -100,7 +101,7 @@ export default {
     },
     grouping: function() {
       const getter = this.dimensionExtractor;
-      const interval = this.getTimeInterval()
+      const interval = this.getTimeInterval(this.timeScale)
       const grouping = (interval === null) ? getter : (d) => interval(getter(d))
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
@@ -171,19 +172,8 @@ export default {
         if(val.per != undefined) return val.per
       }
     },
-    getTimeInterval: function() {
-      if(this.timeScale === undefined) return null
-      else return TIME_INTERVALS[this.timeScale]
-    },
-    getTimeFormat: function() {
-      if (this.timeScale === undefined) return null
-      // If time-format passed from props, then use it
-      else if (this.timeFormat) return d3.time.format(this.timeFormat)
-      // else format is automatically selected (depending on time-scale)
-      else return TIME_FORMATS[this.timeScale]
-    },
     formatKey: function(key) {
-      const format = this.getTimeFormat()
+      const format = this.getTimeFormat(this.timeScale)
       if (format === null) return key
       return format(key)
     }
@@ -219,7 +209,7 @@ export default {
     chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
     if(this.timeScale) {
-      const format = this.timeFormat ? d3.time.format(this.timeFormat) : TIME_FORMATS[this.timeScale]
+      const format = this.getTimeFormat(this.timeScale)
       chart.filterPrinter(filters => {
         return filters.map(f => format(f));
       });
