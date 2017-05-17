@@ -3,11 +3,11 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
-function _getReduceKeysSuper(Component) {
+function _getReduceKeySuper(Component) {
   if (!Component) return;
-  if (Component.computed && Component.computed.reduceKeys)
-    return Component.computed.reduceKeys
-  return _getReduceKeysSuper(Component.extends)
+  if (Component.methods && Component.methods.getReduceKey)
+    return Component.methods.getReduceKey
+  return _getReduceKeySuper(Component.extends)
 }
 
 
@@ -55,11 +55,13 @@ export function compose(Left, Right) {
               const _reducer = generateExtractor(this.reduce);
               return _reducer(d)[0];
             }
-          },
-          reduceKeys: function(idx) {
-            const s = _getReduceKeysSuper(Left);
+          }
+        },
+        methods: {
+          getReduceKey: function(idx) {
+            const s = _getReduceKeySuper(Right);
             if (!s) return 'l'
-            return s.apply(this).map((k) => 'l:'+k);
+            return 'l:' + s.apply(this, [idx])
           }
         },
         propsData: {
@@ -81,10 +83,12 @@ export function compose(Left, Right) {
               return _reducer(d)[1];
             }
           },
-          reduceKeys: function(idx) {
-            const s = _getReduceKeysSuper(Right);
+        },
+        methods: {
+          getReduceKey: function(idx) {
+            const s = _getReduceKeySuper(Right);
             if (!s) return 'r'
-            return s.apply(this).map((k) => 'r:'+k);
+            return 'r:' + s.apply(this, [idx])
           }
         },
         propsData: {
