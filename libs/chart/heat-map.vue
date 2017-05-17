@@ -30,10 +30,6 @@ export default {
       type: String,
       default: 'heatMap'
     },
-    // TODO: Baseに移動する
-    dateKey: {
-      type: String
-    },
     dimension: {
       type: String
     },
