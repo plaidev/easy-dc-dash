@@ -4,7 +4,7 @@ import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
-import ResetButton from './components/reset-button.vue'
+import ResetButton from '../components/reset-button.vue'
 
 export default {
 
