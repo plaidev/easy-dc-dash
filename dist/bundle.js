@@ -8,6 +8,1474 @@ function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
+var crossfilter$2 = createCommonjsModule(function (module, exports) {
+  (function (exports) {
+    crossfilter.version = "1.3.12";
+    function crossfilter_identity(d) {
+      return d;
+    }
+    crossfilter.permute = permute;
+
+    function permute(array, index) {
+      for (var i = 0, n = index.length, copy = new Array(n); i < n; ++i) {
+        copy[i] = array[index[i]];
+      }
+      return copy;
+    }
+    var bisect = crossfilter.bisect = bisect_by(crossfilter_identity);
+
+    bisect.by = bisect_by;
+
+    function bisect_by(f) {
+
+      // Locate the insertion point for x in a to maintain sorted order. The
+      // arguments lo and hi may be used to specify a subset of the array which
+      // should be considered; by default the entire array is used. If x is already
+      // present in a, the insertion point will be before (to the left of) any
+      // existing entries. The return value is suitable for use as the first
+      // argument to `array.splice` assuming that a is already sorted.
+      //
+      // The returned insertion point i partitions the array a into two halves so
+      // that all v < x for v in a[lo:i] for the left side and all v >= x for v in
+      // a[i:hi] for the right side.
+      function bisectLeft(a, x, lo, hi) {
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (f(a[mid]) < x) lo = mid + 1;else hi = mid;
+        }
+        return lo;
+      }
+
+      // Similar to bisectLeft, but returns an insertion point which comes after (to
+      // the right of) any existing entries of x in a.
+      //
+      // The returned insertion point i partitions the array into two halves so that
+      // all v <= x for v in a[lo:i] for the left side and all v > x for v in
+      // a[i:hi] for the right side.
+      function bisectRight(a, x, lo, hi) {
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (x < f(a[mid])) hi = mid;else lo = mid + 1;
+        }
+        return lo;
+      }
+
+      bisectRight.right = bisectRight;
+      bisectRight.left = bisectLeft;
+      return bisectRight;
+    }
+    var heap = crossfilter.heap = heap_by(crossfilter_identity);
+
+    heap.by = heap_by;
+
+    function heap_by(f) {
+
+      // Builds a binary heap within the specified array a[lo:hi]. The heap has the
+      // property such that the parent a[lo+i] is always less than or equal to its
+      // two children: a[lo+2*i+1] and a[lo+2*i+2].
+      function heap(a, lo, hi) {
+        var n = hi - lo,
+            i = (n >>> 1) + 1;
+        while (--i > 0) {
+          sift(a, i, n, lo);
+        }return a;
+      }
+
+      // Sorts the specified array a[lo:hi] in descending order, assuming it is
+      // already a heap.
+      function sort(a, lo, hi) {
+        var n = hi - lo,
+            t;
+        while (--n > 0) {
+          t = a[lo], a[lo] = a[lo + n], a[lo + n] = t, sift(a, 1, n, lo);
+        }return a;
+      }
+
+      // Sifts the element a[lo+i-1] down the heap, where the heap is the contiguous
+      // slice of array a[lo:lo+n]. This method can also be used to update the heap
+      // incrementally, without incurring the full cost of reconstructing the heap.
+      function sift(a, i, n, lo) {
+        var d = a[--lo + i],
+            x = f(d),
+            child;
+        while ((child = i << 1) <= n) {
+          if (child < n && f(a[lo + child]) > f(a[lo + child + 1])) child++;
+          if (x <= f(a[lo + child])) break;
+          a[lo + i] = a[lo + child];
+          i = child;
+        }
+        a[lo + i] = d;
+      }
+
+      heap.sort = sort;
+      return heap;
+    }
+    var heapselect = crossfilter.heapselect = heapselect_by(crossfilter_identity);
+
+    heapselect.by = heapselect_by;
+
+    function heapselect_by(f) {
+      var heap = heap_by(f);
+
+      // Returns a new array containing the top k elements in the array a[lo:hi].
+      // The returned array is not sorted, but maintains the heap property. If k is
+      // greater than hi - lo, then fewer than k elements will be returned. The
+      // order of elements in a is unchanged by this operation.
+      function heapselect(a, lo, hi, k) {
+        var queue = new Array(k = Math.min(hi - lo, k)),
+            min,
+            i,
+            x,
+            d;
+
+        for (i = 0; i < k; ++i) {
+          queue[i] = a[lo++];
+        }heap(queue, 0, k);
+
+        if (lo < hi) {
+          min = f(queue[0]);
+          do {
+            if (x = f(d = a[lo]) > min) {
+              queue[0] = d;
+              min = f(heap(queue, 0, k)[0]);
+            }
+          } while (++lo < hi);
+        }
+
+        return queue;
+      }
+
+      return heapselect;
+    }
+    var insertionsort = crossfilter.insertionsort = insertionsort_by(crossfilter_identity);
+
+    insertionsort.by = insertionsort_by;
+
+    function insertionsort_by(f) {
+
+      function insertionsort(a, lo, hi) {
+        for (var i = lo + 1; i < hi; ++i) {
+          for (var j = i, t = a[i], x = f(t); j > lo && f(a[j - 1]) > x; --j) {
+            a[j] = a[j - 1];
+          }
+          a[j] = t;
+        }
+        return a;
+      }
+
+      return insertionsort;
+    }
+    // Algorithm designed by Vladimir Yaroslavskiy.
+    // Implementation based on the Dart project; see lib/dart/LICENSE for details.
+
+    var quicksort = crossfilter.quicksort = quicksort_by(crossfilter_identity);
+
+    quicksort.by = quicksort_by;
+
+    function quicksort_by(f) {
+      var insertionsort = insertionsort_by(f);
+
+      function sort(a, lo, hi) {
+        return (hi - lo < quicksort_sizeThreshold ? insertionsort : quicksort)(a, lo, hi);
+      }
+
+      function quicksort(a, lo, hi) {
+        // Compute the two pivots by looking at 5 elements.
+        var sixth = (hi - lo) / 6 | 0,
+            i1 = lo + sixth,
+            i5 = hi - 1 - sixth,
+            i3 = lo + hi - 1 >> 1,
+            // The midpoint.
+        i2 = i3 - sixth,
+            i4 = i3 + sixth;
+
+        var e1 = a[i1],
+            x1 = f(e1),
+            e2 = a[i2],
+            x2 = f(e2),
+            e3 = a[i3],
+            x3 = f(e3),
+            e4 = a[i4],
+            x4 = f(e4),
+            e5 = a[i5],
+            x5 = f(e5);
+
+        var t;
+
+        // Sort the selected 5 elements using a sorting network.
+        if (x1 > x2) t = e1, e1 = e2, e2 = t, t = x1, x1 = x2, x2 = t;
+        if (x4 > x5) t = e4, e4 = e5, e5 = t, t = x4, x4 = x5, x5 = t;
+        if (x1 > x3) t = e1, e1 = e3, e3 = t, t = x1, x1 = x3, x3 = t;
+        if (x2 > x3) t = e2, e2 = e3, e3 = t, t = x2, x2 = x3, x3 = t;
+        if (x1 > x4) t = e1, e1 = e4, e4 = t, t = x1, x1 = x4, x4 = t;
+        if (x3 > x4) t = e3, e3 = e4, e4 = t, t = x3, x3 = x4, x4 = t;
+        if (x2 > x5) t = e2, e2 = e5, e5 = t, t = x2, x2 = x5, x5 = t;
+        if (x2 > x3) t = e2, e2 = e3, e3 = t, t = x2, x2 = x3, x3 = t;
+        if (x4 > x5) t = e4, e4 = e5, e5 = t, t = x4, x4 = x5, x5 = t;
+
+        var pivot1 = e2,
+            pivotValue1 = x2,
+            pivot2 = e4,
+            pivotValue2 = x4;
+
+        // e2 and e4 have been saved in the pivot variables. They will be written
+        // back, once the partitioning is finished.
+        a[i1] = e1;
+        a[i2] = a[lo];
+        a[i3] = e3;
+        a[i4] = a[hi - 1];
+        a[i5] = e5;
+
+        var less = lo + 1,
+            // First element in the middle partition.
+        great = hi - 2; // Last element in the middle partition.
+
+        // Note that for value comparison, <, <=, >= and > coerce to a primitive via
+        // Object.prototype.valueOf; == and === do not, so in order to be consistent
+        // with natural order (such as for Date objects), we must do two compares.
+        var pivotsEqual = pivotValue1 <= pivotValue2 && pivotValue1 >= pivotValue2;
+        if (pivotsEqual) {
+
+          // Degenerated case where the partitioning becomes a dutch national flag
+          // problem.
+          //
+          // [ |  < pivot  | == pivot | unpartitioned | > pivot  | ]
+          //  ^             ^          ^             ^            ^
+          // left         less         k           great         right
+          //
+          // a[left] and a[right] are undefined and are filled after the
+          // partitioning.
+          //
+          // Invariants:
+          //   1) for x in ]left, less[ : x < pivot.
+          //   2) for x in [less, k[ : x == pivot.
+          //   3) for x in ]great, right[ : x > pivot.
+          for (var k = less; k <= great; ++k) {
+            var ek = a[k],
+                xk = f(ek);
+            if (xk < pivotValue1) {
+              if (k !== less) {
+                a[k] = a[less];
+                a[less] = ek;
+              }
+              ++less;
+            } else if (xk > pivotValue1) {
+
+              // Find the first element <= pivot in the range [k - 1, great] and
+              // put [:ek:] there. We know that such an element must exist:
+              // When k == less, then el3 (which is equal to pivot) lies in the
+              // interval. Otherwise a[k - 1] == pivot and the search stops at k-1.
+              // Note that in the latter case invariant 2 will be violated for a
+              // short amount of time. The invariant will be restored when the
+              // pivots are put into their final positions.
+              while (true) {
+                var greatValue = f(a[great]);
+                if (greatValue > pivotValue1) {
+                  great--;
+                  // This is the only location in the while-loop where a new
+                  // iteration is started.
+                  continue;
+                } else if (greatValue < pivotValue1) {
+                  // Triple exchange.
+                  a[k] = a[less];
+                  a[less++] = a[great];
+                  a[great--] = ek;
+                  break;
+                } else {
+                  a[k] = a[great];
+                  a[great--] = ek;
+                  // Note: if great < k then we will exit the outer loop and fix
+                  // invariant 2 (which we just violated).
+                  break;
+                }
+              }
+            }
+          }
+        } else {
+
+          // We partition the list into three parts:
+          //  1. < pivot1
+          //  2. >= pivot1 && <= pivot2
+          //  3. > pivot2
+          //
+          // During the loop we have:
+          // [ | < pivot1 | >= pivot1 && <= pivot2 | unpartitioned  | > pivot2  | ]
+          //  ^            ^                        ^              ^             ^
+          // left         less                     k              great        right
+          //
+          // a[left] and a[right] are undefined and are filled after the
+          // partitioning.
+          //
+          // Invariants:
+          //   1. for x in ]left, less[ : x < pivot1
+          //   2. for x in [less, k[ : pivot1 <= x && x <= pivot2
+          //   3. for x in ]great, right[ : x > pivot2
+          for (var k = less; k <= great; k++) {
+            var ek = a[k],
+                xk = f(ek);
+            if (xk < pivotValue1) {
+              if (k !== less) {
+                a[k] = a[less];
+                a[less] = ek;
+              }
+              ++less;
+            } else {
+              if (xk > pivotValue2) {
+                while (true) {
+                  var greatValue = f(a[great]);
+                  if (greatValue > pivotValue2) {
+                    great--;
+                    if (great < k) break;
+                    // This is the only location inside the loop where a new
+                    // iteration is started.
+                    continue;
+                  } else {
+                    // a[great] <= pivot2.
+                    if (greatValue < pivotValue1) {
+                      // Triple exchange.
+                      a[k] = a[less];
+                      a[less++] = a[great];
+                      a[great--] = ek;
+                    } else {
+                      // a[great] >= pivot1.
+                      a[k] = a[great];
+                      a[great--] = ek;
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Move pivots into their final positions.
+        // We shrunk the list from both sides (a[left] and a[right] have
+        // meaningless values in them) and now we move elements from the first
+        // and third partition into these locations so that we can store the
+        // pivots.
+        a[lo] = a[less - 1];
+        a[less - 1] = pivot1;
+        a[hi - 1] = a[great + 1];
+        a[great + 1] = pivot2;
+
+        // The list is now partitioned into three partitions:
+        // [ < pivot1   | >= pivot1 && <= pivot2   |  > pivot2   ]
+        //  ^            ^                        ^             ^
+        // left         less                     great        right
+
+        // Recursive descent. (Don't include the pivot values.)
+        sort(a, lo, less - 1);
+        sort(a, great + 2, hi);
+
+        if (pivotsEqual) {
+          // All elements in the second partition are equal to the pivot. No
+          // need to sort them.
+          return a;
+        }
+
+        // In theory it should be enough to call _doSort recursively on the second
+        // partition.
+        // The Android source however removes the pivot elements from the recursive
+        // call if the second partition is too large (more than 2/3 of the list).
+        if (less < i1 && great > i5) {
+          var lessValue, greatValue;
+          while ((lessValue = f(a[less])) <= pivotValue1 && lessValue >= pivotValue1) {
+            ++less;
+          }while ((greatValue = f(a[great])) <= pivotValue2 && greatValue >= pivotValue2) {
+            --great;
+          } // Copy paste of the previous 3-way partitioning with adaptions.
+          //
+          // We partition the list into three parts:
+          //  1. == pivot1
+          //  2. > pivot1 && < pivot2
+          //  3. == pivot2
+          //
+          // During the loop we have:
+          // [ == pivot1 | > pivot1 && < pivot2 | unpartitioned  | == pivot2 ]
+          //              ^                      ^              ^
+          //            less                     k              great
+          //
+          // Invariants:
+          //   1. for x in [ *, less[ : x == pivot1
+          //   2. for x in [less, k[ : pivot1 < x && x < pivot2
+          //   3. for x in ]great, * ] : x == pivot2
+          for (var k = less; k <= great; k++) {
+            var ek = a[k],
+                xk = f(ek);
+            if (xk <= pivotValue1 && xk >= pivotValue1) {
+              if (k !== less) {
+                a[k] = a[less];
+                a[less] = ek;
+              }
+              less++;
+            } else {
+              if (xk <= pivotValue2 && xk >= pivotValue2) {
+                while (true) {
+                  var greatValue = f(a[great]);
+                  if (greatValue <= pivotValue2 && greatValue >= pivotValue2) {
+                    great--;
+                    if (great < k) break;
+                    // This is the only location inside the loop where a new
+                    // iteration is started.
+                    continue;
+                  } else {
+                    // a[great] < pivot2.
+                    if (greatValue < pivotValue1) {
+                      // Triple exchange.
+                      a[k] = a[less];
+                      a[less++] = a[great];
+                      a[great--] = ek;
+                    } else {
+                      // a[great] == pivot1.
+                      a[k] = a[great];
+                      a[great--] = ek;
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // The second partition has now been cleared of pivot elements and looks
+        // as follows:
+        // [  *  |  > pivot1 && < pivot2  | * ]
+        //        ^                      ^
+        //       less                  great
+        // Sort the second partition using recursive descent.
+
+        // The second partition looks as follows:
+        // [  *  |  >= pivot1 && <= pivot2  | * ]
+        //        ^                        ^
+        //       less                    great
+        // Simply sort it by recursive descent.
+
+        return sort(a, less, great + 1);
+      }
+
+      return sort;
+    }
+
+    var quicksort_sizeThreshold = 32;
+    var crossfilter_array8 = crossfilter_arrayUntyped,
+        crossfilter_array16 = crossfilter_arrayUntyped,
+        crossfilter_array32 = crossfilter_arrayUntyped,
+        crossfilter_arrayLengthen = crossfilter_arrayLengthenUntyped,
+        crossfilter_arrayWiden = crossfilter_arrayWidenUntyped;
+
+    if (typeof Uint8Array !== "undefined") {
+      crossfilter_array8 = function crossfilter_array8(n) {
+        return new Uint8Array(n);
+      };
+      crossfilter_array16 = function crossfilter_array16(n) {
+        return new Uint16Array(n);
+      };
+      crossfilter_array32 = function crossfilter_array32(n) {
+        return new Uint32Array(n);
+      };
+
+      crossfilter_arrayLengthen = function crossfilter_arrayLengthen(array, length) {
+        if (array.length >= length) return array;
+        var copy = new array.constructor(length);
+        copy.set(array);
+        return copy;
+      };
+
+      crossfilter_arrayWiden = function crossfilter_arrayWiden(array, width) {
+        var copy;
+        switch (width) {
+          case 16:
+            copy = crossfilter_array16(array.length);break;
+          case 32:
+            copy = crossfilter_array32(array.length);break;
+          default:
+            throw new Error("invalid array width!");
+        }
+        copy.set(array);
+        return copy;
+      };
+    }
+
+    function crossfilter_arrayUntyped(n) {
+      var array = new Array(n),
+          i = -1;
+      while (++i < n) {
+        array[i] = 0;
+      }return array;
+    }
+
+    function crossfilter_arrayLengthenUntyped(array, length) {
+      var n = array.length;
+      while (n < length) {
+        array[n++] = 0;
+      }return array;
+    }
+
+    function crossfilter_arrayWidenUntyped(array, width) {
+      if (width > 32) throw new Error("invalid array width!");
+      return array;
+    }
+    function crossfilter_filterExact(bisect, value) {
+      return function (values) {
+        var n = values.length;
+        return [bisect.left(values, value, 0, n), bisect.right(values, value, 0, n)];
+      };
+    }
+
+    function crossfilter_filterRange(bisect, range) {
+      var min = range[0],
+          max = range[1];
+      return function (values) {
+        var n = values.length;
+        return [bisect.left(values, min, 0, n), bisect.left(values, max, 0, n)];
+      };
+    }
+
+    function crossfilter_filterAll(values) {
+      return [0, values.length];
+    }
+    function crossfilter_null() {
+      return null;
+    }
+    function crossfilter_zero() {
+      return 0;
+    }
+    function crossfilter_reduceIncrement(p) {
+      return p + 1;
+    }
+
+    function crossfilter_reduceDecrement(p) {
+      return p - 1;
+    }
+
+    function crossfilter_reduceAdd(f) {
+      return function (p, v) {
+        return p + +f(v);
+      };
+    }
+
+    function crossfilter_reduceSubtract(f) {
+      return function (p, v) {
+        return p - f(v);
+      };
+    }
+    exports.crossfilter = crossfilter;
+
+    function crossfilter() {
+      var crossfilter = {
+        add: add,
+        remove: removeData,
+        dimension: dimension,
+        groupAll: groupAll,
+        size: size
+      };
+
+      var data = [],
+          // the records
+      n = 0,
+          // the number of records; data.length
+      m = 0,
+          // a bit mask representing which dimensions are in use
+      M = 8,
+          // number of dimensions that can fit in `filters`
+      filters = crossfilter_array8(0),
+          // M bits per record; 1 is filtered out
+      filterListeners = [],
+          // when the filters change
+      dataListeners = [],
+          // when data is added
+      removeDataListeners = []; // when data is removed
+
+      // Adds the specified new records to this crossfilter.
+      function add(newData) {
+        var n0 = n,
+            n1 = newData.length;
+
+        // If there's actually new data to add…
+        // Merge the new data into the existing data.
+        // Lengthen the filter bitset to handle the new records.
+        // Notify listeners (dimensions and groups) that new data is available.
+        if (n1) {
+          data = data.concat(newData);
+          filters = crossfilter_arrayLengthen(filters, n += n1);
+          dataListeners.forEach(function (l) {
+            l(newData, n0, n1);
+          });
+        }
+
+        return crossfilter;
+      }
+
+      // Removes all records that match the current filters.
+      function removeData() {
+        var newIndex = crossfilter_index(n, n),
+            removed = [];
+        for (var i = 0, j = 0; i < n; ++i) {
+          if (filters[i]) newIndex[i] = j++;else removed.push(i);
+        }
+
+        // Remove all matching records from groups.
+        filterListeners.forEach(function (l) {
+          l(0, [], removed);
+        });
+
+        // Update indexes.
+        removeDataListeners.forEach(function (l) {
+          l(newIndex);
+        });
+
+        // Remove old filters and data by overwriting.
+        for (var i = 0, j = 0, k; i < n; ++i) {
+          if (k = filters[i]) {
+            if (i !== j) filters[j] = k, data[j] = data[i];
+            ++j;
+          }
+        }
+        data.length = j;
+        while (n > j) {
+          filters[--n] = 0;
+        }
+      }
+
+      // Adds a new dimension with the specified value accessor function.
+      function dimension(value) {
+        var dimension = {
+          filter: filter,
+          filterExact: filterExact,
+          filterRange: filterRange,
+          filterFunction: filterFunction,
+          filterAll: filterAll,
+          top: top,
+          bottom: bottom,
+          group: group,
+          groupAll: groupAll,
+          dispose: dispose,
+          remove: dispose // for backwards-compatibility
+        };
+
+        var one = ~m & -~m,
+            // lowest unset bit as mask, e.g., 00001000
+        zero = ~one,
+            // inverted one, e.g., 11110111
+        values,
+            // sorted, cached array
+        index,
+            // value rank ↦ object id
+        newValues,
+            // temporary array storing newly-added values
+        newIndex,
+            // temporary array storing newly-added index
+        sort = quicksort_by(function (i) {
+          return newValues[i];
+        }),
+            refilter = crossfilter_filterAll,
+            // for recomputing filter
+        refilterFunction,
+            // the custom filter function in use
+        indexListeners = [],
+            // when data is added
+        dimensionGroups = [],
+            lo0 = 0,
+            hi0 = 0;
+
+        // Updating a dimension is a two-stage process. First, we must update the
+        // associated filters for the newly-added records. Once all dimensions have
+        // updated their filters, the groups are notified to update.
+        dataListeners.unshift(preAdd);
+        dataListeners.push(postAdd);
+
+        removeDataListeners.push(removeData);
+
+        // Incorporate any existing data into this dimension, and make sure that the
+        // filter bitset is wide enough to handle the new dimension.
+        m |= one;
+        if (M >= 32 ? !one : m & -(1 << M)) {
+          filters = crossfilter_arrayWiden(filters, M <<= 1);
+        }
+        preAdd(data, 0, n);
+        postAdd(data, 0, n);
+
+        // Incorporates the specified new records into this dimension.
+        // This function is responsible for updating filters, values, and index.
+        function preAdd(newData, n0, n1) {
+
+          // Permute new values into natural order using a sorted index.
+          newValues = newData.map(value);
+          newIndex = sort(crossfilter_range(n1), 0, n1);
+          newValues = permute(newValues, newIndex);
+
+          // Bisect newValues to determine which new records are selected.
+          var bounds = refilter(newValues),
+              lo1 = bounds[0],
+              hi1 = bounds[1],
+              i;
+          if (refilterFunction) {
+            for (i = 0; i < n1; ++i) {
+              if (!refilterFunction(newValues[i], i)) filters[newIndex[i] + n0] |= one;
+            }
+          } else {
+            for (i = 0; i < lo1; ++i) {
+              filters[newIndex[i] + n0] |= one;
+            }for (i = hi1; i < n1; ++i) {
+              filters[newIndex[i] + n0] |= one;
+            }
+          }
+
+          // If this dimension previously had no data, then we don't need to do the
+          // more expensive merge operation; use the new values and index as-is.
+          if (!n0) {
+            values = newValues;
+            index = newIndex;
+            lo0 = lo1;
+            hi0 = hi1;
+            return;
+          }
+
+          var oldValues = values,
+              oldIndex = index,
+              i0 = 0,
+              i1 = 0;
+
+          // Otherwise, create new arrays into which to merge new and old.
+          values = new Array(n);
+          index = crossfilter_index(n, n);
+
+          // Merge the old and new sorted values, and old and new index.
+          for (i = 0; i0 < n0 && i1 < n1; ++i) {
+            if (oldValues[i0] < newValues[i1]) {
+              values[i] = oldValues[i0];
+              index[i] = oldIndex[i0++];
+            } else {
+              values[i] = newValues[i1];
+              index[i] = newIndex[i1++] + n0;
+            }
+          }
+
+          // Add any remaining old values.
+          for (; i0 < n0; ++i0, ++i) {
+            values[i] = oldValues[i0];
+            index[i] = oldIndex[i0];
+          }
+
+          // Add any remaining new values.
+          for (; i1 < n1; ++i1, ++i) {
+            values[i] = newValues[i1];
+            index[i] = newIndex[i1] + n0;
+          }
+
+          // Bisect again to recompute lo0 and hi0.
+          bounds = refilter(values), lo0 = bounds[0], hi0 = bounds[1];
+        }
+
+        // When all filters have updated, notify index listeners of the new values.
+        function postAdd(newData, n0, n1) {
+          indexListeners.forEach(function (l) {
+            l(newValues, newIndex, n0, n1);
+          });
+          newValues = newIndex = null;
+        }
+
+        function removeData(reIndex) {
+          for (var i = 0, j = 0, k; i < n; ++i) {
+            if (filters[k = index[i]]) {
+              if (i !== j) values[j] = values[i];
+              index[j] = reIndex[k];
+              ++j;
+            }
+          }
+          values.length = j;
+          while (j < n) {
+            index[j++] = 0;
+          } // Bisect again to recompute lo0 and hi0.
+          var bounds = refilter(values);
+          lo0 = bounds[0], hi0 = bounds[1];
+        }
+
+        // Updates the selected values based on the specified bounds [lo, hi].
+        // This implementation is used by all the public filter methods.
+        function filterIndexBounds(bounds) {
+          var lo1 = bounds[0],
+              hi1 = bounds[1];
+
+          if (refilterFunction) {
+            refilterFunction = null;
+            filterIndexFunction(function (d, i) {
+              return lo1 <= i && i < hi1;
+            });
+            lo0 = lo1;
+            hi0 = hi1;
+            return dimension;
+          }
+
+          var i,
+              j,
+              k,
+              added = [],
+              removed = [];
+
+          // Fast incremental update based on previous lo index.
+          if (lo1 < lo0) {
+            for (i = lo1, j = Math.min(lo0, hi1); i < j; ++i) {
+              filters[k = index[i]] ^= one;
+              added.push(k);
+            }
+          } else if (lo1 > lo0) {
+            for (i = lo0, j = Math.min(lo1, hi0); i < j; ++i) {
+              filters[k = index[i]] ^= one;
+              removed.push(k);
+            }
+          }
+
+          // Fast incremental update based on previous hi index.
+          if (hi1 > hi0) {
+            for (i = Math.max(lo1, hi0), j = hi1; i < j; ++i) {
+              filters[k = index[i]] ^= one;
+              added.push(k);
+            }
+          } else if (hi1 < hi0) {
+            for (i = Math.max(lo0, hi1), j = hi0; i < j; ++i) {
+              filters[k = index[i]] ^= one;
+              removed.push(k);
+            }
+          }
+
+          lo0 = lo1;
+          hi0 = hi1;
+          filterListeners.forEach(function (l) {
+            l(one, added, removed);
+          });
+          return dimension;
+        }
+
+        // Filters this dimension using the specified range, value, or null.
+        // If the range is null, this is equivalent to filterAll.
+        // If the range is an array, this is equivalent to filterRange.
+        // Otherwise, this is equivalent to filterExact.
+        function filter(range) {
+          return range == null ? filterAll() : Array.isArray(range) ? filterRange(range) : typeof range === "function" ? filterFunction(range) : filterExact(range);
+        }
+
+        // Filters this dimension to select the exact value.
+        function filterExact(value) {
+          return filterIndexBounds((refilter = crossfilter_filterExact(bisect, value))(values));
+        }
+
+        // Filters this dimension to select the specified range [lo, hi].
+        // The lower bound is inclusive, and the upper bound is exclusive.
+        function filterRange(range) {
+          return filterIndexBounds((refilter = crossfilter_filterRange(bisect, range))(values));
+        }
+
+        // Clears any filters on this dimension.
+        function filterAll() {
+          return filterIndexBounds((refilter = crossfilter_filterAll)(values));
+        }
+
+        // Filters this dimension using an arbitrary function.
+        function filterFunction(f) {
+          refilter = crossfilter_filterAll;
+
+          filterIndexFunction(refilterFunction = f);
+
+          lo0 = 0;
+          hi0 = n;
+
+          return dimension;
+        }
+
+        function filterIndexFunction(f) {
+          var i,
+              k,
+              x,
+              added = [],
+              removed = [];
+
+          for (i = 0; i < n; ++i) {
+            if (!(filters[k = index[i]] & one) ^ !!(x = f(values[i], i))) {
+              if (x) filters[k] &= zero, added.push(k);else filters[k] |= one, removed.push(k);
+            }
+          }
+          filterListeners.forEach(function (l) {
+            l(one, added, removed);
+          });
+        }
+
+        // Returns the top K selected records based on this dimension's order.
+        // Note: observes this dimension's filter, unlike group and groupAll.
+        function top(k) {
+          var array = [],
+              i = hi0,
+              j;
+
+          while (--i >= lo0 && k > 0) {
+            if (!filters[j = index[i]]) {
+              array.push(data[j]);
+              --k;
+            }
+          }
+
+          return array;
+        }
+
+        // Returns the bottom K selected records based on this dimension's order.
+        // Note: observes this dimension's filter, unlike group and groupAll.
+        function bottom(k) {
+          var array = [],
+              i = lo0,
+              j;
+
+          while (i < hi0 && k > 0) {
+            if (!filters[j = index[i]]) {
+              array.push(data[j]);
+              --k;
+            }
+            i++;
+          }
+
+          return array;
+        }
+
+        // Adds a new group to this dimension, using the specified key function.
+        function group(key) {
+          var group = {
+            top: top,
+            all: all,
+            reduce: reduce,
+            reduceCount: reduceCount,
+            reduceSum: reduceSum,
+            order: order,
+            orderNatural: orderNatural,
+            size: size,
+            dispose: dispose,
+            remove: dispose // for backwards-compatibility
+          };
+
+          // Ensure that this group will be removed when the dimension is removed.
+          dimensionGroups.push(group);
+
+          var groups,
+              // array of {key, value}
+          groupIndex,
+              // object id ↦ group id
+          groupWidth = 8,
+              groupCapacity = crossfilter_capacity(groupWidth),
+              k = 0,
+              // cardinality
+          select,
+              heap,
+              reduceAdd,
+              reduceRemove,
+              reduceInitial,
+              update = crossfilter_null,
+              reset = crossfilter_null,
+              resetNeeded = true,
+              groupAll = key === crossfilter_null;
+
+          if (arguments.length < 1) key = crossfilter_identity;
+
+          // The group listens to the crossfilter for when any dimension changes, so
+          // that it can update the associated reduce values. It must also listen to
+          // the parent dimension for when data is added, and compute new keys.
+          filterListeners.push(update);
+          indexListeners.push(add);
+          removeDataListeners.push(removeData);
+
+          // Incorporate any existing data into the grouping.
+          add(values, index, 0, n);
+
+          // Incorporates the specified new values into this group.
+          // This function is responsible for updating groups and groupIndex.
+          function add(newValues, newIndex, n0, n1) {
+            var oldGroups = groups,
+                reIndex = crossfilter_index(k, groupCapacity),
+                add = reduceAdd,
+                initial = reduceInitial,
+                k0 = k,
+                // old cardinality
+            i0 = 0,
+                // index of old group
+            i1 = 0,
+                // index of new record
+            j,
+                // object id
+            g0,
+                // old group
+            x0,
+                // old key
+            x1,
+                // new key
+            g,
+                // group to add
+            x; // key of group to add
+
+            // If a reset is needed, we don't need to update the reduce values.
+            if (resetNeeded) add = initial = crossfilter_null;
+
+            // Reset the new groups (k is a lower bound).
+            // Also, make sure that groupIndex exists and is long enough.
+            groups = new Array(k), k = 0;
+            groupIndex = k0 > 1 ? crossfilter_arrayLengthen(groupIndex, n) : crossfilter_index(n, groupCapacity);
+
+            // Get the first old key (x0 of g0), if it exists.
+            if (k0) x0 = (g0 = oldGroups[0]).key;
+
+            // Find the first new key (x1), skipping NaN keys.
+            while (i1 < n1 && !((x1 = key(newValues[i1])) >= x1)) {
+              ++i1;
+            } // While new keys remain…
+            while (i1 < n1) {
+
+              // Determine the lesser of the two current keys; new and old.
+              // If there are no old keys remaining, then always add the new key.
+              if (g0 && x0 <= x1) {
+                g = g0, x = x0;
+
+                // Record the new index of the old group.
+                reIndex[i0] = k;
+
+                // Retrieve the next old key.
+                if (g0 = oldGroups[++i0]) x0 = g0.key;
+              } else {
+                g = { key: x1, value: initial() }, x = x1;
+              }
+
+              // Add the lesser group.
+              groups[k] = g;
+
+              // Add any selected records belonging to the added group, while
+              // advancing the new key and populating the associated group index.
+              while (!(x1 > x)) {
+                groupIndex[j = newIndex[i1] + n0] = k;
+                if (!(filters[j] & zero)) g.value = add(g.value, data[j]);
+                if (++i1 >= n1) break;
+                x1 = key(newValues[i1]);
+              }
+
+              groupIncrement();
+            }
+
+            // Add any remaining old groups that were greater than all new keys.
+            // No incremental reduce is needed; these groups have no new records.
+            // Also record the new index of the old group.
+            while (i0 < k0) {
+              groups[reIndex[i0] = k] = oldGroups[i0++];
+              groupIncrement();
+            }
+
+            // If we added any new groups before any old groups,
+            // update the group index of all the old records.
+            if (k > i0) for (i0 = 0; i0 < n0; ++i0) {
+              groupIndex[i0] = reIndex[groupIndex[i0]];
+            }
+
+            // Modify the update and reset behavior based on the cardinality.
+            // If the cardinality is less than or equal to one, then the groupIndex
+            // is not needed. If the cardinality is zero, then there are no records
+            // and therefore no groups to update or reset. Note that we also must
+            // change the registered listener to point to the new method.
+            j = filterListeners.indexOf(update);
+            if (k > 1) {
+              update = updateMany;
+              reset = resetMany;
+            } else {
+              if (!k && groupAll) {
+                k = 1;
+                groups = [{ key: null, value: initial() }];
+              }
+              if (k === 1) {
+                update = updateOne;
+                reset = resetOne;
+              } else {
+                update = crossfilter_null;
+                reset = crossfilter_null;
+              }
+              groupIndex = null;
+            }
+            filterListeners[j] = update;
+
+            // Count the number of added groups,
+            // and widen the group index as needed.
+            function groupIncrement() {
+              if (++k === groupCapacity) {
+                reIndex = crossfilter_arrayWiden(reIndex, groupWidth <<= 1);
+                groupIndex = crossfilter_arrayWiden(groupIndex, groupWidth);
+                groupCapacity = crossfilter_capacity(groupWidth);
+              }
+            }
+          }
+
+          function removeData() {
+            if (k > 1) {
+              var oldK = k,
+                  oldGroups = groups,
+                  seenGroups = crossfilter_index(oldK, oldK);
+
+              // Filter out non-matches by copying matching group index entries to
+              // the beginning of the array.
+              for (var i = 0, j = 0; i < n; ++i) {
+                if (filters[i]) {
+                  seenGroups[groupIndex[j] = groupIndex[i]] = 1;
+                  ++j;
+                }
+              }
+
+              // Reassemble groups including only those groups that were referred
+              // to by matching group index entries.  Note the new group index in
+              // seenGroups.
+              groups = [], k = 0;
+              for (i = 0; i < oldK; ++i) {
+                if (seenGroups[i]) {
+                  seenGroups[i] = k++;
+                  groups.push(oldGroups[i]);
+                }
+              }
+
+              if (k > 1) {
+                // Reindex the group index using seenGroups to find the new index.
+                for (var i = 0; i < j; ++i) {
+                  groupIndex[i] = seenGroups[groupIndex[i]];
+                }
+              } else {
+                groupIndex = null;
+              }
+              filterListeners[filterListeners.indexOf(update)] = k > 1 ? (reset = resetMany, update = updateMany) : k === 1 ? (reset = resetOne, update = updateOne) : reset = update = crossfilter_null;
+            } else if (k === 1) {
+              if (groupAll) return;
+              for (var i = 0; i < n; ++i) {
+                if (filters[i]) return;
+              }groups = [], k = 0;
+              filterListeners[filterListeners.indexOf(update)] = update = reset = crossfilter_null;
+            }
+          }
+
+          // Reduces the specified selected or deselected records.
+          // This function is only used when the cardinality is greater than 1.
+          function updateMany(filterOne, added, removed) {
+            if (filterOne === one || resetNeeded) return;
+
+            var i, k, n, g;
+
+            // Add the added values.
+            for (i = 0, n = added.length; i < n; ++i) {
+              if (!(filters[k = added[i]] & zero)) {
+                g = groups[groupIndex[k]];
+                g.value = reduceAdd(g.value, data[k]);
+              }
+            }
+
+            // Remove the removed values.
+            for (i = 0, n = removed.length; i < n; ++i) {
+              if ((filters[k = removed[i]] & zero) === filterOne) {
+                g = groups[groupIndex[k]];
+                g.value = reduceRemove(g.value, data[k]);
+              }
+            }
+          }
+
+          // Reduces the specified selected or deselected records.
+          // This function is only used when the cardinality is 1.
+          function updateOne(filterOne, added, removed) {
+            if (filterOne === one || resetNeeded) return;
+
+            var i,
+                k,
+                n,
+                g = groups[0];
+
+            // Add the added values.
+            for (i = 0, n = added.length; i < n; ++i) {
+              if (!(filters[k = added[i]] & zero)) {
+                g.value = reduceAdd(g.value, data[k]);
+              }
+            }
+
+            // Remove the removed values.
+            for (i = 0, n = removed.length; i < n; ++i) {
+              if ((filters[k = removed[i]] & zero) === filterOne) {
+                g.value = reduceRemove(g.value, data[k]);
+              }
+            }
+          }
+
+          // Recomputes the group reduce values from scratch.
+          // This function is only used when the cardinality is greater than 1.
+          function resetMany() {
+            var i, g;
+
+            // Reset all group values.
+            for (i = 0; i < k; ++i) {
+              groups[i].value = reduceInitial();
+            }
+
+            // Add any selected records.
+            for (i = 0; i < n; ++i) {
+              if (!(filters[i] & zero)) {
+                g = groups[groupIndex[i]];
+                g.value = reduceAdd(g.value, data[i]);
+              }
+            }
+          }
+
+          // Recomputes the group reduce values from scratch.
+          // This function is only used when the cardinality is 1.
+          function resetOne() {
+            var i,
+                g = groups[0];
+
+            // Reset the singleton group values.
+            g.value = reduceInitial();
+
+            // Add any selected records.
+            for (i = 0; i < n; ++i) {
+              if (!(filters[i] & zero)) {
+                g.value = reduceAdd(g.value, data[i]);
+              }
+            }
+          }
+
+          // Returns the array of group values, in the dimension's natural order.
+          function all() {
+            if (resetNeeded) reset(), resetNeeded = false;
+            return groups;
+          }
+
+          // Returns a new array containing the top K group values, in reduce order.
+          function top(k) {
+            var top = select(all(), 0, groups.length, k);
+            return heap.sort(top, 0, top.length);
+          }
+
+          // Sets the reduce behavior for this group to use the specified functions.
+          // This method lazily recomputes the reduce values, waiting until needed.
+          function reduce(add, remove, initial) {
+            reduceAdd = add;
+            reduceRemove = remove;
+            reduceInitial = initial;
+            resetNeeded = true;
+            return group;
+          }
+
+          // A convenience method for reducing by count.
+          function reduceCount() {
+            return reduce(crossfilter_reduceIncrement, crossfilter_reduceDecrement, crossfilter_zero);
+          }
+
+          // A convenience method for reducing by sum(value).
+          function reduceSum(value) {
+            return reduce(crossfilter_reduceAdd(value), crossfilter_reduceSubtract(value), crossfilter_zero);
+          }
+
+          // Sets the reduce order, using the specified accessor.
+          function order(value) {
+            select = heapselect_by(valueOf);
+            heap = heap_by(valueOf);
+            function valueOf(d) {
+              return value(d.value);
+            }
+            return group;
+          }
+
+          // A convenience method for natural ordering by reduce value.
+          function orderNatural() {
+            return order(crossfilter_identity);
+          }
+
+          // Returns the cardinality of this group, irrespective of any filters.
+          function size() {
+            return k;
+          }
+
+          // Removes this group and associated event listeners.
+          function dispose() {
+            var i = filterListeners.indexOf(update);
+            if (i >= 0) filterListeners.splice(i, 1);
+            i = indexListeners.indexOf(add);
+            if (i >= 0) indexListeners.splice(i, 1);
+            i = removeDataListeners.indexOf(removeData);
+            if (i >= 0) removeDataListeners.splice(i, 1);
+            return group;
+          }
+
+          return reduceCount().orderNatural();
+        }
+
+        // A convenience function for generating a singleton group.
+        function groupAll() {
+          var g = group(crossfilter_null),
+              all = g.all;
+          delete g.all;
+          delete g.top;
+          delete g.order;
+          delete g.orderNatural;
+          delete g.size;
+          g.value = function () {
+            return all()[0].value;
+          };
+          return g;
+        }
+
+        // Removes this dimension and associated groups and event listeners.
+        function dispose() {
+          dimensionGroups.forEach(function (group) {
+            group.dispose();
+          });
+          var i = dataListeners.indexOf(preAdd);
+          if (i >= 0) dataListeners.splice(i, 1);
+          i = dataListeners.indexOf(postAdd);
+          if (i >= 0) dataListeners.splice(i, 1);
+          i = removeDataListeners.indexOf(removeData);
+          if (i >= 0) removeDataListeners.splice(i, 1);
+          m &= zero;
+          return filterAll();
+        }
+
+        return dimension;
+      }
+
+      // A convenience method for groupAll on a dummy dimension.
+      // This implementation can be optimized since it always has cardinality 1.
+      function groupAll() {
+        var group = {
+          reduce: reduce,
+          reduceCount: reduceCount,
+          reduceSum: reduceSum,
+          value: value,
+          dispose: dispose,
+          remove: dispose // for backwards-compatibility
+        };
+
+        var reduceValue,
+            reduceAdd,
+            reduceRemove,
+            reduceInitial,
+            resetNeeded = true;
+
+        // The group listens to the crossfilter for when any dimension changes, so
+        // that it can update the reduce value. It must also listen to the parent
+        // dimension for when data is added.
+        filterListeners.push(update);
+        dataListeners.push(add);
+
+        // For consistency; actually a no-op since resetNeeded is true.
+        add(data, 0, n);
+
+        // Incorporates the specified new values into this group.
+        function add(newData, n0) {
+          var i;
+
+          if (resetNeeded) return;
+
+          // Add the added values.
+          for (i = n0; i < n; ++i) {
+            if (!filters[i]) {
+              reduceValue = reduceAdd(reduceValue, data[i]);
+            }
+          }
+        }
+
+        // Reduces the specified selected or deselected records.
+        function update(filterOne, added, removed) {
+          var i, k, n;
+
+          if (resetNeeded) return;
+
+          // Add the added values.
+          for (i = 0, n = added.length; i < n; ++i) {
+            if (!filters[k = added[i]]) {
+              reduceValue = reduceAdd(reduceValue, data[k]);
+            }
+          }
+
+          // Remove the removed values.
+          for (i = 0, n = removed.length; i < n; ++i) {
+            if (filters[k = removed[i]] === filterOne) {
+              reduceValue = reduceRemove(reduceValue, data[k]);
+            }
+          }
+        }
+
+        // Recomputes the group reduce value from scratch.
+        function reset() {
+          var i;
+
+          reduceValue = reduceInitial();
+
+          for (i = 0; i < n; ++i) {
+            if (!filters[i]) {
+              reduceValue = reduceAdd(reduceValue, data[i]);
+            }
+          }
+        }
+
+        // Sets the reduce behavior for this group to use the specified functions.
+        // This method lazily recomputes the reduce value, waiting until needed.
+        function reduce(add, remove, initial) {
+          reduceAdd = add;
+          reduceRemove = remove;
+          reduceInitial = initial;
+          resetNeeded = true;
+          return group;
+        }
+
+        // A convenience method for reducing by count.
+        function reduceCount() {
+          return reduce(crossfilter_reduceIncrement, crossfilter_reduceDecrement, crossfilter_zero);
+        }
+
+        // A convenience method for reducing by sum(value).
+        function reduceSum(value) {
+          return reduce(crossfilter_reduceAdd(value), crossfilter_reduceSubtract(value), crossfilter_zero);
+        }
+
+        // Returns the computed reduce value.
+        function value() {
+          if (resetNeeded) reset(), resetNeeded = false;
+          return reduceValue;
+        }
+
+        // Removes this group and associated event listeners.
+        function dispose() {
+          var i = filterListeners.indexOf(update);
+          if (i >= 0) filterListeners.splice(i);
+          i = dataListeners.indexOf(add);
+          if (i >= 0) dataListeners.splice(i);
+          return group;
+        }
+
+        return reduceCount();
+      }
+
+      // Returns the number of records in this crossfilter, irrespective of any filters.
+      function size() {
+        return n;
+      }
+
+      return arguments.length ? add(arguments[0]) : crossfilter;
+    }
+
+    // Returns an array of size n, big enough to store ids up to m.
+    function crossfilter_index(n, m) {
+      return (m < 0x101 ? crossfilter_array8 : m < 0x10001 ? crossfilter_array16 : crossfilter_array32)(n);
+    }
+
+    // Constructs a new array of size n, with sequential values from 0 to n - 1.
+    function crossfilter_range(n) {
+      var range = crossfilter_index(n, n);
+      for (var i = -1; ++i < n;) {
+        range[i] = i;
+      }return range;
+    }
+
+    function crossfilter_capacity(w) {
+      return w === 8 ? 0x100 : w === 16 ? 0x10000 : 0x100000000;
+    }
+  })('object' !== 'undefined' && exports || commonjsGlobal);
+});
+
+var index$1 = crossfilter$2.crossfilter;
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
@@ -11208,1477 +12676,11 @@ var d3$1 = createCommonjsModule(function (module) {
     d3.xml = d3_xhrType(function (request) {
       return request.responseXML;
     });
+    console.log(typeof undefined === "function" && undefined.amd, 'object' === "object" && module.exports);
+
     if (typeof undefined === "function" && undefined.amd) this.d3 = d3, undefined(d3);else if ('object' === "object" && module.exports) module.exports = d3;else this.d3 = d3;
   }();
 });
-
-var crossfilter$2 = createCommonjsModule(function (module, exports) {
-  (function (exports) {
-    crossfilter.version = "1.3.12";
-    function crossfilter_identity(d) {
-      return d;
-    }
-    crossfilter.permute = permute;
-
-    function permute(array, index) {
-      for (var i = 0, n = index.length, copy = new Array(n); i < n; ++i) {
-        copy[i] = array[index[i]];
-      }
-      return copy;
-    }
-    var bisect = crossfilter.bisect = bisect_by(crossfilter_identity);
-
-    bisect.by = bisect_by;
-
-    function bisect_by(f) {
-
-      // Locate the insertion point for x in a to maintain sorted order. The
-      // arguments lo and hi may be used to specify a subset of the array which
-      // should be considered; by default the entire array is used. If x is already
-      // present in a, the insertion point will be before (to the left of) any
-      // existing entries. The return value is suitable for use as the first
-      // argument to `array.splice` assuming that a is already sorted.
-      //
-      // The returned insertion point i partitions the array a into two halves so
-      // that all v < x for v in a[lo:i] for the left side and all v >= x for v in
-      // a[i:hi] for the right side.
-      function bisectLeft(a, x, lo, hi) {
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (f(a[mid]) < x) lo = mid + 1;else hi = mid;
-        }
-        return lo;
-      }
-
-      // Similar to bisectLeft, but returns an insertion point which comes after (to
-      // the right of) any existing entries of x in a.
-      //
-      // The returned insertion point i partitions the array into two halves so that
-      // all v <= x for v in a[lo:i] for the left side and all v > x for v in
-      // a[i:hi] for the right side.
-      function bisectRight(a, x, lo, hi) {
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (x < f(a[mid])) hi = mid;else lo = mid + 1;
-        }
-        return lo;
-      }
-
-      bisectRight.right = bisectRight;
-      bisectRight.left = bisectLeft;
-      return bisectRight;
-    }
-    var heap = crossfilter.heap = heap_by(crossfilter_identity);
-
-    heap.by = heap_by;
-
-    function heap_by(f) {
-
-      // Builds a binary heap within the specified array a[lo:hi]. The heap has the
-      // property such that the parent a[lo+i] is always less than or equal to its
-      // two children: a[lo+2*i+1] and a[lo+2*i+2].
-      function heap(a, lo, hi) {
-        var n = hi - lo,
-            i = (n >>> 1) + 1;
-        while (--i > 0) {
-          sift(a, i, n, lo);
-        }return a;
-      }
-
-      // Sorts the specified array a[lo:hi] in descending order, assuming it is
-      // already a heap.
-      function sort(a, lo, hi) {
-        var n = hi - lo,
-            t;
-        while (--n > 0) {
-          t = a[lo], a[lo] = a[lo + n], a[lo + n] = t, sift(a, 1, n, lo);
-        }return a;
-      }
-
-      // Sifts the element a[lo+i-1] down the heap, where the heap is the contiguous
-      // slice of array a[lo:lo+n]. This method can also be used to update the heap
-      // incrementally, without incurring the full cost of reconstructing the heap.
-      function sift(a, i, n, lo) {
-        var d = a[--lo + i],
-            x = f(d),
-            child;
-        while ((child = i << 1) <= n) {
-          if (child < n && f(a[lo + child]) > f(a[lo + child + 1])) child++;
-          if (x <= f(a[lo + child])) break;
-          a[lo + i] = a[lo + child];
-          i = child;
-        }
-        a[lo + i] = d;
-      }
-
-      heap.sort = sort;
-      return heap;
-    }
-    var heapselect = crossfilter.heapselect = heapselect_by(crossfilter_identity);
-
-    heapselect.by = heapselect_by;
-
-    function heapselect_by(f) {
-      var heap = heap_by(f);
-
-      // Returns a new array containing the top k elements in the array a[lo:hi].
-      // The returned array is not sorted, but maintains the heap property. If k is
-      // greater than hi - lo, then fewer than k elements will be returned. The
-      // order of elements in a is unchanged by this operation.
-      function heapselect(a, lo, hi, k) {
-        var queue = new Array(k = Math.min(hi - lo, k)),
-            min,
-            i,
-            x,
-            d;
-
-        for (i = 0; i < k; ++i) {
-          queue[i] = a[lo++];
-        }heap(queue, 0, k);
-
-        if (lo < hi) {
-          min = f(queue[0]);
-          do {
-            if (x = f(d = a[lo]) > min) {
-              queue[0] = d;
-              min = f(heap(queue, 0, k)[0]);
-            }
-          } while (++lo < hi);
-        }
-
-        return queue;
-      }
-
-      return heapselect;
-    }
-    var insertionsort = crossfilter.insertionsort = insertionsort_by(crossfilter_identity);
-
-    insertionsort.by = insertionsort_by;
-
-    function insertionsort_by(f) {
-
-      function insertionsort(a, lo, hi) {
-        for (var i = lo + 1; i < hi; ++i) {
-          for (var j = i, t = a[i], x = f(t); j > lo && f(a[j - 1]) > x; --j) {
-            a[j] = a[j - 1];
-          }
-          a[j] = t;
-        }
-        return a;
-      }
-
-      return insertionsort;
-    }
-    // Algorithm designed by Vladimir Yaroslavskiy.
-    // Implementation based on the Dart project; see lib/dart/LICENSE for details.
-
-    var quicksort = crossfilter.quicksort = quicksort_by(crossfilter_identity);
-
-    quicksort.by = quicksort_by;
-
-    function quicksort_by(f) {
-      var insertionsort = insertionsort_by(f);
-
-      function sort(a, lo, hi) {
-        return (hi - lo < quicksort_sizeThreshold ? insertionsort : quicksort)(a, lo, hi);
-      }
-
-      function quicksort(a, lo, hi) {
-        // Compute the two pivots by looking at 5 elements.
-        var sixth = (hi - lo) / 6 | 0,
-            i1 = lo + sixth,
-            i5 = hi - 1 - sixth,
-            i3 = lo + hi - 1 >> 1,
-            // The midpoint.
-        i2 = i3 - sixth,
-            i4 = i3 + sixth;
-
-        var e1 = a[i1],
-            x1 = f(e1),
-            e2 = a[i2],
-            x2 = f(e2),
-            e3 = a[i3],
-            x3 = f(e3),
-            e4 = a[i4],
-            x4 = f(e4),
-            e5 = a[i5],
-            x5 = f(e5);
-
-        var t;
-
-        // Sort the selected 5 elements using a sorting network.
-        if (x1 > x2) t = e1, e1 = e2, e2 = t, t = x1, x1 = x2, x2 = t;
-        if (x4 > x5) t = e4, e4 = e5, e5 = t, t = x4, x4 = x5, x5 = t;
-        if (x1 > x3) t = e1, e1 = e3, e3 = t, t = x1, x1 = x3, x3 = t;
-        if (x2 > x3) t = e2, e2 = e3, e3 = t, t = x2, x2 = x3, x3 = t;
-        if (x1 > x4) t = e1, e1 = e4, e4 = t, t = x1, x1 = x4, x4 = t;
-        if (x3 > x4) t = e3, e3 = e4, e4 = t, t = x3, x3 = x4, x4 = t;
-        if (x2 > x5) t = e2, e2 = e5, e5 = t, t = x2, x2 = x5, x5 = t;
-        if (x2 > x3) t = e2, e2 = e3, e3 = t, t = x2, x2 = x3, x3 = t;
-        if (x4 > x5) t = e4, e4 = e5, e5 = t, t = x4, x4 = x5, x5 = t;
-
-        var pivot1 = e2,
-            pivotValue1 = x2,
-            pivot2 = e4,
-            pivotValue2 = x4;
-
-        // e2 and e4 have been saved in the pivot variables. They will be written
-        // back, once the partitioning is finished.
-        a[i1] = e1;
-        a[i2] = a[lo];
-        a[i3] = e3;
-        a[i4] = a[hi - 1];
-        a[i5] = e5;
-
-        var less = lo + 1,
-            // First element in the middle partition.
-        great = hi - 2; // Last element in the middle partition.
-
-        // Note that for value comparison, <, <=, >= and > coerce to a primitive via
-        // Object.prototype.valueOf; == and === do not, so in order to be consistent
-        // with natural order (such as for Date objects), we must do two compares.
-        var pivotsEqual = pivotValue1 <= pivotValue2 && pivotValue1 >= pivotValue2;
-        if (pivotsEqual) {
-
-          // Degenerated case where the partitioning becomes a dutch national flag
-          // problem.
-          //
-          // [ |  < pivot  | == pivot | unpartitioned | > pivot  | ]
-          //  ^             ^          ^             ^            ^
-          // left         less         k           great         right
-          //
-          // a[left] and a[right] are undefined and are filled after the
-          // partitioning.
-          //
-          // Invariants:
-          //   1) for x in ]left, less[ : x < pivot.
-          //   2) for x in [less, k[ : x == pivot.
-          //   3) for x in ]great, right[ : x > pivot.
-          for (var k = less; k <= great; ++k) {
-            var ek = a[k],
-                xk = f(ek);
-            if (xk < pivotValue1) {
-              if (k !== less) {
-                a[k] = a[less];
-                a[less] = ek;
-              }
-              ++less;
-            } else if (xk > pivotValue1) {
-
-              // Find the first element <= pivot in the range [k - 1, great] and
-              // put [:ek:] there. We know that such an element must exist:
-              // When k == less, then el3 (which is equal to pivot) lies in the
-              // interval. Otherwise a[k - 1] == pivot and the search stops at k-1.
-              // Note that in the latter case invariant 2 will be violated for a
-              // short amount of time. The invariant will be restored when the
-              // pivots are put into their final positions.
-              while (true) {
-                var greatValue = f(a[great]);
-                if (greatValue > pivotValue1) {
-                  great--;
-                  // This is the only location in the while-loop where a new
-                  // iteration is started.
-                  continue;
-                } else if (greatValue < pivotValue1) {
-                  // Triple exchange.
-                  a[k] = a[less];
-                  a[less++] = a[great];
-                  a[great--] = ek;
-                  break;
-                } else {
-                  a[k] = a[great];
-                  a[great--] = ek;
-                  // Note: if great < k then we will exit the outer loop and fix
-                  // invariant 2 (which we just violated).
-                  break;
-                }
-              }
-            }
-          }
-        } else {
-
-          // We partition the list into three parts:
-          //  1. < pivot1
-          //  2. >= pivot1 && <= pivot2
-          //  3. > pivot2
-          //
-          // During the loop we have:
-          // [ | < pivot1 | >= pivot1 && <= pivot2 | unpartitioned  | > pivot2  | ]
-          //  ^            ^                        ^              ^             ^
-          // left         less                     k              great        right
-          //
-          // a[left] and a[right] are undefined and are filled after the
-          // partitioning.
-          //
-          // Invariants:
-          //   1. for x in ]left, less[ : x < pivot1
-          //   2. for x in [less, k[ : pivot1 <= x && x <= pivot2
-          //   3. for x in ]great, right[ : x > pivot2
-          for (var k = less; k <= great; k++) {
-            var ek = a[k],
-                xk = f(ek);
-            if (xk < pivotValue1) {
-              if (k !== less) {
-                a[k] = a[less];
-                a[less] = ek;
-              }
-              ++less;
-            } else {
-              if (xk > pivotValue2) {
-                while (true) {
-                  var greatValue = f(a[great]);
-                  if (greatValue > pivotValue2) {
-                    great--;
-                    if (great < k) break;
-                    // This is the only location inside the loop where a new
-                    // iteration is started.
-                    continue;
-                  } else {
-                    // a[great] <= pivot2.
-                    if (greatValue < pivotValue1) {
-                      // Triple exchange.
-                      a[k] = a[less];
-                      a[less++] = a[great];
-                      a[great--] = ek;
-                    } else {
-                      // a[great] >= pivot1.
-                      a[k] = a[great];
-                      a[great--] = ek;
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        // Move pivots into their final positions.
-        // We shrunk the list from both sides (a[left] and a[right] have
-        // meaningless values in them) and now we move elements from the first
-        // and third partition into these locations so that we can store the
-        // pivots.
-        a[lo] = a[less - 1];
-        a[less - 1] = pivot1;
-        a[hi - 1] = a[great + 1];
-        a[great + 1] = pivot2;
-
-        // The list is now partitioned into three partitions:
-        // [ < pivot1   | >= pivot1 && <= pivot2   |  > pivot2   ]
-        //  ^            ^                        ^             ^
-        // left         less                     great        right
-
-        // Recursive descent. (Don't include the pivot values.)
-        sort(a, lo, less - 1);
-        sort(a, great + 2, hi);
-
-        if (pivotsEqual) {
-          // All elements in the second partition are equal to the pivot. No
-          // need to sort them.
-          return a;
-        }
-
-        // In theory it should be enough to call _doSort recursively on the second
-        // partition.
-        // The Android source however removes the pivot elements from the recursive
-        // call if the second partition is too large (more than 2/3 of the list).
-        if (less < i1 && great > i5) {
-          var lessValue, greatValue;
-          while ((lessValue = f(a[less])) <= pivotValue1 && lessValue >= pivotValue1) {
-            ++less;
-          }while ((greatValue = f(a[great])) <= pivotValue2 && greatValue >= pivotValue2) {
-            --great;
-          } // Copy paste of the previous 3-way partitioning with adaptions.
-          //
-          // We partition the list into three parts:
-          //  1. == pivot1
-          //  2. > pivot1 && < pivot2
-          //  3. == pivot2
-          //
-          // During the loop we have:
-          // [ == pivot1 | > pivot1 && < pivot2 | unpartitioned  | == pivot2 ]
-          //              ^                      ^              ^
-          //            less                     k              great
-          //
-          // Invariants:
-          //   1. for x in [ *, less[ : x == pivot1
-          //   2. for x in [less, k[ : pivot1 < x && x < pivot2
-          //   3. for x in ]great, * ] : x == pivot2
-          for (var k = less; k <= great; k++) {
-            var ek = a[k],
-                xk = f(ek);
-            if (xk <= pivotValue1 && xk >= pivotValue1) {
-              if (k !== less) {
-                a[k] = a[less];
-                a[less] = ek;
-              }
-              less++;
-            } else {
-              if (xk <= pivotValue2 && xk >= pivotValue2) {
-                while (true) {
-                  var greatValue = f(a[great]);
-                  if (greatValue <= pivotValue2 && greatValue >= pivotValue2) {
-                    great--;
-                    if (great < k) break;
-                    // This is the only location inside the loop where a new
-                    // iteration is started.
-                    continue;
-                  } else {
-                    // a[great] < pivot2.
-                    if (greatValue < pivotValue1) {
-                      // Triple exchange.
-                      a[k] = a[less];
-                      a[less++] = a[great];
-                      a[great--] = ek;
-                    } else {
-                      // a[great] == pivot1.
-                      a[k] = a[great];
-                      a[great--] = ek;
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        // The second partition has now been cleared of pivot elements and looks
-        // as follows:
-        // [  *  |  > pivot1 && < pivot2  | * ]
-        //        ^                      ^
-        //       less                  great
-        // Sort the second partition using recursive descent.
-
-        // The second partition looks as follows:
-        // [  *  |  >= pivot1 && <= pivot2  | * ]
-        //        ^                        ^
-        //       less                    great
-        // Simply sort it by recursive descent.
-
-        return sort(a, less, great + 1);
-      }
-
-      return sort;
-    }
-
-    var quicksort_sizeThreshold = 32;
-    var crossfilter_array8 = crossfilter_arrayUntyped,
-        crossfilter_array16 = crossfilter_arrayUntyped,
-        crossfilter_array32 = crossfilter_arrayUntyped,
-        crossfilter_arrayLengthen = crossfilter_arrayLengthenUntyped,
-        crossfilter_arrayWiden = crossfilter_arrayWidenUntyped;
-
-    if (typeof Uint8Array !== "undefined") {
-      crossfilter_array8 = function crossfilter_array8(n) {
-        return new Uint8Array(n);
-      };
-      crossfilter_array16 = function crossfilter_array16(n) {
-        return new Uint16Array(n);
-      };
-      crossfilter_array32 = function crossfilter_array32(n) {
-        return new Uint32Array(n);
-      };
-
-      crossfilter_arrayLengthen = function crossfilter_arrayLengthen(array, length) {
-        if (array.length >= length) return array;
-        var copy = new array.constructor(length);
-        copy.set(array);
-        return copy;
-      };
-
-      crossfilter_arrayWiden = function crossfilter_arrayWiden(array, width) {
-        var copy;
-        switch (width) {
-          case 16:
-            copy = crossfilter_array16(array.length);break;
-          case 32:
-            copy = crossfilter_array32(array.length);break;
-          default:
-            throw new Error("invalid array width!");
-        }
-        copy.set(array);
-        return copy;
-      };
-    }
-
-    function crossfilter_arrayUntyped(n) {
-      var array = new Array(n),
-          i = -1;
-      while (++i < n) {
-        array[i] = 0;
-      }return array;
-    }
-
-    function crossfilter_arrayLengthenUntyped(array, length) {
-      var n = array.length;
-      while (n < length) {
-        array[n++] = 0;
-      }return array;
-    }
-
-    function crossfilter_arrayWidenUntyped(array, width) {
-      if (width > 32) throw new Error("invalid array width!");
-      return array;
-    }
-    function crossfilter_filterExact(bisect, value) {
-      return function (values) {
-        var n = values.length;
-        return [bisect.left(values, value, 0, n), bisect.right(values, value, 0, n)];
-      };
-    }
-
-    function crossfilter_filterRange(bisect, range) {
-      var min = range[0],
-          max = range[1];
-      return function (values) {
-        var n = values.length;
-        return [bisect.left(values, min, 0, n), bisect.left(values, max, 0, n)];
-      };
-    }
-
-    function crossfilter_filterAll(values) {
-      return [0, values.length];
-    }
-    function crossfilter_null() {
-      return null;
-    }
-    function crossfilter_zero() {
-      return 0;
-    }
-    function crossfilter_reduceIncrement(p) {
-      return p + 1;
-    }
-
-    function crossfilter_reduceDecrement(p) {
-      return p - 1;
-    }
-
-    function crossfilter_reduceAdd(f) {
-      return function (p, v) {
-        return p + +f(v);
-      };
-    }
-
-    function crossfilter_reduceSubtract(f) {
-      return function (p, v) {
-        return p - f(v);
-      };
-    }
-    exports.crossfilter = crossfilter;
-
-    function crossfilter() {
-      var crossfilter = {
-        add: add,
-        remove: removeData,
-        dimension: dimension,
-        groupAll: groupAll,
-        size: size
-      };
-
-      var data = [],
-          // the records
-      n = 0,
-          // the number of records; data.length
-      m = 0,
-          // a bit mask representing which dimensions are in use
-      M = 8,
-          // number of dimensions that can fit in `filters`
-      filters = crossfilter_array8(0),
-          // M bits per record; 1 is filtered out
-      filterListeners = [],
-          // when the filters change
-      dataListeners = [],
-          // when data is added
-      removeDataListeners = []; // when data is removed
-
-      // Adds the specified new records to this crossfilter.
-      function add(newData) {
-        var n0 = n,
-            n1 = newData.length;
-
-        // If there's actually new data to add…
-        // Merge the new data into the existing data.
-        // Lengthen the filter bitset to handle the new records.
-        // Notify listeners (dimensions and groups) that new data is available.
-        if (n1) {
-          data = data.concat(newData);
-          filters = crossfilter_arrayLengthen(filters, n += n1);
-          dataListeners.forEach(function (l) {
-            l(newData, n0, n1);
-          });
-        }
-
-        return crossfilter;
-      }
-
-      // Removes all records that match the current filters.
-      function removeData() {
-        var newIndex = crossfilter_index(n, n),
-            removed = [];
-        for (var i = 0, j = 0; i < n; ++i) {
-          if (filters[i]) newIndex[i] = j++;else removed.push(i);
-        }
-
-        // Remove all matching records from groups.
-        filterListeners.forEach(function (l) {
-          l(0, [], removed);
-        });
-
-        // Update indexes.
-        removeDataListeners.forEach(function (l) {
-          l(newIndex);
-        });
-
-        // Remove old filters and data by overwriting.
-        for (var i = 0, j = 0, k; i < n; ++i) {
-          if (k = filters[i]) {
-            if (i !== j) filters[j] = k, data[j] = data[i];
-            ++j;
-          }
-        }
-        data.length = j;
-        while (n > j) {
-          filters[--n] = 0;
-        }
-      }
-
-      // Adds a new dimension with the specified value accessor function.
-      function dimension(value) {
-        var dimension = {
-          filter: filter,
-          filterExact: filterExact,
-          filterRange: filterRange,
-          filterFunction: filterFunction,
-          filterAll: filterAll,
-          top: top,
-          bottom: bottom,
-          group: group,
-          groupAll: groupAll,
-          dispose: dispose,
-          remove: dispose // for backwards-compatibility
-        };
-
-        var one = ~m & -~m,
-            // lowest unset bit as mask, e.g., 00001000
-        zero = ~one,
-            // inverted one, e.g., 11110111
-        values,
-            // sorted, cached array
-        index,
-            // value rank ↦ object id
-        newValues,
-            // temporary array storing newly-added values
-        newIndex,
-            // temporary array storing newly-added index
-        sort = quicksort_by(function (i) {
-          return newValues[i];
-        }),
-            refilter = crossfilter_filterAll,
-            // for recomputing filter
-        refilterFunction,
-            // the custom filter function in use
-        indexListeners = [],
-            // when data is added
-        dimensionGroups = [],
-            lo0 = 0,
-            hi0 = 0;
-
-        // Updating a dimension is a two-stage process. First, we must update the
-        // associated filters for the newly-added records. Once all dimensions have
-        // updated their filters, the groups are notified to update.
-        dataListeners.unshift(preAdd);
-        dataListeners.push(postAdd);
-
-        removeDataListeners.push(removeData);
-
-        // Incorporate any existing data into this dimension, and make sure that the
-        // filter bitset is wide enough to handle the new dimension.
-        m |= one;
-        if (M >= 32 ? !one : m & -(1 << M)) {
-          filters = crossfilter_arrayWiden(filters, M <<= 1);
-        }
-        preAdd(data, 0, n);
-        postAdd(data, 0, n);
-
-        // Incorporates the specified new records into this dimension.
-        // This function is responsible for updating filters, values, and index.
-        function preAdd(newData, n0, n1) {
-
-          // Permute new values into natural order using a sorted index.
-          newValues = newData.map(value);
-          newIndex = sort(crossfilter_range(n1), 0, n1);
-          newValues = permute(newValues, newIndex);
-
-          // Bisect newValues to determine which new records are selected.
-          var bounds = refilter(newValues),
-              lo1 = bounds[0],
-              hi1 = bounds[1],
-              i;
-          if (refilterFunction) {
-            for (i = 0; i < n1; ++i) {
-              if (!refilterFunction(newValues[i], i)) filters[newIndex[i] + n0] |= one;
-            }
-          } else {
-            for (i = 0; i < lo1; ++i) {
-              filters[newIndex[i] + n0] |= one;
-            }for (i = hi1; i < n1; ++i) {
-              filters[newIndex[i] + n0] |= one;
-            }
-          }
-
-          // If this dimension previously had no data, then we don't need to do the
-          // more expensive merge operation; use the new values and index as-is.
-          if (!n0) {
-            values = newValues;
-            index = newIndex;
-            lo0 = lo1;
-            hi0 = hi1;
-            return;
-          }
-
-          var oldValues = values,
-              oldIndex = index,
-              i0 = 0,
-              i1 = 0;
-
-          // Otherwise, create new arrays into which to merge new and old.
-          values = new Array(n);
-          index = crossfilter_index(n, n);
-
-          // Merge the old and new sorted values, and old and new index.
-          for (i = 0; i0 < n0 && i1 < n1; ++i) {
-            if (oldValues[i0] < newValues[i1]) {
-              values[i] = oldValues[i0];
-              index[i] = oldIndex[i0++];
-            } else {
-              values[i] = newValues[i1];
-              index[i] = newIndex[i1++] + n0;
-            }
-          }
-
-          // Add any remaining old values.
-          for (; i0 < n0; ++i0, ++i) {
-            values[i] = oldValues[i0];
-            index[i] = oldIndex[i0];
-          }
-
-          // Add any remaining new values.
-          for (; i1 < n1; ++i1, ++i) {
-            values[i] = newValues[i1];
-            index[i] = newIndex[i1] + n0;
-          }
-
-          // Bisect again to recompute lo0 and hi0.
-          bounds = refilter(values), lo0 = bounds[0], hi0 = bounds[1];
-        }
-
-        // When all filters have updated, notify index listeners of the new values.
-        function postAdd(newData, n0, n1) {
-          indexListeners.forEach(function (l) {
-            l(newValues, newIndex, n0, n1);
-          });
-          newValues = newIndex = null;
-        }
-
-        function removeData(reIndex) {
-          for (var i = 0, j = 0, k; i < n; ++i) {
-            if (filters[k = index[i]]) {
-              if (i !== j) values[j] = values[i];
-              index[j] = reIndex[k];
-              ++j;
-            }
-          }
-          values.length = j;
-          while (j < n) {
-            index[j++] = 0;
-          } // Bisect again to recompute lo0 and hi0.
-          var bounds = refilter(values);
-          lo0 = bounds[0], hi0 = bounds[1];
-        }
-
-        // Updates the selected values based on the specified bounds [lo, hi].
-        // This implementation is used by all the public filter methods.
-        function filterIndexBounds(bounds) {
-          var lo1 = bounds[0],
-              hi1 = bounds[1];
-
-          if (refilterFunction) {
-            refilterFunction = null;
-            filterIndexFunction(function (d, i) {
-              return lo1 <= i && i < hi1;
-            });
-            lo0 = lo1;
-            hi0 = hi1;
-            return dimension;
-          }
-
-          var i,
-              j,
-              k,
-              added = [],
-              removed = [];
-
-          // Fast incremental update based on previous lo index.
-          if (lo1 < lo0) {
-            for (i = lo1, j = Math.min(lo0, hi1); i < j; ++i) {
-              filters[k = index[i]] ^= one;
-              added.push(k);
-            }
-          } else if (lo1 > lo0) {
-            for (i = lo0, j = Math.min(lo1, hi0); i < j; ++i) {
-              filters[k = index[i]] ^= one;
-              removed.push(k);
-            }
-          }
-
-          // Fast incremental update based on previous hi index.
-          if (hi1 > hi0) {
-            for (i = Math.max(lo1, hi0), j = hi1; i < j; ++i) {
-              filters[k = index[i]] ^= one;
-              added.push(k);
-            }
-          } else if (hi1 < hi0) {
-            for (i = Math.max(lo0, hi1), j = hi0; i < j; ++i) {
-              filters[k = index[i]] ^= one;
-              removed.push(k);
-            }
-          }
-
-          lo0 = lo1;
-          hi0 = hi1;
-          filterListeners.forEach(function (l) {
-            l(one, added, removed);
-          });
-          return dimension;
-        }
-
-        // Filters this dimension using the specified range, value, or null.
-        // If the range is null, this is equivalent to filterAll.
-        // If the range is an array, this is equivalent to filterRange.
-        // Otherwise, this is equivalent to filterExact.
-        function filter(range) {
-          return range == null ? filterAll() : Array.isArray(range) ? filterRange(range) : typeof range === "function" ? filterFunction(range) : filterExact(range);
-        }
-
-        // Filters this dimension to select the exact value.
-        function filterExact(value) {
-          return filterIndexBounds((refilter = crossfilter_filterExact(bisect, value))(values));
-        }
-
-        // Filters this dimension to select the specified range [lo, hi].
-        // The lower bound is inclusive, and the upper bound is exclusive.
-        function filterRange(range) {
-          return filterIndexBounds((refilter = crossfilter_filterRange(bisect, range))(values));
-        }
-
-        // Clears any filters on this dimension.
-        function filterAll() {
-          return filterIndexBounds((refilter = crossfilter_filterAll)(values));
-        }
-
-        // Filters this dimension using an arbitrary function.
-        function filterFunction(f) {
-          refilter = crossfilter_filterAll;
-
-          filterIndexFunction(refilterFunction = f);
-
-          lo0 = 0;
-          hi0 = n;
-
-          return dimension;
-        }
-
-        function filterIndexFunction(f) {
-          var i,
-              k,
-              x,
-              added = [],
-              removed = [];
-
-          for (i = 0; i < n; ++i) {
-            if (!(filters[k = index[i]] & one) ^ !!(x = f(values[i], i))) {
-              if (x) filters[k] &= zero, added.push(k);else filters[k] |= one, removed.push(k);
-            }
-          }
-          filterListeners.forEach(function (l) {
-            l(one, added, removed);
-          });
-        }
-
-        // Returns the top K selected records based on this dimension's order.
-        // Note: observes this dimension's filter, unlike group and groupAll.
-        function top(k) {
-          var array = [],
-              i = hi0,
-              j;
-
-          while (--i >= lo0 && k > 0) {
-            if (!filters[j = index[i]]) {
-              array.push(data[j]);
-              --k;
-            }
-          }
-
-          return array;
-        }
-
-        // Returns the bottom K selected records based on this dimension's order.
-        // Note: observes this dimension's filter, unlike group and groupAll.
-        function bottom(k) {
-          var array = [],
-              i = lo0,
-              j;
-
-          while (i < hi0 && k > 0) {
-            if (!filters[j = index[i]]) {
-              array.push(data[j]);
-              --k;
-            }
-            i++;
-          }
-
-          return array;
-        }
-
-        // Adds a new group to this dimension, using the specified key function.
-        function group(key) {
-          var group = {
-            top: top,
-            all: all,
-            reduce: reduce,
-            reduceCount: reduceCount,
-            reduceSum: reduceSum,
-            order: order,
-            orderNatural: orderNatural,
-            size: size,
-            dispose: dispose,
-            remove: dispose // for backwards-compatibility
-          };
-
-          // Ensure that this group will be removed when the dimension is removed.
-          dimensionGroups.push(group);
-
-          var groups,
-              // array of {key, value}
-          groupIndex,
-              // object id ↦ group id
-          groupWidth = 8,
-              groupCapacity = crossfilter_capacity(groupWidth),
-              k = 0,
-              // cardinality
-          select,
-              heap,
-              reduceAdd,
-              reduceRemove,
-              reduceInitial,
-              update = crossfilter_null,
-              reset = crossfilter_null,
-              resetNeeded = true,
-              groupAll = key === crossfilter_null;
-
-          if (arguments.length < 1) key = crossfilter_identity;
-
-          // The group listens to the crossfilter for when any dimension changes, so
-          // that it can update the associated reduce values. It must also listen to
-          // the parent dimension for when data is added, and compute new keys.
-          filterListeners.push(update);
-          indexListeners.push(add);
-          removeDataListeners.push(removeData);
-
-          // Incorporate any existing data into the grouping.
-          add(values, index, 0, n);
-
-          // Incorporates the specified new values into this group.
-          // This function is responsible for updating groups and groupIndex.
-          function add(newValues, newIndex, n0, n1) {
-            var oldGroups = groups,
-                reIndex = crossfilter_index(k, groupCapacity),
-                add = reduceAdd,
-                initial = reduceInitial,
-                k0 = k,
-                // old cardinality
-            i0 = 0,
-                // index of old group
-            i1 = 0,
-                // index of new record
-            j,
-                // object id
-            g0,
-                // old group
-            x0,
-                // old key
-            x1,
-                // new key
-            g,
-                // group to add
-            x; // key of group to add
-
-            // If a reset is needed, we don't need to update the reduce values.
-            if (resetNeeded) add = initial = crossfilter_null;
-
-            // Reset the new groups (k is a lower bound).
-            // Also, make sure that groupIndex exists and is long enough.
-            groups = new Array(k), k = 0;
-            groupIndex = k0 > 1 ? crossfilter_arrayLengthen(groupIndex, n) : crossfilter_index(n, groupCapacity);
-
-            // Get the first old key (x0 of g0), if it exists.
-            if (k0) x0 = (g0 = oldGroups[0]).key;
-
-            // Find the first new key (x1), skipping NaN keys.
-            while (i1 < n1 && !((x1 = key(newValues[i1])) >= x1)) {
-              ++i1;
-            } // While new keys remain…
-            while (i1 < n1) {
-
-              // Determine the lesser of the two current keys; new and old.
-              // If there are no old keys remaining, then always add the new key.
-              if (g0 && x0 <= x1) {
-                g = g0, x = x0;
-
-                // Record the new index of the old group.
-                reIndex[i0] = k;
-
-                // Retrieve the next old key.
-                if (g0 = oldGroups[++i0]) x0 = g0.key;
-              } else {
-                g = { key: x1, value: initial() }, x = x1;
-              }
-
-              // Add the lesser group.
-              groups[k] = g;
-
-              // Add any selected records belonging to the added group, while
-              // advancing the new key and populating the associated group index.
-              while (!(x1 > x)) {
-                groupIndex[j = newIndex[i1] + n0] = k;
-                if (!(filters[j] & zero)) g.value = add(g.value, data[j]);
-                if (++i1 >= n1) break;
-                x1 = key(newValues[i1]);
-              }
-
-              groupIncrement();
-            }
-
-            // Add any remaining old groups that were greater than all new keys.
-            // No incremental reduce is needed; these groups have no new records.
-            // Also record the new index of the old group.
-            while (i0 < k0) {
-              groups[reIndex[i0] = k] = oldGroups[i0++];
-              groupIncrement();
-            }
-
-            // If we added any new groups before any old groups,
-            // update the group index of all the old records.
-            if (k > i0) for (i0 = 0; i0 < n0; ++i0) {
-              groupIndex[i0] = reIndex[groupIndex[i0]];
-            }
-
-            // Modify the update and reset behavior based on the cardinality.
-            // If the cardinality is less than or equal to one, then the groupIndex
-            // is not needed. If the cardinality is zero, then there are no records
-            // and therefore no groups to update or reset. Note that we also must
-            // change the registered listener to point to the new method.
-            j = filterListeners.indexOf(update);
-            if (k > 1) {
-              update = updateMany;
-              reset = resetMany;
-            } else {
-              if (!k && groupAll) {
-                k = 1;
-                groups = [{ key: null, value: initial() }];
-              }
-              if (k === 1) {
-                update = updateOne;
-                reset = resetOne;
-              } else {
-                update = crossfilter_null;
-                reset = crossfilter_null;
-              }
-              groupIndex = null;
-            }
-            filterListeners[j] = update;
-
-            // Count the number of added groups,
-            // and widen the group index as needed.
-            function groupIncrement() {
-              if (++k === groupCapacity) {
-                reIndex = crossfilter_arrayWiden(reIndex, groupWidth <<= 1);
-                groupIndex = crossfilter_arrayWiden(groupIndex, groupWidth);
-                groupCapacity = crossfilter_capacity(groupWidth);
-              }
-            }
-          }
-
-          function removeData() {
-            if (k > 1) {
-              var oldK = k,
-                  oldGroups = groups,
-                  seenGroups = crossfilter_index(oldK, oldK);
-
-              // Filter out non-matches by copying matching group index entries to
-              // the beginning of the array.
-              for (var i = 0, j = 0; i < n; ++i) {
-                if (filters[i]) {
-                  seenGroups[groupIndex[j] = groupIndex[i]] = 1;
-                  ++j;
-                }
-              }
-
-              // Reassemble groups including only those groups that were referred
-              // to by matching group index entries.  Note the new group index in
-              // seenGroups.
-              groups = [], k = 0;
-              for (i = 0; i < oldK; ++i) {
-                if (seenGroups[i]) {
-                  seenGroups[i] = k++;
-                  groups.push(oldGroups[i]);
-                }
-              }
-
-              if (k > 1) {
-                // Reindex the group index using seenGroups to find the new index.
-                for (var i = 0; i < j; ++i) {
-                  groupIndex[i] = seenGroups[groupIndex[i]];
-                }
-              } else {
-                groupIndex = null;
-              }
-              filterListeners[filterListeners.indexOf(update)] = k > 1 ? (reset = resetMany, update = updateMany) : k === 1 ? (reset = resetOne, update = updateOne) : reset = update = crossfilter_null;
-            } else if (k === 1) {
-              if (groupAll) return;
-              for (var i = 0; i < n; ++i) {
-                if (filters[i]) return;
-              }groups = [], k = 0;
-              filterListeners[filterListeners.indexOf(update)] = update = reset = crossfilter_null;
-            }
-          }
-
-          // Reduces the specified selected or deselected records.
-          // This function is only used when the cardinality is greater than 1.
-          function updateMany(filterOne, added, removed) {
-            if (filterOne === one || resetNeeded) return;
-
-            var i, k, n, g;
-
-            // Add the added values.
-            for (i = 0, n = added.length; i < n; ++i) {
-              if (!(filters[k = added[i]] & zero)) {
-                g = groups[groupIndex[k]];
-                g.value = reduceAdd(g.value, data[k]);
-              }
-            }
-
-            // Remove the removed values.
-            for (i = 0, n = removed.length; i < n; ++i) {
-              if ((filters[k = removed[i]] & zero) === filterOne) {
-                g = groups[groupIndex[k]];
-                g.value = reduceRemove(g.value, data[k]);
-              }
-            }
-          }
-
-          // Reduces the specified selected or deselected records.
-          // This function is only used when the cardinality is 1.
-          function updateOne(filterOne, added, removed) {
-            if (filterOne === one || resetNeeded) return;
-
-            var i,
-                k,
-                n,
-                g = groups[0];
-
-            // Add the added values.
-            for (i = 0, n = added.length; i < n; ++i) {
-              if (!(filters[k = added[i]] & zero)) {
-                g.value = reduceAdd(g.value, data[k]);
-              }
-            }
-
-            // Remove the removed values.
-            for (i = 0, n = removed.length; i < n; ++i) {
-              if ((filters[k = removed[i]] & zero) === filterOne) {
-                g.value = reduceRemove(g.value, data[k]);
-              }
-            }
-          }
-
-          // Recomputes the group reduce values from scratch.
-          // This function is only used when the cardinality is greater than 1.
-          function resetMany() {
-            var i, g;
-
-            // Reset all group values.
-            for (i = 0; i < k; ++i) {
-              groups[i].value = reduceInitial();
-            }
-
-            // Add any selected records.
-            for (i = 0; i < n; ++i) {
-              if (!(filters[i] & zero)) {
-                g = groups[groupIndex[i]];
-                g.value = reduceAdd(g.value, data[i]);
-              }
-            }
-          }
-
-          // Recomputes the group reduce values from scratch.
-          // This function is only used when the cardinality is 1.
-          function resetOne() {
-            var i,
-                g = groups[0];
-
-            // Reset the singleton group values.
-            g.value = reduceInitial();
-
-            // Add any selected records.
-            for (i = 0; i < n; ++i) {
-              if (!(filters[i] & zero)) {
-                g.value = reduceAdd(g.value, data[i]);
-              }
-            }
-          }
-
-          // Returns the array of group values, in the dimension's natural order.
-          function all() {
-            if (resetNeeded) reset(), resetNeeded = false;
-            return groups;
-          }
-
-          // Returns a new array containing the top K group values, in reduce order.
-          function top(k) {
-            var top = select(all(), 0, groups.length, k);
-            return heap.sort(top, 0, top.length);
-          }
-
-          // Sets the reduce behavior for this group to use the specified functions.
-          // This method lazily recomputes the reduce values, waiting until needed.
-          function reduce(add, remove, initial) {
-            reduceAdd = add;
-            reduceRemove = remove;
-            reduceInitial = initial;
-            resetNeeded = true;
-            return group;
-          }
-
-          // A convenience method for reducing by count.
-          function reduceCount() {
-            return reduce(crossfilter_reduceIncrement, crossfilter_reduceDecrement, crossfilter_zero);
-          }
-
-          // A convenience method for reducing by sum(value).
-          function reduceSum(value) {
-            return reduce(crossfilter_reduceAdd(value), crossfilter_reduceSubtract(value), crossfilter_zero);
-          }
-
-          // Sets the reduce order, using the specified accessor.
-          function order(value) {
-            select = heapselect_by(valueOf);
-            heap = heap_by(valueOf);
-            function valueOf(d) {
-              return value(d.value);
-            }
-            return group;
-          }
-
-          // A convenience method for natural ordering by reduce value.
-          function orderNatural() {
-            return order(crossfilter_identity);
-          }
-
-          // Returns the cardinality of this group, irrespective of any filters.
-          function size() {
-            return k;
-          }
-
-          // Removes this group and associated event listeners.
-          function dispose() {
-            var i = filterListeners.indexOf(update);
-            if (i >= 0) filterListeners.splice(i, 1);
-            i = indexListeners.indexOf(add);
-            if (i >= 0) indexListeners.splice(i, 1);
-            i = removeDataListeners.indexOf(removeData);
-            if (i >= 0) removeDataListeners.splice(i, 1);
-            return group;
-          }
-
-          return reduceCount().orderNatural();
-        }
-
-        // A convenience function for generating a singleton group.
-        function groupAll() {
-          var g = group(crossfilter_null),
-              all = g.all;
-          delete g.all;
-          delete g.top;
-          delete g.order;
-          delete g.orderNatural;
-          delete g.size;
-          g.value = function () {
-            return all()[0].value;
-          };
-          return g;
-        }
-
-        // Removes this dimension and associated groups and event listeners.
-        function dispose() {
-          dimensionGroups.forEach(function (group) {
-            group.dispose();
-          });
-          var i = dataListeners.indexOf(preAdd);
-          if (i >= 0) dataListeners.splice(i, 1);
-          i = dataListeners.indexOf(postAdd);
-          if (i >= 0) dataListeners.splice(i, 1);
-          i = removeDataListeners.indexOf(removeData);
-          if (i >= 0) removeDataListeners.splice(i, 1);
-          m &= zero;
-          return filterAll();
-        }
-
-        return dimension;
-      }
-
-      // A convenience method for groupAll on a dummy dimension.
-      // This implementation can be optimized since it always has cardinality 1.
-      function groupAll() {
-        var group = {
-          reduce: reduce,
-          reduceCount: reduceCount,
-          reduceSum: reduceSum,
-          value: value,
-          dispose: dispose,
-          remove: dispose // for backwards-compatibility
-        };
-
-        var reduceValue,
-            reduceAdd,
-            reduceRemove,
-            reduceInitial,
-            resetNeeded = true;
-
-        // The group listens to the crossfilter for when any dimension changes, so
-        // that it can update the reduce value. It must also listen to the parent
-        // dimension for when data is added.
-        filterListeners.push(update);
-        dataListeners.push(add);
-
-        // For consistency; actually a no-op since resetNeeded is true.
-        add(data, 0, n);
-
-        // Incorporates the specified new values into this group.
-        function add(newData, n0) {
-          var i;
-
-          if (resetNeeded) return;
-
-          // Add the added values.
-          for (i = n0; i < n; ++i) {
-            if (!filters[i]) {
-              reduceValue = reduceAdd(reduceValue, data[i]);
-            }
-          }
-        }
-
-        // Reduces the specified selected or deselected records.
-        function update(filterOne, added, removed) {
-          var i, k, n;
-
-          if (resetNeeded) return;
-
-          // Add the added values.
-          for (i = 0, n = added.length; i < n; ++i) {
-            if (!filters[k = added[i]]) {
-              reduceValue = reduceAdd(reduceValue, data[k]);
-            }
-          }
-
-          // Remove the removed values.
-          for (i = 0, n = removed.length; i < n; ++i) {
-            if (filters[k = removed[i]] === filterOne) {
-              reduceValue = reduceRemove(reduceValue, data[k]);
-            }
-          }
-        }
-
-        // Recomputes the group reduce value from scratch.
-        function reset() {
-          var i;
-
-          reduceValue = reduceInitial();
-
-          for (i = 0; i < n; ++i) {
-            if (!filters[i]) {
-              reduceValue = reduceAdd(reduceValue, data[i]);
-            }
-          }
-        }
-
-        // Sets the reduce behavior for this group to use the specified functions.
-        // This method lazily recomputes the reduce value, waiting until needed.
-        function reduce(add, remove, initial) {
-          reduceAdd = add;
-          reduceRemove = remove;
-          reduceInitial = initial;
-          resetNeeded = true;
-          return group;
-        }
-
-        // A convenience method for reducing by count.
-        function reduceCount() {
-          return reduce(crossfilter_reduceIncrement, crossfilter_reduceDecrement, crossfilter_zero);
-        }
-
-        // A convenience method for reducing by sum(value).
-        function reduceSum(value) {
-          return reduce(crossfilter_reduceAdd(value), crossfilter_reduceSubtract(value), crossfilter_zero);
-        }
-
-        // Returns the computed reduce value.
-        function value() {
-          if (resetNeeded) reset(), resetNeeded = false;
-          return reduceValue;
-        }
-
-        // Removes this group and associated event listeners.
-        function dispose() {
-          var i = filterListeners.indexOf(update);
-          if (i >= 0) filterListeners.splice(i);
-          i = dataListeners.indexOf(add);
-          if (i >= 0) dataListeners.splice(i);
-          return group;
-        }
-
-        return reduceCount();
-      }
-
-      // Returns the number of records in this crossfilter, irrespective of any filters.
-      function size() {
-        return n;
-      }
-
-      return arguments.length ? add(arguments[0]) : crossfilter;
-    }
-
-    // Returns an array of size n, big enough to store ids up to m.
-    function crossfilter_index(n, m) {
-      return (m < 0x101 ? crossfilter_array8 : m < 0x10001 ? crossfilter_array16 : crossfilter_array32)(n);
-    }
-
-    // Constructs a new array of size n, with sequential values from 0 to n - 1.
-    function crossfilter_range(n) {
-      var range = crossfilter_index(n, n);
-      for (var i = -1; ++i < n;) {
-        range[i] = i;
-      }return range;
-    }
-
-    function crossfilter_capacity(w) {
-      return w === 8 ? 0x100 : w === 16 ? 0x10000 : 0x100000000;
-    }
-  })('object' !== 'undefined' && exports || commonjsGlobal);
-});
-
-var index$1 = crossfilter$2.crossfilter;
 
 var crossfilter$4 = createCommonjsModule(function (module, exports) {
   (function (exports) {
@@ -24358,8 +24360,10 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24438,6 +24442,9 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
+//-------------------------------------
+
+
 var DashboardStore = function () {
   function DashboardStore() {
     classCallCheck(this, DashboardStore);
@@ -24452,7 +24459,12 @@ var DashboardStore = function () {
     this._dimensions = {
       default: {}
     };
-    this._labels = {};
+
+    this._labels = {
+      default: {
+        '': {} // チャート固有でない辞書
+      }
+    };
   }
 
   createClass(DashboardStore, [{
@@ -24576,29 +24588,51 @@ var DashboardStore = function () {
     value: function setLabels(labels) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var _options$dataset5 = options.dataset,
-          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5;
+          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5,
+          _options$chartName = options.chartName,
+          chartName = _options$chartName === undefined ? '' : _options$chartName;
 
       if (!this._labels[dataset]) this._labels[dataset] = {};
-      Object.assign(this._labels[dataset], labels);
+      if (!this._labels[dataset][chartName]) this._labels[dataset][chartName] = {};
+      Object.assign(this._labels[dataset][chartName], labels);
     }
   }, {
     key: 'getLabel',
     value: function getLabel(k) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var _options$dataset6 = options.dataset,
-          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6;
+          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
+          _options$chartName2 = options.chartName,
+          chartName = _options$chartName2 === undefined ? '' : _options$chartName2;
 
-      return this._labels[dataset][k] !== undefined ? this._labels[dataset][k] : k;
+      var labels = this._labels[dataset];
+      if (!labels) return k;
+      // チャート固有の辞書からの探索
+      if (labels[chartName] && labels[chartName][k] !== undefined) return labels[chartName][k];
+      // チャート固有でないの辞書からの探索
+      else if (labels[''] && labels[''][k] !== undefined) return labels[''][k];
+      return k;
     }
   }, {
     key: 'getKeyByLabel',
     value: function getKeyByLabel(label) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var _options$dataset7 = options.dataset,
-          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7;
+          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7,
+          _options$chartName3 = options.chartName,
+          chartName = _options$chartName3 === undefined ? '' : _options$chartName3;
+      // chart固有辞書からの探索
 
-      for (var k in this._labels[dataset]) {
-        if (this._labels[dataset][k] === label) return k;
+      if (this._labels[dataset] && this._labels[dataset][chartName]) {
+        for (var k in this._labels[dataset][chartName]) {
+          if (this._labels[dataset][chartName][k] === label) return k;
+        }
+      }
+      // chart固有でない辞書からの探索
+      if (this._labels[dataset] && this._labels[dataset]['']) {
+        for (var _k in this._labels[dataset]['']) {
+          if (this._labels[dataset][''][_k] === label) return _k;
+        }
       }
       return null;
     }
@@ -24655,7 +24689,11 @@ function generateExtractor(rule) {
   if (typeof rule === 'function' || rule instanceof Function) {
     return rule;
   } else if (typeof rule === "string" || rule instanceof String) {
-    if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
+    if (/^[a-zA-Z0-9\$_]+$/g.test(rule)) {
+      return function (d) {
+        return d[rule];
+      };
+    } else if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
       var keys = rule.split(',');
       return function (d) {
         var row = [];
@@ -24696,8 +24734,8 @@ function combineGroups(sourceGroups) {
         return g.all();
       });
       // Object型がkeyになっている場合に ret.push({key: k, value:gm[k]}) のkeyがString型になってしまうのを防ぐ
-      // ret.push({key: objKeys[k], value: gm[k]});
-      var objKeys = {};
+      // ret.push({key: _keys[k], value: gm[k]});
+      var _keys = {};
       var gm = {};
       alls.forEach(function (a, i) {
         a.forEach(function (b) {
@@ -24709,13 +24747,13 @@ function combineGroups(sourceGroups) {
           }
           gm[b.key][i] = b.value;
           for (var k in gm) {
-            if (!objKeys[k]) objKeys[k] = b.key;
+            if (!_keys[k]) _keys[k] = b.key;
           }
         });
       });
       var ret = [];
       for (var k in gm) {
-        ret.push({ key: objKeys[k], value: gm[k] });
+        ret.push({ key: _keys[k], value: gm[k] });
       }return ret;
     }
   };
@@ -24740,6 +24778,30 @@ function reverseLegendOrder(chart) {
     return items.reverse();
   });
 }
+
+var ymdFormat = d3$1.time.format('%Y-%m-%d');
+var ymFormat = d3$1.time.format('%Y-%m');
+var yearFormat = d3$1.time.format('%Y');
+var monthFormat = d3$1.time.format('%m');
+var weekFormat = d3$1.time.format('%w');
+var dayFormat = d3$1.time.format('%d');
+
+var yearInterval = d3$1.time.year;
+var monthInterval = d3$1.time.month;
+var dayInterval = d3$1.time.day;
+
+var TIME_FORMATS = {
+  ymdFormat: ymdFormat,
+  ymFormat: ymFormat,
+  year: yearFormat,
+  month: monthFormat,
+  day: dayFormat
+};
+var TIME_INTERVALS = {
+  year: yearInterval,
+  month: monthInterval,
+  day: dayInterval
+};
 
 (function () {
   if (document) {
@@ -24767,7 +24829,7 @@ var ResetButton = { render: function render() {
 
 var Base = {
 
-  template: '<div class="krt-dc-component" :id="id"><reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button></div>',
+  template: '<div class="krt-dc-component" :id="id">\n              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n              <div v-text="title" style="font-size:24px; text-align:center;"></div>\n            </div>',
 
   components: {
     'reset-button': ResetButton
@@ -24787,6 +24849,13 @@ var Base = {
     chartType: {
       type: String,
       default: 'barChart'
+    },
+    title: {
+      type: String,
+      default: ''
+    },
+    dateKey: {
+      type: String
     },
     volume: {
       type: String
@@ -24833,8 +24902,9 @@ var Base = {
     },
     transitionDuration: {
       type: Number,
-      default: 1500
-    }
+      default: 750
+    },
+    labels: {}
   },
 
   computed: {
@@ -24844,32 +24914,35 @@ var Base = {
     dimensionName: function dimensionName() {
       return this.dimension;
     },
-    getDimensionExtractor: function getDimensionExtractor() {
+    dimensionExtractor: function dimensionExtractor() {
       return generateExtractor(this.dimension);
     },
-    getReducerExtractor: function getReducerExtractor() {
+    reducerExtractor: function reducerExtractor() {
       return generateExtractor(this.reduce);
     },
     grouping: function grouping() {
-      var grouping = this.getDimensionExtractor;
+      var grouping = this.dimensionExtractor;
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var reducer = this.getReducerExtractor;
+      var reducer = this.reducerExtractor;
       return dim.group().reduceSum(reducer);
+    },
+    reduceKeys: function reduceKeys() {
+      return [];
     },
     accessor: function accessor() {
       return null;
     },
     min: function min() {
       var dim = this.grouping;
-      var dimExtractor = this.getDimensionExtractor;
+      var dimExtractor = this.dimensionExtractor;
       return dimExtractor(dim.bottom(1)[0]);
     },
     max: function max() {
       var dim = this.grouping;
-      var dimExtractor = this.getDimensionExtractor;
+      var dimExtractor = this.dimensionExtractor;
       return dimExtractor(dim.top(1)[0]);
     },
     xScale: function xScale() {
@@ -24879,6 +24952,7 @@ var Base = {
       if (this.scale === 'time') scale = d3$1.time.scale;else scale = d3$1.scale[this.scale];
 
       if (!scale) return null;
+
       return scale().domain([this.min, this.max]);
     }
   },
@@ -24889,24 +24963,63 @@ var Base = {
       index$2.redrawAll();
     },
     applyLegend: function applyLegend() {
+      var _this = this;
+
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       if (!this.useLegend || !this.legend) return;
 
-      var _options$reverseOrder = options.reverseOrder,
+      var _options$indexLabel = options.indexLabel,
+          indexLabel = _options$indexLabel === undefined ? false : _options$indexLabel,
+          _options$reverseOrder = options.reverseOrder,
           reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
 
+
       var l = this.legend;
-      this.chart.legend(index$2.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal));
+
+      var legendInstance = index$2.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal).legendText(function (d, i) {
+        var k = indexLabel ? i : d.name;
+        return _this.getLabel(k);
+      });
+
+      this.chart.legend(legendInstance);
       if (reverseOrder) reverseLegendOrder(this.chart);
+    },
+    getLabel: function getLabel(key) {
+      return Store.getLabel(key, {
+        dataset: this.dataset,
+        chartName: this.id
+      });
+    },
+    getReduceKey: function getReduceKey(idx) {
+      return this.reduceKeys && this.reduceKeys[idx] || idx;
+    },
+    getTimeInterval: function getTimeInterval(key) {
+      if ((this.dateKey || this.timeScale) === undefined) return null;else return TIME_INTERVALS[key];
+    },
+    getTimeFormat: function getTimeFormat(key) {
+      if ((this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
     }
   },
 
   mounted: function mounted() {
+    var _this2 = this;
+
     var chart = Store.registerChart(this.parent, this.id, this.chartType, { volume: this.volume });
 
+    if (this.labels) {
+      var labels = this.labels;
+      if (typeof this.labels === 'string' || this.labels instanceof String) labels = this.labels.split(',');
+      Store.setLabels(labels, {
+        dataset: this.dataset,
+        chartName: this.id
+      });
+    }
+
     if (this.grouping) chart.dimension(this.grouping);
-    if (this.reducer) chart.group(this.reducer);
+    if (this.reducer) {
+      chart.group(this.reducer, this.getReduceKey(0));
+    }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
     if (this.width) chart.width(this.width);
@@ -24914,8 +25027,14 @@ var Base = {
     if (this.margins) chart.margins(this.margins);
     if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel);
     if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel);
-    chart.renderLabel(this.renderLabel);
-    chart.renderTitle(this.renderTitle);
+
+    chart.renderLabel(this.renderLabel).renderTitle(this.renderTitle).transitionDuration(this.transitionDuration).label(function (d) {
+      return _this2.getLabel(d.key);
+    }).filterPrinter(function (filters) {
+      return filters.map(function (filter) {
+        return _this2.getLabel(index$2.printers.filter(filter));
+      }).join(', ');
+    });
 
     this.chart = chart;
 
@@ -33499,9 +33618,10 @@ var vue = createCommonjsModule(function (module, exports) {
   });
 });
 
-function _extractReduceKey(reduce) {
-  // FIXME: Replace if there is a better way
-  return reduce.match(/d.\w*/g);
+function _getReduceKeySuper(Component) {
+  if (!Component) return;
+  if (Component.methods && Component.methods.getReduceKey) return Component.methods.getReduceKey;
+  return _getReduceKeySuper(Component.extends);
 }
 
 function compose(Left, Right) {
@@ -33509,7 +33629,7 @@ function compose(Left, Right) {
   var ComponentObject = {
     extends: Base,
 
-    template: '<div class="krt-dc-composite" :id="id"></div>',
+    template: '<div class="krt-dc-composite" :id="id">\n                <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n                <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>\n              </div>',
 
     props: {
       chartType: {
@@ -33530,20 +33650,9 @@ function compose(Left, Right) {
           return { x: 0, y: 0, gap: 5, width: 800, itemWidth: 70, itemHeight: 12, horizontal: true };
         }
       },
-      labels: {
-        type: Array
-      },
       elasticY: {
         type: Boolean,
         default: true
-      }
-    },
-    computed: {
-      _labels: function _labels() {
-        return this.labels || this.reduceKeys;
-      },
-      reduceKeys: function reduceKeys() {
-        return _extractReduceKey(this.reduce);
       }
     },
     mounted: function mounted() {
@@ -33557,23 +33666,24 @@ function compose(Left, Right) {
           parent: function parent() {
             return _this.chart;
           },
-          getReducerExtractor: function getReducerExtractor() {
+          reducerExtractor: function reducerExtractor() {
             return function (d) {
               var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[0];
             };
-          },
-          labels: function labels() {
-            var dim = Store.getDimension(_this.dimensionName, _this.getDimensionExtractor, { dataset: _this.dataset });
-            var _reducer = generateExtractor(_this.reduce);
-            var lines = _reducer(dim.top(1)[0])[0];
-            var lineNum = Array.isArray(lines) ? lines.length : 1;
-            return _this._labels.slice(0, lineNum);
+          }
+        },
+        methods: {
+          getReduceKey: function getReduceKey(idx) {
+            var s = _getReduceKeySuper(Right);
+            if (!s) return 'l';
+            return 'l:' + s.apply(this, [idx]);
           }
         },
         propsData: {
           dimension: this.dimension,
-          scale: this.scale
+          scale: this.scale,
+          legend: false
         }
       });
 
@@ -33583,23 +33693,24 @@ function compose(Left, Right) {
           parent: function parent() {
             return _this.chart;
           },
-          getReducerExtractor: function getReducerExtractor() {
+          reducerExtractor: function reducerExtractor() {
             return function (d) {
               var _reducer = generateExtractor(_this.reduce);
               return _reducer(d)[1];
             };
-          },
-          labels: function labels() {
-            var dim = Store.getDimension(_this.dimensionName, _this.getDimensionExtractor, { dataset: _this.dataset });
-            var _reducer = generateExtractor(_this.reduce);
-            var lines = _reducer(dim.top(1)[0])[1];
-            var lineNum = Array.isArray(lines) ? lines.length : 1;
-            return _this._labels.slice(-lineNum);
+          }
+        },
+        methods: {
+          getReduceKey: function getReduceKey(idx) {
+            var s = _getReduceKeySuper(Right);
+            if (!s) return 'r';
+            return 'r:' + s.apply(this, [idx]);
           }
         },
         propsData: {
           dimension: this.dimension,
-          scale: this.scale
+          scale: this.scale,
+          legend: false
         }
       });
 
@@ -33611,9 +33722,15 @@ function compose(Left, Right) {
 
       composite.dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
       //.rightY(scale.linear().domain([0, 1]))
-      .elasticY(this.elasticY);
+      .elasticY(this.elasticY).shareColors(true);
 
-      this.applyLegend();
+      // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
+      // legendは配列として受け取り、番号で割り当てる
+      // lines系なら問題ない。
+      // TODO: bubbleチャート系だとうまくいかないかもしれない。
+      // legendの利用有無も含めて再検討必要
+      this.applyLegend({ indexLabel: true });
+
       return composite.render();
     },
 
@@ -33639,7 +33756,7 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.fillBoxColor ? _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', background: _vm.themeColor, fontSize: _vm.fontSize * 4 + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]) : _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', color: _vm.themeColor, borderColor: _vm.themeColor, fontSize: _vm.fontSize * 4 + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.fillBoxColor ? _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', background: _vm.themeColor, fontSize: _vm.fontSize + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]) : _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', color: _vm.themeColor, borderColor: _vm.themeColor, fontSize: _vm.fontSize + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
@@ -33665,7 +33782,7 @@ var NumberDisplay = { render: function render() {
     },
     fontSize: {
       type: Number,
-      default: 12
+      default: 48
     },
     boxLabel: {
       type: String
@@ -33678,8 +33795,18 @@ var NumberDisplay = { render: function render() {
   computed: {
     reducer: function reducer() {
       var cf = Store.getCf({ dataset: this.dataset });
-      var reducer = this.getReducerExtractor;
-      return cf.groupAll().reduceSum(reducer);
+      var reducer = this.reducerExtractor;
+      return cf.groupAll().reduce(function (p, v) {
+        var val = reducer(v);
+        typeof val === 'number' || val instanceof Number ? p.value += val : p.value++;
+        return p;
+      }, function (p, v) {
+        var val = reducer(v);
+        typeof val === 'number' || val instanceof Number ? p.value -= val : p.value--;
+        return p;
+      }, function () {
+        return { value: 0 };
+      });
     },
     _boxLabel: function _boxLabel() {
       return this.reduce.replace(/d\./, '');
@@ -33689,8 +33816,8 @@ var NumberDisplay = { render: function render() {
     var chart = this.chart;
 
     chart.valueAccessor(function (d) {
-      return d;
-    }).formatNumber(d3.format(this.numberFormat)).html({
+      return d.value;
+    }).formatNumber(d3$1.format(this.numberFormat)).html({
       none: "<span class=\"number-display\">0</span>"
     });
     return chart.render();
@@ -33712,7 +33839,7 @@ var NumberDisplay = { render: function render() {
 var SegmentPie = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33753,7 +33880,7 @@ var SegmentPie = { render: function render() {
     },
     grouping: function grouping() {
       var segments = this.segmentIds;
-      var getter = this.getDimensionExtractor;
+      var getter = this.dimensionExtractor;
       var grouping = function grouping(d) {
         var segs = getter(d).split(',');
         var idx = segments.findIndex(function (segment) {
@@ -33823,7 +33950,7 @@ var SegmentPie = { render: function render() {
 var MultiDimensionPie = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-multidim-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33875,23 +34002,13 @@ var MultiDimensionPie = { render: function render() {
 
   computed: {
     grouping: function grouping() {
-      var getter = this.getDimensionExtractor;
+      var getter = this.dimensionExtractor;
       var grouping = function grouping(d) {
-        return getter(d).join(',');
+        var v = getter(d);
+        if (!(v instanceof Array)) v = [v];
+        return v.join(',');
       };
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
-    }
-  },
-
-  methods: {
-    segmentLabel: function segmentLabel(segmentId) {
-      var label = segmentId;
-      if (this.labels && segmentId in this.labels) {
-        label = this.labels[segmentId];
-      } else {
-        label = Store.getLabel(segmentId);
-      }
-      return label;
     }
   },
 
@@ -33899,42 +34016,22 @@ var MultiDimensionPie = { render: function render() {
     var _this = this;
 
     var chart = this.chart;
-    chart.label(function (d) {
-      return _this.segmentLabel(d.key);
-    });
+
     if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
+      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal).legendText(function (d, i) {
+        return Store.getLabel(d.name, {
+          dataset: _this.dataset,
+          chartName: _this.id
+        });
+      }));
     }
+
     return chart.render();
   },
 
   destroyed: function destroyed() {
     Store.unregisterDimension(this.dimension, { dataset: this.dataset });
   }
-};
-
-var ymdFormat = d3$1.time.format('%Y-%m-%d');
-var ymFormat = d3$1.time.format('%Y-%m');
-var yearFormat = d3$1.time.format('%Y');
-var monthFormat = d3$1.time.format('%m');
-var weekFormat = d3$1.time.format('%w');
-var dayFormat = d3$1.time.format('%d');
-
-var yearInterval = d3$1.time.year;
-var monthInterval = d3$1.time.month;
-var dayInterval = d3$1.time.day;
-
-var TIME_FORMATS = {
-  ymdFormat: ymdFormat,
-  ymFormat: ymFormat,
-  year: yearFormat,
-  month: monthFormat,
-  day: dayFormat
-};
-var TIME_INTERVALS = {
-  year: yearInterval,
-  month: monthInterval,
-  day: dayInterval
 };
 
 (function () {
@@ -33949,12 +34046,10 @@ var TIME_INTERVALS = {
   }
 })();
 
-var _week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 var WeekRow = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -33970,6 +34065,9 @@ var WeekRow = { render: function render() {
     width: {
       type: Number,
       default: 200
+    },
+    labels: {
+      default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
     }
   },
 
@@ -33978,7 +34076,7 @@ var WeekRow = { render: function render() {
       return 'week(' + this.dimension + ')';
     },
     grouping: function grouping() {
-      var getter = this.getDimensionExtractor;
+      var getter = this.dimensionExtractor;
       var grouping = function grouping(d) {
         return Number(weekFormat(getter(d)));
       };
@@ -33986,8 +34084,8 @@ var WeekRow = { render: function render() {
     },
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var getter = this.getDimensionExtractor;
-      var reducer = this.getReducerExtractor;
+      var getter = this.dimensionExtractor;
+      var reducer = this.reducerExtractor;
       var date_cnt = {};
 
       return dim.group().reduce(function (p, v) {
@@ -34013,7 +34111,7 @@ var WeekRow = { render: function render() {
     },
     accessor: function accessor() {
       var dim = this.grouping;
-      var dimExtractor = this.getDimensionExtractor;
+      var dimExtractor = this.dimensionExtractor;
       var methodNames = ['sundays', 'mondays', 'tuesdays', 'wednesdays', 'thursdays', 'fridays', 'saturdays'];
       return function (p) {
         var dates = Object.keys(p.value.date_cnt).sort();
@@ -34029,13 +34127,7 @@ var WeekRow = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.title(function (d) {
-      return _week[d.key];
-    }).label(function (d) {
-      return _week[d.key];
-    }).keyAccessor(function (d) {
-      return _week[d.key];
-    }).ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
+    chart.ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
     return chart.render();
   }
 };
@@ -34055,7 +34147,7 @@ var WeekRow = { render: function render() {
 var ListRow = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34111,7 +34203,7 @@ var ListRow = { render: function render() {
   computed: {
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var reducer = this.getReducerExtractor;
+      var reducer = this.reducerExtractor;
       return this.filteredGroup(dim.group().reduceSum(reducer));
     },
     rowNums: function rowNums() {
@@ -34159,7 +34251,7 @@ var ListRow = { render: function render() {
 var RateLine = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34173,7 +34265,7 @@ var RateLine = { render: function render() {
   computed: {
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var reducer = this.getReducerExtractor;
+      var reducer = this.reducerExtractor;
 
       return dim.group().reduce(function (p, v) {
         var _reducer = reducer(v),
@@ -34206,7 +34298,7 @@ var RateLine = { render: function render() {
   },
 
   mounted: function mounted() {
-    return this.chart.group(this.reducer, this.labels[0]).render();
+    return this.chart.render();
   }
 };
 
@@ -34225,7 +34317,7 @@ var RateLine = { render: function render() {
 var StackedLines = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34239,7 +34331,7 @@ var StackedLines = { render: function render() {
   computed: {
     combinedGroup: function combinedGroup() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var _reducer = this.getReducerExtractor;
+      var _reducer = this.reducerExtractor;
       var lineNum = _reducer(dim.top(1)[0]).length;
       var groups = [];
 
@@ -34253,6 +34345,9 @@ var StackedLines = { render: function render() {
         _loop(i);
       }
       return combineGroups(groups);
+    },
+    reducer: function reducer() {
+      return null; // disable default reducer
     }
   },
 
@@ -34261,15 +34356,18 @@ var StackedLines = { render: function render() {
 
     var chart = this.chart;
     var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-    var _reducer = this.getReducerExtractor;
+    var _reducer = this.reducerExtractor;
+
+    if (!dim.top(1).length) return chart;
+
     var lineNum = _reducer(dim.top(1)[0]).length;
 
-    chart.group(this.combinedGroup, this.labels[0], function (d) {
+    chart.group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), function (d) {
       return d.value[0];
     }).renderArea(true);
 
     var _loop2 = function _loop2(i) {
-      chart.stack(_this.combinedGroup, _this.labels[i], function (d) {
+      chart.stack(_this.combinedGroup, _this.getLabel(_this.getReduceKey(i)), function (d) {
         return d.value[i];
       });
     };
@@ -34296,7 +34394,7 @@ var StackedLines = { render: function render() {
 var OrdinalBar = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34329,7 +34427,7 @@ var OrdinalBar = { render: function render() {
   computed: {
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var reducer = this.getReducerExtractor;
+      var reducer = this.reducerExtractor;
       var group = dim.group().reduceSum(reducer);
       return this.removeEmptyRows ? removeEmptyBins(group) : group;
     }
@@ -34354,15 +34452,10 @@ var OrdinalBar = { render: function render() {
   }
 })();
 
-function _extractReduceKey$1(reduce) {
-  // FIXME: Replace if there is a better way
-  return reduce.match(/d.\w*/g);
-}
-
 var StackedBar = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34400,7 +34493,7 @@ var StackedBar = { render: function render() {
   computed: {
     combinedGroup: function combinedGroup() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var _reducer = this.getReducerExtractor;
+      var _reducer = this.reducerExtractor;
       var groups = [];
 
       var _loop = function _loop(i) {
@@ -34409,16 +34502,19 @@ var StackedBar = { render: function render() {
         }));
       };
 
-      for (var i = 0; i < this._labels.length; i++) {
+      for (var i = 0; i < this.reduceKeys.length; i++) {
         _loop(i);
       }
       return combineGroups(groups);
     },
-    reduceKeys: function reduceKeys() {
-      return _extractReduceKey$1(this.reduce);
+    reducer: function reducer() {
+      return null; // disable default reducer
     },
-    _labels: function _labels() {
-      return this.labels || this.reduceKeys;
+    xScale: function xScale() {
+      return Base.computed.xScale.apply(this) || d3$1.scale.ordinal();
+    },
+    reduceKeys: function reduceKeys() {
+      return Object.keys(this.reducerExtractor({}));
     }
   },
   mounted: function mounted() {
@@ -34426,20 +34522,20 @@ var StackedBar = { render: function render() {
 
     var chart = this.chart;
 
-    chart.group(this.combinedGroup, this._labels[0], function (d) {
+    chart.group(this.combinedGroup, this.getLabel(0), function (d) {
       return d.value[0];
-    }).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
+    }).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
       return d.key + '[' + this.layer + ']: ' + d.value;
     });
     // stack
 
     var _loop2 = function _loop2(i) {
-      chart.stack(_this.combinedGroup, _this._labels[i], function (d) {
+      chart.stack(_this.combinedGroup, _this.getLabel(i), function (d) {
         return d.value[i];
       });
     };
 
-    for (var i = 1; i < this._labels.length; i++) {
+    for (var i = 1; i < this.reduceKeys.length; i++) {
       _loop2(i);
     }
     this.applyLegend({ reverseOrder: true });
@@ -34472,7 +34568,7 @@ function _multikey(x, y) {
 var FilterStackedBar = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -34512,7 +34608,7 @@ var FilterStackedBar = { render: function render() {
     dimensionName: function dimensionName() {
       return this.dimension;
     },
-    getDimensionExtractor: function getDimensionExtractor() {
+    dimensionExtractor: function dimensionExtractor() {
       var _this = this;
 
       var extractor = generateExtractor(this.dimension);
@@ -34520,18 +34616,18 @@ var FilterStackedBar = { render: function render() {
       return function (d) {
         var v = extractor(d);
         if (_this.scale === 'time') {
-          v[0] = ymdFormat(v[0]);
+          v[0] = d3$1.time.format('%Y-%m-%d')(v[0]);
         }
         return _joinkey(v);
       };
     },
     grouping: function grouping() {
-      var grouping = this.getDimensionExtractor;
+      var grouping = this.dimensionExtractor;
       return Store.registerDimension(this.dimensionName, grouping, { dataest: this.dataset });
     },
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var reducer = this.getReducerExtractor;
+      var reducer = this.reducerExtractor;
       var group = dim.group().reduceSum(reducer);
       return this.stackSecond(group);
     },
@@ -34885,6 +34981,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -34985,6 +35095,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -34996,6 +35109,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -35023,6 +35138,10 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -35084,7 +35203,7 @@ var GeoJP = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .container { display: flex; flex-direction: column; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .container { display: flex; flex-direction: column; } th.dc-table-head { cursor: pointer } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35136,7 +35255,7 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [_c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } }), this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
@@ -35160,6 +35279,9 @@ var DataTable = { render: function render() {
     order: {
       type: String,
       default: 'descending'
+    },
+    linkColumn: {
+      type: String
     },
     // chart style
     width: {
@@ -35223,7 +35345,7 @@ var DataTable = { render: function render() {
       return Math.min(end, this.filteredSize);
     },
     firstRow: function firstRow() {
-      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
       return dim.top(1)[0];
     },
     isFirstPage: function isFirstPage() {
@@ -35232,10 +35354,13 @@ var DataTable = { render: function render() {
     isLastPage: function isLastPage() {
       return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
     },
+    linkCol: function linkCol() {
+      return this.linkColumn.replace(/\s/g, '').split(',');
+    },
     grouping: function grouping() {
       var _this = this;
 
-      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
       var dimensionKey = this.extractDimensionName(this.dimension);
       var grouping = dim.group().reduce(function (p, v) {
         var vals = _this.getColsExtractor(v);
@@ -35309,6 +35434,14 @@ var DataTable = { render: function render() {
       });
       return schema;
     },
+    setFormat: function setFormat(d, key) {
+      if (this.linkCol && this.linkCol.includes(key)) {
+        return this.insertLink(d.value[key]);
+      } else if (d.value[key].per) return d.value[key].per;else return d.value[key];
+    },
+    insertLink: function insertLink(v) {
+      return '<a href=' + v + '>' + v + '</a>';
+    },
     setColumnSettings: function setColumnSettings() {
       var _this4 = this;
 
@@ -35316,7 +35449,7 @@ var DataTable = { render: function render() {
         _this4.columnSettings.push({
           label: Store.getLabel(k, { dataset: _this4.dataset }),
           format: function format(d) {
-            return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
+            return _this4.setFormat(d, k);
           }
         });
       });
@@ -35353,6 +35486,8 @@ var DataTable = { render: function render() {
       var dim = Store.getDimension(_this5.dimensionName, { dataset: _this5.dataset });
       _this5.filteredDataSize = dim.groupAll().value();
       _this5.filteredSize = _this5.grouping.size();
+      var ths = d3$1.selectAll('th.dc-table-head');
+      ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
     });
     this.updateTable();
     return chart.render();
@@ -35382,7 +35517,7 @@ function _extractName(dimension) {
 var HeatMap = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -35390,10 +35525,6 @@ var HeatMap = { render: function render() {
     chartType: {
       type: String,
       default: 'heatMap'
-    },
-    // TODO: Baseに移動する
-    dateKey: {
-      type: String
     },
     dimension: {
       type: String
@@ -35447,21 +35578,21 @@ var HeatMap = { render: function render() {
       return this.dimensionKeys[1];
     },
     firstRow: function firstRow() {
-      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
       return dim.top(1)[0];
     },
     data: function data() {
-      return this.getDimensionExtractor(this.firstRow);
+      return this.dimensionExtractor(this.firstRow);
     },
     dataKeys: function dataKeys() {
       return Object.keys(this.data);
     },
-    getDimensionExtractor: function getDimensionExtractor() {
+    dimensionExtractor: function dimensionExtractor() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey);
       return generateExtractor(this.dimensionName);
     },
     grouping: function grouping() {
-      var getter = this.getDimensionExtractor;
+      var getter = this.dimensionExtractor;
       var xInterval = this.getTimeInterval(this.xKey);
       var yInterval = this.getTimeInterval(this.yKey);
       if ((xInterval && yInterval) === null) {
@@ -35475,12 +35606,6 @@ var HeatMap = { render: function render() {
     }
   },
   methods: {
-    getTimeInterval: function getTimeInterval(key) {
-      if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
-    },
-    getTimeFormat: function getTimeFormat(key) {
-      if (this.dateKey === undefined) return null;else return TIME_FORMATS[key];
-    },
     formatKey: function formatKey(axis, key) {
       var xTimeFormat = this.getTimeFormat(this.xKey);
       var yTimeFormat = this.getTimeFormat(this.yKey);
@@ -35549,7 +35674,7 @@ function _extractName$1(dimension) {
 var Series = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -35559,9 +35684,6 @@ var Series = { render: function render() {
       default: 'seriesChart'
     },
     dimension: {
-      type: String
-    },
-    dateKey: {
       type: String
     },
     width: {
@@ -35661,29 +35783,22 @@ var Series = { render: function render() {
     yKey: function yKey() {
       return _extractName$1(this.reduce);
     },
-    firstRow: function firstRow() {
-      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
-      return dim.top(1)[0];
-    },
-    data: function data() {
-      return this.getDimensionExtractor(this.firstRow);
-    },
     dataKeys: function dataKeys() {
-      return Object.keys(this.data);
+      return Object.keys(this.dimensionExtractor({}));
     },
-    getDimensionExtractor: function getDimensionExtractor() {
+    dimensionExtractor: function dimensionExtractor() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey);
       return generateExtractor(this.dimensionName);
     },
     grouping: function grouping() {
-      var getter = this.getDimensionExtractor;
-      var xInterval = this.getTimeInterval(this.seriesKey);
-      var yInterval = this.getTimeInterval(this.xKey);
+      var getter = this.dimensionExtractor;
+      var yInterval = this.getTimeInterval(this.seriesKey);
+      var xInterval = this.getTimeInterval(this.xKey);
       if ((xInterval && yInterval) === null) {
         return Store.registerDimension(this.dimensionName, getter, { dataset: this.dataset });
       } else {
         var grouping = function grouping(d) {
-          return [xInterval(getter(d)), yInterval(getter(d))];
+          return [yInterval(getter(d)), xInterval(getter(d))];
         };
         return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
       }
@@ -35754,7 +35869,7 @@ var Series = { render: function render() {
 var Bubble = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-bubble-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
-        } } })], 1);
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
 
@@ -35830,18 +35945,18 @@ var Bubble = { render: function render() {
       return this.dimension;
     },
     data: function data() {
-      return this.getReducerExtractor(this.firstRow);
+      return this.reducerExtractor(this.firstRow);
     },
     dataKeys: function dataKeys() {
       return Object.keys(this.data);
     },
     firstRow: function firstRow() {
-      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
       return dim.top(1)[0];
     },
     grouping: function grouping() {
-      var getter = this.getDimensionExtractor;
-      var interval = this.getTimeInterval();
+      var getter = this.dimensionExtractor;
+      var interval = this.getTimeInterval(this.timeScale);
       var grouping = interval === null ? getter : function (d) {
         return interval(getter(d));
       };
@@ -35850,10 +35965,10 @@ var Bubble = { render: function render() {
     reducer: function reducer() {
       var _this = this;
 
-      var dim = Store.getDimension(this.dimensionName, this.getDimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
       var dimensionKey = this.extractDimensionName(this.dimension);
       return dim.group().reduce(function (p, v) {
-        var vals = _this.getReducerExtractor(v);
+        var vals = _this.reducerExtractor(v);
         _this.dataKeys.forEach(function (k) {
           if (typeof p[k] === 'string' && typeof vals[k] === 'string') {
             p[k] = vals[k];
@@ -35866,7 +35981,7 @@ var Bubble = { render: function render() {
         p._count++;
         return p;
       }, function (p, v) {
-        var vals = _this.getReducerExtractor(v);
+        var vals = _this.reducerExtractor(v);
         _this.dataKeys.forEach(function (k) {
           if (k === dimensionKey) {
             p[k] = vals[k];
@@ -35907,18 +36022,8 @@ var Bubble = { render: function render() {
         if (val.per != undefined) return val.per;
       }
     },
-    getTimeInterval: function getTimeInterval() {
-      if (this.timeScale === undefined) return null;else return TIME_INTERVALS[this.timeScale];
-    },
-    getTimeFormat: function getTimeFormat() {
-      if (this.timeScale === undefined) return null;
-      // If time-format passed from props, then use it
-      else if (this.timeFormat) return d3$1.time.format(this.timeFormat);
-        // else format is automatically selected (depending on time-scale)
-        else return TIME_FORMATS[this.timeScale];
-    },
     formatKey: function formatKey(key) {
-      var format = this.getTimeFormat();
+      var format = this.getTimeFormat(this.timeScale);
       if (format === null) return key;
       return format(key);
     }
@@ -35929,7 +36034,7 @@ var Bubble = { render: function render() {
     var chart = this.chart;
     var all = this.reducer.all();
 
-    chart.transitionDuration(this.transitionDuration).colors(d3$1.scale.category10()).keyAccessor(function (p) {
+    chart.colors(d3$1.scale.category10()).keyAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.xAxis]);
     }).valueAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.yAxis]);
@@ -35953,7 +36058,7 @@ var Bubble = { render: function render() {
       return v + ('' + _this3.yAxisFormat);
     });
     if (this.timeScale) {
-      var format = this.timeFormat ? d3$1.time.format(this.timeFormat) : TIME_FORMATS[this.timeScale];
+      var format = this.getTimeFormat(this.timeScale);
       chart.filterPrinter(function (filters) {
         return filters.map(function (f) {
           return format(f);
@@ -35987,6 +36092,30 @@ var resetAllButton = { render: function render() {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .download-csv-button a:not([href]):not([tabindex]) { color: #2AAB9F; cursor: pointer; font-weight: bold; } .download-csv-button .btn.btn-outline-primary { border-color: #2AAB9F; } .download-csv-button .btn.btn-outline-primary:hover { color: #2AAB9F; border-color: #2AAB9F; background-color: #fff; opacity: .8; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var csvDownloadButton = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "download-csv-button" }, [_c('a', { staticClass: "btn btn-outline-primary btn-lg", on: { "click": function click($event) {
+          _vm.downloadCSV('data');
+        } } }, [_vm._v("csv download")])]);
+  }, staticRenderFns: [],
+  methods: {
+    downloadCSV: function downloadCSV(data) {
+      return EasyDC.Store.downloadCSV(data);
+    }
+  }
+};
+
 var components = {
   'number-display': NumberDisplay,
   'segment-pie': SegmentPie,
@@ -36004,7 +36133,8 @@ var components = {
   'series': Series,
   'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine),
-  'reset-all-button': resetAllButton
+  'reset-all-button': resetAllButton,
+  'csv-download-button': csvDownloadButton
 };
 
 function install(Vue, options) {
@@ -36031,6 +36161,7 @@ var Chart = {
   Bubble: Bubble,
   compose: compose,
   resetAllButton: resetAllButton,
+  csvDownloadButton: csvDownloadButton,
   install: install,
   installedComponents: components
 };
