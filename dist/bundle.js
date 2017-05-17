@@ -12676,8 +12676,6 @@ var d3$1 = createCommonjsModule(function (module) {
     d3.xml = d3_xhrType(function (request) {
       return request.responseXML;
     });
-    console.log(typeof undefined === "function" && undefined.amd, 'object' === "object" && module.exports);
-
     if (typeof undefined === "function" && undefined.amd) this.d3 = d3, undefined(d3);else if ('object' === "object" && module.exports) module.exports = d3;else this.d3 = d3;
   }();
 });
@@ -24829,7 +24827,7 @@ var ResetButton = { render: function render() {
 
 var Base = {
 
-  template: '<div class="krt-dc-component" :id="id">\n              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n              <div v-text="title" style="font-size:24px; text-align:center;"></div>\n            </div>',
+  template: '\n    <div class="krt-dc-component" :id="id">\n      <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      <div v-text="title" style="font-size:24px; text-align:center;"></div>\n    </div>\n  ',
 
   components: {
     'reset-button': ResetButton
