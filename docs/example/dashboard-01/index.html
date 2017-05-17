@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
     <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://use.fontawesome.com/41e2f80a78.js"></script>
 
   </head>
 
@@ -17,19 +18,6 @@
       align-items: center;
       justify-content: space-around;
    }
-    .buttons .download-csv-button a:not([href]):not([tabindex]) {
-      color: #2AAB9F;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .buttons .download-csv-button .btn.btn-outline-primary {
-      border-color: #2AAB9F;
-    }
-    .buttons .download-csv-button .btn.btn-outline-primary:hover {
-      border-color: #2AAB9F;
-      background-color: #fff;
-      opacity: .8;
-    }
   </style>
 
   <body>
@@ -43,9 +31,7 @@
 
 <div id="krt-dc-dashboard">
   <div class="buttons">
-    <div class="download-csv-button">
-      <a class="btn btn-outline-primary btn-lg" onclick="EasyDC.Store.downloadCSV('data')">csv download</a>
-    </div>
+    <csv-download-button></csv-download-button>
     <reset-all-button></reset-all-button>
   </div>
 
@@ -82,7 +68,7 @@
       :font-size=48
     -->
     <number-display
-      reduce="d.pv"
+      reduce="d.name"
     ></number-display>
     <number-display
       reduce="d.uu"
@@ -100,6 +86,7 @@
 
   <div>
     <list-row
+      title='list-row'
        dimension='d.name'
        reduce='d.pv'
        :descending=true
@@ -112,6 +99,7 @@
 
   <div class="container" style="display: flex; flex-direction: row;">
     <ordinal-bar
+      title='ordinal-bar'
       dimension='d.name'
       reduce='d.pv'
       :width=300
@@ -178,11 +166,12 @@
   <div class="container">
     <data-table
       dimension="d.name"
-      columns="{name: d.name, pv: d.pv, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+      columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
       sort-by="name"
       order="descending"
+      link-column='link'
       :width=1000
-      :height=1000
+      :height=300
       :use-table-paging=true
       :offset=0
       :rows-per-page=5
