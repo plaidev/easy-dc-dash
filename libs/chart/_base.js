@@ -36,6 +36,9 @@ export default {
       type: String,
       default: ''
     },
+    dateKey: {
+      type: String
+    },
     volume: {
       type: String
     },

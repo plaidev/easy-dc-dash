@@ -33,9 +33,6 @@ export default {
     dimension: {
       type: String
     },
-    dateKey: {
-      type: String
-    },
     width: {
       type: Number,
       default: 768
