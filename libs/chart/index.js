@@ -16,6 +16,7 @@ import HeatMap from './heat-map.vue'
 import Series from './series.vue'
 import Bubble from './bubble.vue'
 import resetAllButton from './reset-all-button.vue'
+import csvDownloadButton from './csv-download-button.vue'
 
 const components = {
   'number-display': NumberDisplay,
@@ -34,7 +35,8 @@ const components = {
   'series': Series,
   'bubble': Bubble,
   'stack-and-rate': compose(StackedLines, RateLine),
-  'reset-all-button': resetAllButton
+  'reset-all-button': resetAllButton,
+  'csv-download-button': csvDownloadButton
 }
 
 function install(Vue, options) {
@@ -61,6 +63,7 @@ export default {
   Bubble: Bubble,
   compose: compose,
   resetAllButton: resetAllButton,
+  csvDownloadButton: csvDownloadButton,
   install: install,
   installedComponents: components
 }
