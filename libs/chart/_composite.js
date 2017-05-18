@@ -46,7 +46,6 @@ export function compose(Left, Right) {
     },
     methods: {
       showTooltip: function(d) {
-        console.log(d);
         const data = {
           key: d.name,
           // val: d.values

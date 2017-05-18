@@ -195,7 +195,6 @@ export default {
       this.$refs.tooltip.show(data)
     },
     moveTooltip: function() {
-      console.log(d3.event);
       this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
     },
     removeTooltip: function() {
