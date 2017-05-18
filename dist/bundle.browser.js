@@ -34213,6 +34213,7 @@ var WeekRow = { render: function render() {
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
   extends: Base,
+
   props: {
     chartType: {
       type: String,
@@ -34702,7 +34703,7 @@ var StackedBar = { render: function render() {
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
       var data = {
-        key: Store.getLabel(d.data.key),
+        key: d.data.key,
         val: d.data.value.reduce(function (a, b) {
           return a + b;
         })
