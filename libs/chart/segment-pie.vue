@@ -22,10 +22,6 @@ export default {
     labels: {
       type: Object
     },
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 200, itemWidth: 70, itemHeight: 12, horizontal: true}}
-    },
     useLegend: {
       type: Boolean,
       default: true
@@ -85,7 +81,6 @@ export default {
     const chart = this.chart;
     chart
       .label((d) => this.segmentLabel(d.key))
-    this.applyLegend()
     return chart.render()
   },
 

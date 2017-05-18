@@ -47,6 +47,9 @@ export default {
     renderTitleLabel: {
       type: Boolean,
       default: true
+    },
+    useLegend: {
+      default: false
     }
   },
   computed: {

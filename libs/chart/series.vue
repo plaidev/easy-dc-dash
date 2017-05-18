@@ -71,40 +71,10 @@ export default {
       type: String,
       default: ''
     },
-    // legend
-    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
     useLegend: {
       type: Boolean,
       default: true
     },
-    legendX: {
-      type: Number,
-      default: 350
-    },
-    legendY: {
-      type: Number,
-      default: 350
-    },
-    legendWidth: {
-      type: Number,
-      default: 140
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 13
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
-    }
   },
   computed: {
     dimensionName: function() {
@@ -179,16 +149,6 @@ export default {
       })
     chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
-    if(this.useLegend) {
-      chart.legend(dc.legend()
-      .x(this.legendX)
-      .y(this.legendY)
-      .gap(this.legendGap)
-      .legendWidth(this.legendWidth)
-      .itemWidth(this.legendItemWidth)
-      .itemHeight(this.legendItemHeight)
-      .horizontal(this.legendHorizontal))
-    }
     return chart.render();
   }
 }

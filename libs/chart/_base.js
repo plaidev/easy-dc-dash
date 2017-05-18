@@ -162,29 +162,6 @@ export default {
       this.chart.filterAll();
       dc.redrawAll();
     },
-    applyLegend: function(options={}) {
-      if(!this.useLegend || !this.legend) return
-
-      const {
-        indexLabel = false,
-        reverseOrder = false
-      } = options;
-
-      const l = this.legend
-      
-      const legendInstance = dc.legend()
-        .x(l.x).y(l.y)
-        .gap(l.gap).legendWidth(l.width)
-        .itemWidth(l.itemWidth).itemHeight(l.itemHeight)
-        .horizontal(l.horizontal)
-        .legendText((d, i) => {
-          const k = indexLabel? i: d.name;
-          return this.getLabel(k)
-        })
-
-      this.chart.legend(legendInstance)
-      if(reverseOrder) reverseLegendOrder(this.chart)
-    },
     getLabel: function(key) {
       return Store.getLabel(key, {
         dataset: this.dataset,
@@ -202,6 +179,36 @@ export default {
       if((this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
+    },
+    applyLegend: function(options={}) {
+      const {
+        indexLabel = false,
+        reverseOrder = false
+      } = options;
+
+      const {
+        legend: legendOptions
+      } = this.layoutSettings;
+
+      this.legend = dc.legend()
+        .legendText((d, i) => {
+          const k = indexLabel? i: d.name;
+          return this.getLabel(k)
+        })
+
+      const {
+        x = 0, y = 0, width = 200, horizontal = true,
+        itemWidth = 70, itemHeight = 12, gap = 5
+      } = legendOptions || {};
+
+      this.legend
+        .x(x).y(y).legendWidth(width).horizontal(horizontal)
+        .itemWidth(itemWidth).itemHeight(itemHeight)
+        .gap(gap)
+
+      this.chart.legend(this.legend)
+
+      if(reverseOrder) reverseLegendOrder(this.chart)
     },
     getContainerInnerSize: function() {
       let width, height;
@@ -269,6 +276,7 @@ export default {
     if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
     if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
 
+    if (this.useLegend) this.applyLegend();
     this.applyStyles();
 
     chart
