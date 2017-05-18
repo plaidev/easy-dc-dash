@@ -1,6 +1,6 @@
 <template>
-  <div class="krt-dc-date-volume-chart" :id=id>
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
+  <div class="krt-dc-date-volume-chart" :id="id">
+    <!-- <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip> -->
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -36,7 +36,6 @@ export default {
   },
   methods: {
     showTooltip: function(d) {
-      console.log(d);
       const data = {
         key: d.data.key,
         val: d.data.value
@@ -54,12 +53,12 @@ export default {
       //.round(time.week.round)
       .alwaysUseRounding(true)
       .xUnits(d3.time.days)
-      .on('renderlet', () => {
-        d3.selectAll('#krt-dc-date-volume-chart rect.bar')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
+      // .on('renderlet', () => {
+      //   d3.selectAll('#krt-dc-date-volume-chart rect.bar')
+      //     .on("mouseover", this.showTooltip)
+      //     .on("mousemove", this.moveTooltip)
+      //     .on("mouseout", this.removeTooltip);
+      // })
       .yAxis().ticks(0)
 
     return chart.render()

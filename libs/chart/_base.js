@@ -1,5 +1,6 @@
 import d3 from 'd3'
 import dc from 'dc'
+import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
