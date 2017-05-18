@@ -131,11 +131,13 @@ export default {
       return k.replace(/\'/g, '')
     },
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const k = this.getLabel(d.data.key)
       const data = {
-        key: `${d.data.key}[${d.layer}]`,
+        key: `${k}[${d.layer}]`,
         val: d.data.value[d.layer]
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -158,12 +160,6 @@ export default {
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
-      .on('renderlet', () => {
-        d3.selectAll('.krt-dc-filter-stacked rect.bar')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     // stack
     for (let i=1; i<barNum; i++) {
       chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));

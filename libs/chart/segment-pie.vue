@@ -88,11 +88,12 @@ export default {
       return label;
     },
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const data = {
-        key: d.data.key,
+        key: this.segmentLabel(d.data.key),
         val: d.data.value
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
 
@@ -100,12 +101,6 @@ export default {
     const chart = this.chart;
     chart
       .label((d) => this.segmentLabel(d.key))
-    chart.on('renderlet', () => {
-      d3.selectAll('.krt-dc-segment-pie .pie-slice')
-        .on("mouseover", this.showTooltip)
-        .on("mousemove", this.moveTooltip)
-        .on("mouseout", this.removeTooltip);
-    })
     this.applyLegend()
     return chart.render()
   },
@@ -115,5 +110,10 @@ export default {
   }
 }
 
-
 </script>
+
+<style scoped>
+.krt-dc-segment-pie .pie-label-group text {
+  pointer-events: none;
+}
+</style>

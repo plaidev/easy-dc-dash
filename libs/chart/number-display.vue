@@ -46,6 +46,10 @@ export default {
     numberFormat: {
       type: String,
       default: '.2s'
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

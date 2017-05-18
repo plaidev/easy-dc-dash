@@ -179,16 +179,19 @@ export default {
       return format(key)
     },
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const v = d.value
+      const format = this.getTimeFormat(this.timeScale)
+      const k = format ? format(d.key) : d.key
       const data = {
-        key: d.key,
+        key: k,
         vals: {
-          x: v.x.per ? v.x.per : v.x,
-          y: v.y.per ? v.y.per : v.y,
-          r: v.radius.per ? v.radius.per : v.radius
+          [this.xAxis]: v[this.xAxis].per ? v[this.xAxis].per : v.x,
+          [this.yAxis]: v[this.yAxis].per ? v[this.yAxis].per : v.y,
+          [this.radius]: v[this.radius].per ? v[this.radius].per : v.radius
         }
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -213,12 +216,6 @@ export default {
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .renderVerticalGridLines(this.renderVerticalGridLines)
       .label((p) => this.formatKey(p.key))
-      .on('renderlet', () => {
-        d3.selectAll('.krt-dc-bubble-chart .node .bubble')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
     if(this.timeScale) {
@@ -232,3 +229,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.krt-dc-bubble-chart .node text {
+  pointer-events: none;
+}
+</style>

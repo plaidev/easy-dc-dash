@@ -1,11 +1,23 @@
 <template>
   <div class="krt-dc-tooltip" v-if="data">
+    <div class="circle-box" v-if="color">
+      <div class="circle" :style="{backgroundColor: color}"></div>
+    </div>
     <div class="chart-data">
-      <div v-if="data.key"><span class="key">key: {{data.key}}</span></div>
-      <div v-if="data.keys" v-for="(v, k) in data.keys"><span class="keys">{{k}} : {{v}}</span></div>
-      <div v-if="data.val"><span class="val">value: {{data.val}}</span></div>
-      <div v-if="data.vals" v-for="(v, k) in data.vals"><span class="vals">{{k}}: {{v}}</span></div>
-      <div v-if="data.total"><span class="total">value: {{data.total}}</span></div>
+      <div class="key">
+        <div v-if="data.key">
+          <span>{{data.key}}</span>
+        </div>
+        <div v-if="data.keys" v-for="(v,k) in data.keys">
+          <span>{{k}} : {{v}}</span>
+        </div>
+      </div>
+      <div class="val">
+        <div v-if="data.val">{{data.val}}</div>
+        <div v-if="data.vals" v-for="(v, k) in data.vals">
+          <span>{{k}}: {{v}}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -16,14 +28,18 @@ export default {
   name: 'KrtDcTooltip',
   data () {
    return {
-      data: null
+      data: null,
+      color: null
     }
   },
   methods: {
-    show: function(data) {
+    show: function(data, color) {
+      if(!data) return
       this.data = data;
+      this.color = color;
     },
     move: function(left, top) {
+      if(!this.data) return
       const el = this.$el;
       el.style.left = (left + 50) + "px";
       el.style.top = (top - 10) + "px";
@@ -40,17 +56,34 @@ export default {
     pointer-events: none;
     color: #000;
     font-size: 18px;
-    font-weight: bold;
-    border: 1px solid #000;
-    background: rgba(255,255,255,.4);
+    border: 1px solid #aaa;
+    background: rgba(255,255,255,.8);
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
     position: fixed;
     margin: 0 0 0 -32px;
     border-radius: 5px;
     padding: 8px 10px;
     z-index: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+  }
+  .krt-dc-tooltip .circle-box {
+    height: 100%;
+    width: 30px;
+  }
+  .krt-dc-tooltip .circle-box .circle {
+    border-radius: 50%;
+    height: 16px;
+    width: 16px;
   }
   .krt-dc-tooltip .chart-data {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
   }
+  .krt-dc-tooltip .chart-data .key {
+    font-weight: bold;
+  }
+
 </style>

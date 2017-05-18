@@ -69,11 +69,12 @@ export default {
   },
   methods: {
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const data = {
         key: d.data.key,
         val: d.data.value.reduce((a,b) => a+b)
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -87,12 +88,6 @@ export default {
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
-      .on('renderlet', () => {
-        d3.selectAll('.krt-dc-stacked-bar rect.bar')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     // stack
     for (let i=1; i<this.reduceKeys.length; i++) {
       chart.stack(this.combinedGroup, this.getLabel(i), (d) => d.value[i]);
@@ -102,9 +97,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.krt-dc-stacked-bar .rect.bar:hover {
-  fill-opacity: 1;
-}
-</style>

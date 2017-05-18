@@ -46,11 +46,14 @@ export function compose(Left, Right) {
     },
     methods: {
       showTooltip: function(d) {
+        const fill = d3.event.target.getAttribute('fill')
+        const stroke = d3.event.target.getAttribute('stroke')
+        const color = fill || stroke
         const data = {
           key: d.name,
           // val: d.values
         }
-        this.$refs.tooltip.show(data)
+        this.$refs.tooltip.show(data, color)
       }
     },
     mounted: function() {
@@ -128,12 +131,6 @@ export function compose(Left, Right) {
         //.rightY(scale.linear().domain([0, 1]))
         .elasticY(this.elasticY)
         .shareColors(true)
-        .on('renderlet', () => {
-          const g = d3.selectAll('.krt-dc-composite .stack-list .stack')
-            .on("mouseover", this.showTooltip)
-            .on("mousemove", this.moveTooltip)
-            .on("mouseout", this.removeTooltip);
-        })
 
       // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
       // legendは配列として受け取り、番号で割り当てる

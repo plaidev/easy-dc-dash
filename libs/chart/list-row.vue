@@ -78,11 +78,12 @@ export default {
       }
     },
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const data = {
         key: d.key,
         val: d.value
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -96,12 +97,6 @@ export default {
       .labelOffsetY(this.labeloffsetY)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
       .ordering((d) => this.descending ? -d.value : d.value)
-      .on('renderlet', () => {
-        const bar = d3.selectAll('.krt-dc-list-row .row')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     return chart.render();
   }
 }
@@ -109,6 +104,9 @@ export default {
 </script>
 
 <style scoped>
+.krt-dc-list-row g.row text {
+    pointer-events: none;
+  }
 .krt-dc-list-row g.row text.titlerow {
     fill: #000000
   }

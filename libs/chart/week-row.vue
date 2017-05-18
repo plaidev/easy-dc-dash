@@ -96,11 +96,12 @@ export default {
 
   methods: {
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const data = {
-        key: d.key,
+        key: this.getLabel(d.key),
         val: d.value.value
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
 
@@ -111,14 +112,14 @@ export default {
       .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
       .x(d3.scale.linear().domain([0, 7]))
       .elasticX(true)
-      .on('renderlet', () => {
-        const bar = d3.selectAll('.krt-dc-week-row .row')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     return chart.render();
   }
 }
 
 </script>
+
+<style scoped>
+.krt-dc-week-row g.row text {
+    pointer-events: none;
+  }
+</style>
