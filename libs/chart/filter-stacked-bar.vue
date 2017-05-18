@@ -1,9 +1,3 @@
-<template>
-  <div class="krt-dc-filter-stacked" :id="id">
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 
@@ -159,7 +153,7 @@ export default {
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
-      chart.selectAll('.krt-dc-filter-stacked rect.bar')
+      chart.selectAll('rect.bar')
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
           let x = d.x;
@@ -181,10 +175,11 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-filter-stacked g.chart-body {
+g.chart-body {
+  test: 'abc';
     clip-path: none;
 }
-.krt-dc-filter-stacked rect.bar.stack-deselected {
+rect.bar.stack-deselected {
   opacity: .8;
   fill-opacity: .5;
 }
