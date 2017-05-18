@@ -2,6 +2,8 @@ import crossfilter from 'crossfilter'
 import dc from 'dc'
 import {downloadCSV} from './utils/blob-csv'
 
+import DefaultTheme from './themes/default'
+
 //-------------------------------------
 
 
@@ -161,6 +163,10 @@ class DashboardStore {
       }
     }
     return null
+  }
+
+  getTheme() {
+    return DefaultTheme
   }
 
   downloadCSV(filename, dimensionName='_all', options={}) {
