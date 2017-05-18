@@ -38,6 +38,8 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
+    chart
+      .cx(this.$el.clientHeight / 2)
 
     return chart.render()
   },
