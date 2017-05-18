@@ -23,9 +23,6 @@ export default {
       type: String,
       default: 'seriesChart'
     },
-    dimension: {
-      type: String
-    },
     width: {
       type: Number,
       default: 768
@@ -92,9 +89,6 @@ export default {
     },
     yKey: function() {
       return _extractName(this.reduce)
-    },
-    dataKeys: function() {
-      return Object.keys(this.dimensionExtractor({}))
     },
     dimensionExtractor: function() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey)
