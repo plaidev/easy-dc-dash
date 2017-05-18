@@ -5,15 +5,20 @@ import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 import ResetButton from '../components/reset-button.vue'
+import CardContainer from '../components/card.vue'
 
 export default {
 
-  template: `<div class="krt-dc-component" :id="id">
-              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-              <div v-text="title" style="font-size:24px; text-align:center;"></div>
-            </div>`,
+  template: `
+    <card :title="title" :width="width" :height="height">
+      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
+        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+      </div>
+    </card>
+  `,
 
   components: {
+    'card': CardContainer,
     'reset-button': ResetButton
   },
 

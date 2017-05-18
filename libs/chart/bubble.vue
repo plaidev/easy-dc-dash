@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-bubble-chart" :id="id">
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
-
 <script lang='js'>
 
 import d3 from "d3"
