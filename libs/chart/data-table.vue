@@ -111,6 +111,9 @@ export default {
     rowsPerPage: {
       type: Number,
       default: 10
+    },
+    useLegend: {
+      default: false
     }
   },
   data () {

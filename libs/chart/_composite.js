@@ -29,10 +29,6 @@ export function compose(Left, Right) {
         type: Number,
         default: 240
       },
-      legend: {
-        type: Object,
-        default: () => {return {x:0, y:0, gap: 5, width: 800, itemWidth: 70, itemHeight: 12, horizontal: true}}
-      },
       elasticY: {
         type: Boolean,
         default: true

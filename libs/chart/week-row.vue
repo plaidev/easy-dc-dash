@@ -17,6 +17,9 @@ export default {
     },
     labels: {
       default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
+    },
+    useLegend: {
+      default: false
     }
   },
 

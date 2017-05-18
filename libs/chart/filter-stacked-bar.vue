@@ -45,10 +45,6 @@ export default {
     elasticY: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     }
   },
   computed: {

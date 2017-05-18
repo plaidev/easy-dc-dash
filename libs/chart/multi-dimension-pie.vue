@@ -19,30 +19,6 @@ export default {
       type: Boolean,
       default: true
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
-    },
     layout: {
       default: 'square-and-legend'
     }
@@ -62,17 +38,6 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
-
-    if(this.useLegend) {
-      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal)
-        .legendText((d, i) => {
-          return Store.getLabel(d.name, {
-            dataset: this.dataset,
-            chartName: this.id
-          })
-        })
-      )
-    }
 
     return chart.render()
   },
