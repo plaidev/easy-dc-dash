@@ -46,6 +46,9 @@ export default {
     dateKey: {
       type: String
     },
+    timeScale: {
+      type: String
+    },
     volume: {
       type: String
     },
