@@ -143,15 +143,7 @@ export default {
       }
     }
   },
-   methods: {
-    getTimeInterval: function(key) {
-      if(this.dateKey === undefined) return null
-      else return TIME_INTERVALS[key]
-    },
-    getTimeFormat: function(key) {
-      if(this.dateKey === undefined) return null
-      else return TIME_FORMATS[key]
-    },
+  methods: {
     formatKey: function(axis, key) {
       const seriesTimeFormat = this.getTimeFormat(this.seriesKey)
       const xTimeFormat = this.getTimeFormat(this.xKey)
