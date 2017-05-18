@@ -17,9 +17,10 @@ export function compose(Left, Right) {
     extends: Base,
 
     template: `<div class="krt-dc-composite" :id="id">
-                <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-                <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
-              </div>`,
+                      <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
+                      <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+                      <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>
+                    </div>`,
 
     props: {
       chartType: {
@@ -41,6 +42,16 @@ export function compose(Left, Right) {
       elasticY: {
         type: Boolean,
         default: true
+      }
+    },
+    methods: {
+      showTooltip: function(d) {
+        console.log(d);
+        const data = {
+          key: d.name,
+          // val: d.values
+        }
+        this.$refs.tooltip.show(data)
       }
     },
     mounted: function() {
@@ -118,6 +129,12 @@ export function compose(Left, Right) {
         //.rightY(scale.linear().domain([0, 1]))
         .elasticY(this.elasticY)
         .shareColors(true)
+        .on('renderlet', () => {
+          const g = d3.selectAll('.krt-dc-composite .stack-list .stack')
+            .on("mouseover", this.showTooltip)
+            .on("mousemove", this.moveTooltip)
+            .on("mouseout", this.removeTooltip);
+        })
 
       // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
       // legendは配列として受け取り、番号で割り当てる

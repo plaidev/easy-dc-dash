@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-multidim-pie" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -71,8 +72,24 @@ export default {
     }
   },
 
+  methods: {
+    showTooltip: function(d) {
+      const data = {
+        key: d.data.key,
+        val: d.data.value
+      }
+      this.$refs.tooltip.show(data)
+    }
+  },
+
   mounted: function() {
     const chart = this.chart;
+    chart.on('renderlet', () => {
+      d3.selectAll('.krt-dc-multidim-pie .pie-slice')
+        .on("mouseover", this.showTooltip)
+        .on("mousemove", this.moveTooltip)
+        .on("mouseout", this.removeTooltip);
+    })
 
     if(this.useLegend) {
       chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal)

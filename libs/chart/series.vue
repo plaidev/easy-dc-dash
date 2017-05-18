@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-series-chart" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -168,6 +169,13 @@ export default {
       }
       if(FORMATS[axis] === null) return +key
       return Number(FORMATS[axis](key))
+    },
+    showTooltip: function(d) {
+      const data = {
+        key: d.name,
+        // val: d.values
+      }
+      this.$refs.tooltip.show(data)
     }
   },
   mounted: function() {
@@ -187,23 +195,15 @@ export default {
       .seriesAccessor((d) => this.formatKey('series', d.key[0]))
       .keyAccessor((d) => this.formatKey('x', d.key[1]))
       .valueAccessor((d) => +d.value)
-      .title((d) => {
-        return `${this.seriesLabel}[${this.seriesKey}]: ${this.formatKey('series', d.key[0])}\n`
-          + `${this.xAxisLabel}[${this.xKey}]: ${this.formatKey('x', d.key[1])}\n`
-          + `${this.yAxisLabel}[${this.yKey}]: ${d.value}`
+      .on('renderlet', () => {
+        d3.selectAll('.krt-dc-series-chart .stack-list .stack .line')
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip);
       })
     chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
-    if(this.useLegend) {
-      chart.legend(dc.legend()
-      .x(this.legendX)
-      .y(this.legendY)
-      .gap(this.legendGap)
-      .legendWidth(this.legendWidth)
-      .itemWidth(this.legendItemWidth)
-      .itemHeight(this.legendItemHeight)
-      .horizontal(this.legendHorizontal))
-    }
+    this.applyLegend()
     return chart.render();
   }
 }

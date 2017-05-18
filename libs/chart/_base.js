@@ -4,16 +4,19 @@ import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 import ResetButton from './components/reset-button.vue'
+import KrtDcTooltip from './components/krt-dc-tooltip.vue'
 
 export default {
 
   template: `<div class="krt-dc-component" :id="id">
-              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-              <div v-text="title" style="font-size:24px; text-align:center;"></div>
-            </div>`,
+                    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
+                    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+                    <div v-text="title" style="font-size:24px; text-align:center;"></div>
+                  </div>`,
 
   components: {
-    'reset-button': ResetButton
+    'reset-button': ResetButton,
+    'krt-dc-tooltip': KrtDcTooltip
   },
 
   props: {
@@ -77,7 +80,7 @@ export default {
     },
     renderTitle: {
       type: Boolean,
-      default: true
+      default: false
     },
     useLegend: {
       type: Boolean,
@@ -187,6 +190,16 @@ export default {
       if((this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
+    },
+    showTooltip: function(data) {
+      this.$refs.tooltip.show(data)
+    },
+    moveTooltip: function() {
+      console.log(d3.event);
+      this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
+    },
+    removeTooltip: function() {
+      this.$refs.tooltip.remove();
     }
   },
 

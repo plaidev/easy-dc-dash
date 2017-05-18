@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-ordinal-bar" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -50,6 +51,15 @@ export default {
       return this.removeEmptyRows ? removeEmptyBins(group) : group
     }
   },
+  methods: {
+    showTooltip: function(d) {
+      const data = {
+        key: d.data.key,
+        val: d.data.value
+      }
+      this.$refs.tooltip.show(data)
+    }
+  },
   mounted: function() {
     const chart = this.chart;
 
@@ -60,6 +70,12 @@ export default {
       .xUnits(dc.units.ordinal)
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
+      .on('renderlet', () => {
+        d3.selectAll('.krt-dc-ordinal-bar rect.bar')
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip);
+      })
     return chart.render();
   }
 }

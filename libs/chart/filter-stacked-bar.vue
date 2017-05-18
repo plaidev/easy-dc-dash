@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-filter-stacked" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -128,6 +129,13 @@ export default {
     },
     extractKey: function(k) {
       return k.replace(/\'/g, '')
+    },
+    showTooltip: function(d) {
+      const data = {
+        key: `${d.data.key}[${d.layer}]`,
+        val: d.data.value[d.layer]
+      }
+      this.$refs.tooltip.show(data)
     }
   },
   mounted: function() {
@@ -150,8 +158,11 @@ export default {
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
-      .title(function(d) {
-        return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
+      .on('renderlet', () => {
+        d3.selectAll('.krt-dc-filter-stacked rect.bar')
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip);
       })
     // stack
     for (let i=1; i<barNum; i++) {

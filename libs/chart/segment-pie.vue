@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-segment-pie" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -85,6 +86,13 @@ export default {
         label = Store.getLabel(segmentId)
       }
       return label;
+    },
+    showTooltip: function(d) {
+      const data = {
+        key: d.data.key,
+        val: d.data.value
+      }
+      this.$refs.tooltip.show(data)
     }
   },
 
@@ -92,6 +100,12 @@ export default {
     const chart = this.chart;
     chart
       .label((d) => this.segmentLabel(d.key))
+    chart.on('renderlet', () => {
+      d3.selectAll('.krt-dc-segment-pie .pie-slice')
+        .on("mouseover", this.showTooltip)
+        .on("mousemove", this.moveTooltip)
+        .on("mouseout", this.removeTooltip);
+    })
     this.applyLegend()
     return chart.render()
   },

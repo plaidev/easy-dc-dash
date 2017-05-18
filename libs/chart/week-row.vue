@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-week-row" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -93,13 +94,29 @@ export default {
     }
   },
 
+  methods: {
+    showTooltip: function(d) {
+      const data = {
+        key: d.key,
+        val: d.value.value
+      }
+      this.$refs.tooltip.show(data)
+    }
+  },
+
   mounted: function() {
     const chart = this.chart;
 
     chart
       .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
       .x(d3.scale.linear().domain([0, 7]))
-      .elasticX(true);
+      .elasticX(true)
+      .on('renderlet', () => {
+        const bar = d3.selectAll('.krt-dc-week-row .row')
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip);
+      })
     return chart.render();
   }
 }
