@@ -1,9 +1,11 @@
 <template>
   <div class="reset-button">
-    <a class="reset btn btn-secondary" style="display: none;" @click="reset">reset</a>
     <span class='reset' style="display: none;">
-      Selected: <span class='filter badge'></span>
+      <span class='filter badge'></span>
     </span>
+    <a class="reset" style="display: none;" @click="reset">
+      <i class="fa fa-ban">&nbsp;</i>
+    </a>
   </div>
 </template>
 
@@ -20,25 +22,20 @@ export default {
 
 <style scoped>
 .reset-button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding-left: 20px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-right: 5px;
   padding-bottom: 5px;
 }
-.reset-button.reset {
-  font-weight: bold;
+.reset {
+  vertical-align: middle;
+  margin-left: 2px;
 }
-.reset-button a.reset.btn {
-  color: #fff;
-  background-color: #969E9C;
-  font-size: 10px;
+.reset i {
+  vertical-align: middle;
 }
-span.reset {
-  padding-left: 5px;
-  font-size: 12px;
-}
-span.reset .badge {
+.badge {
   max-width: 200px;
   background-color: #2FAB9F;
   font-size: 12px;
