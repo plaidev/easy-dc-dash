@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-stacked-bar" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -66,6 +67,15 @@ export default {
       return Object.keys(this.reducerExtractor({}))
     }
   },
+  methods: {
+    showTooltip: function(d) {
+      const data = {
+        key: d.data.key,
+        val: d.data.value.reduce((a,b) => a+b)
+      }
+      this.$refs.tooltip.show(data)
+    }
+  },
   mounted: function() {
     const chart = this.chart;
 
@@ -77,8 +87,11 @@ export default {
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
-      .title(function(d) {
-        return d.key + '[' + this.layer + ']: ' + d.value
+      .on('renderlet', () => {
+        d3.selectAll('.krt-dc-stacked-bar rect.bar')
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip);
       })
     // stack
     for (let i=1; i<this.reduceKeys.length; i++) {
@@ -89,3 +102,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.krt-dc-stacked-bar .rect.bar:hover {
+  fill-opacity: 1;
+}
+</style>

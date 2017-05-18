@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-bubble-chart" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -176,6 +177,18 @@ export default {
       const format = this.getTimeFormat(this.timeScale)
       if (format === null) return key
       return format(key)
+    },
+    showTooltip: function(d) {
+      const v = d.value
+      const data = {
+        key: d.key,
+        vals: {
+          x: v.x.per ? v.x.per : v.x,
+          y: v.y.per ? v.y.per : v.y,
+          r: v.radius.per ? v.radius.per : v.radius
+        }
+      }
+      this.$refs.tooltip.show(data)
     }
   },
   mounted: function() {
@@ -200,11 +213,11 @@ export default {
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .renderVerticalGridLines(this.renderVerticalGridLines)
       .label((p) => this.formatKey(p.key))
-      .title((p) => {
-        return `[${this.formatKey(p.key)}]\n`
-          + `${this.xAxis}: ${this.extractValue(p.value[this.xAxis])}${this.xAxisFormat}\n`
-          + `${this.yAxis}: ${this.extractValue(p.value[this.yAxis])}${this.yAxisFormat}\n`
-          + `${this.radius}: ${this.extractValue(p.value[this.radius])}${this.radiusFormat}`
+      .on('renderlet', () => {
+        d3.selectAll('.krt-dc-bubble-chart .node .bubble')
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip);
       })
     chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
