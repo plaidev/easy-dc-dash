@@ -8,19 +8,12 @@ export default {
   extends: Base,
 
   props: {
-    dimension: {
-      type: String,
-      default: 'd.segments'
-    },
     chartType: {
       type: String,
       default: 'pieChart'
     },
     segments: {
       required: true
-    },
-    labels: {
-      type: Object
     },
     useLegend: {
       type: Boolean,
