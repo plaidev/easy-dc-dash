@@ -171,11 +171,12 @@ export default {
       return Number(FORMATS[axis](key))
     },
     showTooltip: function(d) {
+      const stroke = d3.event.target.getAttribute('stroke')
       const data = {
         key: d.name,
         // val: d.values
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, stroke)
     }
   },
   mounted: function() {
@@ -195,12 +196,6 @@ export default {
       .seriesAccessor((d) => this.formatKey('series', d.key[0]))
       .keyAccessor((d) => this.formatKey('x', d.key[1]))
       .valueAccessor((d) => +d.value)
-      .on('renderlet', () => {
-        d3.selectAll('.krt-dc-series-chart .stack-list .stack .line')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
     this.applyLegend()

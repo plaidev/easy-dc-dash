@@ -121,14 +121,17 @@ export default {
       return Number(FORMATS[axis](key))
     },
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const xAxisLabel = this.xAxisLabel || this.xKey
+      const yAxisLabel = this.xAxisLabel || this.yKey
       const data = {
         keys: {
-          x: d.key[0],
-          y: d.key[1]
+          [xAxisLabel]: this.formatKey('x', d.key[0]),
+          [yAxisLabel]: this.formatKey('y', d.key[1])
         },
         val: d.value
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -145,12 +148,6 @@ export default {
       .yBorderRadius(this.yBorderRadius)
       .colsLabel((d) => d + `${this.xAxisFormat}`)
       .rowsLabel((d) => d + `${this.yAxisFormat}`)
-      .on('renderlet', () => {
-        d3.selectAll('.krt-dc-heat-map .box-group .heat-box')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {
@@ -165,3 +162,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.krt-dc-heat-map .box-group .heat-box:hover{
+  fill-opacity: 0.5;
+}
+</style>

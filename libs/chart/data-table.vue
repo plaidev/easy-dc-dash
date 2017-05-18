@@ -111,6 +111,10 @@ export default {
     rowsPerPage: {
       type: Number,
       default: 10
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   data () {

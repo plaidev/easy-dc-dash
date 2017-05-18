@@ -34,11 +34,12 @@ export default {
   },
   methods: {
     showTooltip(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const data = {
         key: d.properties.nam_ja
         // val: null
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -71,12 +72,6 @@ export default {
         .interpolate(d3.interpolateHcl)
         .range(['#f7fcfd', '#00441b'])
       )
-      .on('renderlet', () => {
-        const geo = d3.selectAll('.krt-dc-geo-chart .layer0 .pref')
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip);
-      })
     return this.chart;
   }
 }

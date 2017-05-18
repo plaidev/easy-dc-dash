@@ -74,30 +74,22 @@ export default {
 
   methods: {
     showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
       const data = {
         key: d.data.key,
         val: d.data.value
       }
-      this.$refs.tooltip.show(data)
+      this.$refs.tooltip.show(data, fill)
     }
   },
 
   mounted: function() {
     const chart = this.chart;
-    chart.on('renderlet', () => {
-      d3.selectAll('.krt-dc-multidim-pie .pie-slice')
-        .on("mouseover", this.showTooltip)
-        .on("mousemove", this.moveTooltip)
-        .on("mouseout", this.removeTooltip);
-    })
 
     if(this.useLegend) {
       chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal)
         .legendText((d, i) => {
-          return Store.getLabel(d.name, {
-            dataset: this.dataset,
-            chartName: this.id
-          })
+          return this.getLabel(d.name)
         })
       )
     }
@@ -112,3 +104,9 @@ export default {
 
 
 </script>
+
+<style scoped>
+.krt-dc-multidim-pie .pie-label-group text {
+  pointer-events: none;
+}
+</style>

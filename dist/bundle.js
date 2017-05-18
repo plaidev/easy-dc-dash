@@ -24824,7 +24824,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; font-weight: bold; border: 1px solid #000; background: rgba(255,255,255,.4); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; } .krt-dc-tooltip .chart-data { display: inline-block; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip .circle-box { height: 100%; width: 30px; } .krt-dc-tooltip .circle-box .circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip .chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip .chart-data .key { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -24833,24 +24833,28 @@ var ResetButton = { render: function render() {
 })();
 
 var KrtDcTooltip = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip" }, [_c('div', { staticClass: "chart-data" }, [_vm.data.key ? _c('div', [_c('span', { staticClass: "key" }, [_vm._v("key: " + _vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
-      return _vm.data.keys ? _c('div', [_c('span', { staticClass: "keys" }, [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
-    }), _vm.data.val ? _c('div', [_c('span', { staticClass: "val" }, [_vm._v("value: " + _vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
-      return _vm.data.vals ? _c('div', [_c('span', { staticClass: "vals" }, [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
-    }), _vm.data.total ? _c('div', [_c('span', { staticClass: "total" }, [_vm._v("value: " + _vm._s(_vm.data.total))])]) : _vm._e()], 2)]) : _vm._e();
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "circle-box" }, [_c('div', { staticClass: "circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "chart-data" }, [_c('div', { staticClass: "key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
+      return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
+    })], 2), _c('div', { staticClass: "val" }, [_vm.data.val ? _c('div', [_vm._v(_vm._s(_vm.data.val))]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
+      return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
+    })], 2)])]) : _vm._e();
   }, staticRenderFns: [],
   name: 'KrtDcTooltip',
   data: function data() {
     return {
-      data: null
+      data: null,
+      color: null
     };
   },
 
   methods: {
-    show: function show(data) {
+    show: function show(data, color) {
+      if (!data) return;
       this.data = data;
+      this.color = color;
     },
     move: function move(left, top) {
+      if (!this.data) return;
       var el = this.$el;
       el.style.left = left + 50 + "px";
       el.style.top = top - 10 + "px";
@@ -24939,7 +24943,11 @@ var Base = {
       type: Number,
       default: 750
     },
-    labels: {}
+    labels: {},
+    renderTooltip: {
+      type: Boolean,
+      default: true
+    }
   },
 
   computed: {
@@ -24989,6 +24997,17 @@ var Base = {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max]);
+    },
+    selector: function selector() {
+      if (this.chartType === 'heatMap') return '#' + this.id + ' .heat-box';
+      if (this.chartType === 'rowChart') return '#' + this.id + ' .row rect';
+      if (this.chartType === 'pieChart') return '#' + this.id + ' .pie-slice';
+      if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
+      if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
+      if (this.chartType === 'seriesChart') return '#' + this.id + ' .line';
+      if (this.chartType === 'bubbleChart') return '#' + this.id + ' .bubble';
+      if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack';
+      if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
     }
   },
 
@@ -25036,7 +25055,8 @@ var Base = {
       if ((this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
     },
     showTooltip: function showTooltip(data) {
-      this.$refs.tooltip.show(data);
+      var fill = d3$1.event.target.getAttribute('fill');
+      this.$refs.tooltip.show(data, fill);
     },
     moveTooltip: function moveTooltip() {
       this.$refs.tooltip.move(d3$1.event.clientX, d3$1.event.clientY);
@@ -25080,6 +25100,11 @@ var Base = {
       }).join(', ');
     });
 
+    if (this.renderTooltip) {
+      chart.on('postRender', function () {
+        d3$1.selectAll(_this2.selector).on("mouseover", _this2.showTooltip).on("mousemove", _this2.moveTooltip).on("mouseout", _this2.removeTooltip);
+      });
+    }
     this.chart = chart;
 
     return chart;
@@ -33701,10 +33726,13 @@ function compose(Left, Right) {
     },
     methods: {
       showTooltip: function showTooltip(d) {
+        var fill = d3.event.target.getAttribute('fill');
+        var stroke = d3.event.target.getAttribute('stroke');
+        var color = fill || stroke;
         var data = {
           key: d.name
         };
-        this.$refs.tooltip.show(data);
+        this.$refs.tooltip.show(data, color);
       }
     },
     mounted: function mounted() {
@@ -33774,9 +33802,7 @@ function compose(Left, Right) {
 
       composite.dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)]).renderHorizontalGridLines(true).brushOn(false)
       //.rightY(scale.linear().domain([0, 1]))
-      .elasticY(this.elasticY).shareColors(true).on('renderlet', function () {
-        var g = d3.selectAll('.krt-dc-composite .stack-list .stack').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-      });
+      .elasticY(this.elasticY).shareColors(true);
 
       // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
       // legendは配列として受け取り、番号で割り当てる
@@ -33844,6 +33870,10 @@ var NumberDisplay = { render: function render() {
     numberFormat: {
       type: String,
       default: '.2s'
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -33891,7 +33921,7 @@ var NumberDisplay = { render: function render() {
 })();
 
 var DateVolumeChart = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-date-volume-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-date-volume-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -33920,23 +33950,19 @@ var DateVolumeChart = { render: function render() {
 
   methods: {
     showTooltip: function showTooltip(d) {
-      console.log(d);
+      var fill = d3.event.target.getAttribute('fill');
       var data = {
         key: d.data.key,
         val: d.data.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
-    var _this = this;
-
     var chart = this.chart;
     chart.centerBar(true).gap(1).elasticY(true).round(d3.time.day.round)
     //.round(time.week.round)
-    .alwaysUseRounding(true).xUnits(d3.time.days).on('renderlet', function () {
-      d3.selectAll('#krt-dc-date-volume-chart rect.bar').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-    }).yAxis().ticks(0);
+    .alwaysUseRounding(true).xUnits(d3.time.days).yAxis().ticks(0);
 
     return chart.render();
   }
@@ -33946,7 +33972,7 @@ var DateVolumeChart = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-segment-pie .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34036,11 +34062,12 @@ var SegmentPie = { render: function render() {
       return label;
     },
     showTooltip: function showTooltip(d) {
+      var fill = d3.event.target.getAttribute('fill');
       var data = {
-        key: d.data.key,
+        key: this.segmentLabel(d.data.key),
         val: d.data.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
 
@@ -34050,9 +34077,6 @@ var SegmentPie = { render: function render() {
     var chart = this.chart;
     chart.label(function (d) {
       return _this.segmentLabel(d.key);
-    });
-    chart.on('renderlet', function () {
-      d3.selectAll('.krt-dc-segment-pie .pie-slice').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
     });
     this.applyLegend();
     return chart.render();
@@ -34067,7 +34091,7 @@ var SegmentPie = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-multidim-pie .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34142,11 +34166,12 @@ var MultiDimensionPie = { render: function render() {
 
   methods: {
     showTooltip: function showTooltip(d) {
+      var fill = d3.event.target.getAttribute('fill');
       var data = {
         key: d.data.key,
         val: d.data.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
 
@@ -34154,16 +34179,10 @@ var MultiDimensionPie = { render: function render() {
     var _this = this;
 
     var chart = this.chart;
-    chart.on('renderlet', function () {
-      d3.selectAll('.krt-dc-multidim-pie .pie-slice').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-    });
 
     if (this.useLegend) {
       chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal).legendText(function (d, i) {
-        return Store.getLabel(d.name, {
-          dataset: _this.dataset,
-          chartName: _this.id
-        });
+        return _this.getLabel(d.name);
       }));
     }
 
@@ -34179,7 +34198,7 @@ var MultiDimensionPie = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-week-row g.row text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34267,22 +34286,19 @@ var WeekRow = { render: function render() {
 
   methods: {
     showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
       var data = {
-        key: d.key,
+        key: this.getLabel(d.key),
         val: d.value.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
 
   mounted: function mounted() {
-    var _this = this;
-
     var chart = this.chart;
 
-    chart.ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).x(d3$1.scale.linear().domain([0, 7])).elasticX(true).on('renderlet', function () {
-      var bar = d3$1.selectAll('.krt-dc-week-row .row').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-    });
+    chart.ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).x(d3$1.scale.linear().domain([0, 7])).elasticX(true);
     return chart.render();
   }
 };
@@ -34291,7 +34307,7 @@ var WeekRow = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-list-row g.row text { pointer-events: none; } .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34371,11 +34387,12 @@ var ListRow = { render: function render() {
       };
     },
     showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
       var data = {
         key: d.key,
         val: d.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -34385,8 +34402,6 @@ var ListRow = { render: function render() {
 
     chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
       return _this2.descending ? -d.value : d.value;
-    }).on('renderlet', function () {
-      var bar = d3$1.selectAll('.krt-dc-list-row .row').on("mouseover", _this2.showTooltip).on("mousemove", _this2.moveTooltip).on("mouseout", _this2.removeTooltip);
     });
     return chart.render();
   }
@@ -34590,21 +34605,18 @@ var OrdinalBar = { render: function render() {
   },
   methods: {
     showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
       var data = {
         key: d.data.key,
         val: d.data.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
-    var _this = this;
-
     var chart = this.chart;
 
-    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY).on('renderlet', function () {
-      d3$1.selectAll('.krt-dc-ordinal-bar rect.bar').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-    });
+    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY);
     return chart.render();
   }
 };
@@ -34613,7 +34625,7 @@ var OrdinalBar = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-stacked-bar .rect.bar:hover { fill-opacity: 1; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = "";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34688,13 +34700,14 @@ var StackedBar = { render: function render() {
   },
   methods: {
     showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
       var data = {
         key: d.data.key,
         val: d.data.value.reduce(function (a, b) {
           return a + b;
         })
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -34704,9 +34717,7 @@ var StackedBar = { render: function render() {
 
     chart.group(this.combinedGroup, this.getLabel(0), function (d) {
       return d.value[0];
-    }).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines).on('renderlet', function () {
-      d3$1.selectAll('.krt-dc-stacked-bar rect.bar').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-    });
+    }).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines);
     // stack
 
     var _loop2 = function _loop2(i) {
@@ -34860,11 +34871,13 @@ var FilterStackedBar = { render: function render() {
       return k.replace(/\'/g, '');
     },
     showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var k = this.getLabel(d.data.key);
       var data = {
-        key: d.data.key + '[' + d.layer + ']',
+        key: k + '[' + d.layer + ']',
         val: d.data.value[d.layer]
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -34876,9 +34889,7 @@ var FilterStackedBar = { render: function render() {
 
     if (!this.scale) chart.x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal);else chart.xUnits(d3$1.time.days); // FIXME
 
-    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).mouseZoomable(false).on('renderlet', function () {
-      d3$1.selectAll('.krt-dc-filter-stacked rect.bar').on("mouseover", _this3.showTooltip).on("mousemove", _this3.moveTooltip).on("mouseout", _this3.removeTooltip);
-    });
+    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).mouseZoomable(false);
     // stack
     for (var i = 1; i < barNum; i++) {
       chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
@@ -35346,11 +35357,12 @@ var GeoJP = { render: function render() {
   },
   methods: {
     showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
       var data = {
         key: d.properties.nam_ja
         // val: null
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -35367,9 +35379,7 @@ var GeoJP = { render: function render() {
 
     var max = this.reducer.top(1)[0].value;
 
-    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.scale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).on('renderlet', function () {
-      var geo = d3$1.selectAll('.krt-dc-geo-chart .layer0 .pref').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
-    });
+    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.scale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b']));
     return this.chart;
   }
 };
@@ -35479,6 +35489,10 @@ var DataTable = { render: function render() {
     rowsPerPage: {
       type: Number,
       default: 10
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   data: function data() {
@@ -35674,7 +35688,7 @@ var DataTable = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-heat-map .box-group .heat-box:hover{ fill-opacity: 0.5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35793,14 +35807,16 @@ var HeatMap = { render: function render() {
       return Number(FORMATS[axis](key));
     },
     showTooltip: function showTooltip(d) {
+      var _keys;
+
+      var fill = d3$1.event.target.getAttribute('fill');
+      var xAxisLabel = this.xAxisLabel || this.xKey;
+      var yAxisLabel = this.xAxisLabel || this.yKey;
       var data = {
-        keys: {
-          x: d.key[0],
-          y: d.key[1]
-        },
+        keys: (_keys = {}, defineProperty(_keys, xAxisLabel, this.formatKey('x', d.key[0])), defineProperty(_keys, yAxisLabel, this.formatKey('y', d.key[1])), _keys),
         val: d.value
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -35821,8 +35837,6 @@ var HeatMap = { render: function render() {
       return d + ('' + _this.xAxisFormat);
     }).rowsLabel(function (d) {
       return d + ('' + _this.yAxisFormat);
-    }).on('renderlet', function () {
-      d3$1.selectAll('.krt-dc-heat-map .box-group .heat-box').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
     });
     if (this.dateKey) {
       chart.filterPrinter(function (filters) {
@@ -36008,10 +36022,11 @@ var Series = { render: function render() {
       return Number(FORMATS[axis](key));
     },
     showTooltip: function showTooltip(d) {
+      var stroke = d3$1.event.target.getAttribute('stroke');
       var data = {
         key: d.name
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, stroke);
     }
   },
   mounted: function mounted() {
@@ -36030,8 +36045,6 @@ var Series = { render: function render() {
       return _this.formatKey('x', d.key[1]);
     }).valueAccessor(function (d) {
       return +d.value;
-    }).on('renderlet', function () {
-      d3$1.selectAll('.krt-dc-series-chart .stack-list .stack .line').on("mouseover", _this.showTooltip).on("mousemove", _this.moveTooltip).on("mouseout", _this.removeTooltip);
     });
     chart.xAxis().tickFormat(function (d) {
       return d + ('' + _this.xAxisFormat);
@@ -36048,7 +36061,7 @@ var Series = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-bubble-chart .node text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36218,16 +36231,17 @@ var Bubble = { render: function render() {
       return format(key);
     },
     showTooltip: function showTooltip(d) {
+      var _vals;
+
+      var fill = d3$1.event.target.getAttribute('fill');
       var v = d.value;
+      var format = this.getTimeFormat(this.timeScale);
+      var k = format ? format(d.key) : d.key;
       var data = {
-        key: d.key,
-        vals: {
-          x: v.x.per ? v.x.per : v.x,
-          y: v.y.per ? v.y.per : v.y,
-          r: v.radius.per ? v.radius.per : v.radius
-        }
+        key: k,
+        vals: (_vals = {}, defineProperty(_vals, this.xAxis, v[this.xAxis].per ? v[this.xAxis].per : v.x), defineProperty(_vals, this.yAxis, v[this.yAxis].per ? v[this.yAxis].per : v.y), defineProperty(_vals, this.radius, v[this.radius].per ? v[this.radius].per : v.radius), _vals)
       };
-      this.$refs.tooltip.show(data);
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -36250,8 +36264,6 @@ var Bubble = { render: function render() {
       return _this3.extractValue(d.value[_this3.radius]);
     }))).elasticX(this.elasticX).elasticY(this.elasticY).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding).renderHorizontalGridLines(this.renderHorizontalGridLines).renderVerticalGridLines(this.renderVerticalGridLines).label(function (p) {
       return _this3.formatKey(p.key);
-    }).on('renderlet', function () {
-      d3$1.selectAll('.krt-dc-bubble-chart .node .bubble').on("mouseover", _this3.showTooltip).on("mousemove", _this3.moveTooltip).on("mouseout", _this3.removeTooltip);
     });
     chart.xAxis().tickFormat(function (v) {
       return v + ('' + _this3.xAxisFormat);

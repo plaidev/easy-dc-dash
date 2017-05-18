@@ -92,6 +92,10 @@ export default {
       default: 750
     },
     labels: {
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -143,6 +147,17 @@ export default {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max])
+    },
+    selector: function() {
+      if(this.chartType === 'heatMap') return `#${this.id} .heat-box`
+      if(this.chartType === 'rowChart') return `#${this.id} .row rect`
+      if(this.chartType === 'pieChart') return `#${this.id} .pie-slice`
+      if(this.chartType === 'barChart') return `#${this.id} .bar`
+      if(this.chartType === 'lineChart') return `#${this.id} .bar`
+      if(this.chartType === 'seriesChart') return `#${this.id} .line`
+      if(this.chartType === 'bubbleChart') return `#${this.id} .bubble`
+      if(this.chartType === 'compositeChart') return `#${this.id} .stack`
+      if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
     }
   },
 
@@ -160,7 +175,7 @@ export default {
       } = options;
 
       const l = this.legend
-      
+
       const legendInstance = dc.legend()
         .x(l.x).y(l.y)
         .gap(l.gap).legendWidth(l.width)
@@ -193,7 +208,8 @@ export default {
       else return TIME_FORMATS[key]
     },
     showTooltip: function(data) {
-      this.$refs.tooltip.show(data)
+      const fill = d3.event.target.getAttribute('fill')
+      this.$refs.tooltip.show(data, fill)
     },
     moveTooltip: function() {
       this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
@@ -213,7 +229,7 @@ export default {
 
     if (this.labels) {
       let labels = this.labels;
-      if (typeof this.labels === 'string' || this.labels instanceof String) 
+      if (typeof this.labels === 'string' || this.labels instanceof String)
         labels = this.labels.split(',');
       Store.setLabels(labels, {
         dataset: this.dataset,
@@ -248,6 +264,14 @@ export default {
           .join(', ')
       })
 
+    if(this.renderTooltip) {
+      chart.on('postRender', () => {
+        d3.selectAll(this.selector)
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip)
+      })
+    }
     this.chart = chart;
 
     return chart;
