@@ -58,7 +58,14 @@ export default {
     },
     reduceKeys: function() {
       return Object.keys(this.reducerExtractor({}))
-    }
+    },
+    layoutSettings: function() {
+      return {
+        legend: {
+          x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false
+        }
+      }
+    },
   },
   mounted: function() {
     const chart = this.chart;

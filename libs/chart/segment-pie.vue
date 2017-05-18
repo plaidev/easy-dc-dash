@@ -22,18 +22,17 @@ export default {
     labels: {
       type: Object
     },
-    height: {
-      type: Number,
-      default: 160
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     legend: {
       type: Object,
       default: () => {return {x:0, y:0, gap: 5, width: 200, itemWidth: 70, itemHeight: 12, horizontal: true}}
     },
+    useLegend: {
+      type: Boolean,
+      default: true
+    },
+    layout: {
+      default: 'square-and-legend'
+    }
   },
 
   computed: {

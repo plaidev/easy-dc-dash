@@ -55,12 +55,6 @@ export default {
     scale: {
       type: String
     },
-    width: {
-      type: Number
-    },
-    height: {
-      type: Number
-    },
     margins: {
       type: Object
     },
@@ -97,6 +91,14 @@ export default {
       default: 750
     },
     labels: {
+    },
+    width: {
+    },
+    height: {
+    },
+    layout: {
+      type: String,
+      default: 'overlay-legend'
     }
   },
 
@@ -148,6 +150,10 @@ export default {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max])
+    },
+    layoutSettings: function() {
+      const {width, height} = this.getContainerInnerSize()
+      return Store.getTheme().layout(this.layout, {width, height});
     }
   },
 
@@ -196,6 +202,41 @@ export default {
       if((this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
+    },
+    getContainerInnerSize: function() {
+      let width, height;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        const el = document.querySelector(this.parent).parentNode
+        width = el.clientWidth
+        height = el.clientHeight
+      }
+      else {
+        width = this.parent.width()
+        height = this.parent.height()
+      }
+      if (this.width) width = parseFloat(this.width);
+      if (this.height) height = parseFloat(this.height);
+
+      return {width, height}
+    },
+    applyStyles: function() {
+      const chart = this.chart;
+      const legend = this.legend;
+
+      const {width: defaultWidth, height: defaultHeight} = this.getContainerInnerSize()
+      const {
+        width = defaultWidth,
+        height = defaultHeight,
+        margins,
+        legend: legendOptions
+      } = this.layoutSettings;
+
+      chart
+        .width(width)
+        .height(height)
+
+      if (this.margins) chart.margins(this.margins);
+
     }
   },
 
@@ -206,6 +247,8 @@ export default {
       this.chartType,
       {volume: this.volume}
     );
+
+    this.chart = chart;
 
     if (this.labels) {
       let labels = this.labels;
@@ -223,11 +266,10 @@ export default {
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
-    if (this.width) chart.width(this.width);
-    if (this.height) chart.height(this.height);
-    if (this.margins) chart.margins(this.margins);
     if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
     if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
+
+    this.applyStyles();
 
     chart
       .renderLabel(this.renderLabel)
@@ -243,8 +285,6 @@ export default {
           })
           .join(', ')
       })
-
-    this.chart = chart;
 
     return chart;
   },

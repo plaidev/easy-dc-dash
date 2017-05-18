@@ -15,14 +15,6 @@ export default {
       type: String,
       default: 'rowChart'
     },
-    height: {
-      type: Number,
-      default: 240
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     labels: {
       default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
     }

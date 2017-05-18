@@ -15,14 +15,6 @@ export default {
       type: String,
       default: 'pieChart'
     },
-    height: {
-      type: Number,
-      default: 160
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     useLegend: {
       type: Boolean,
       default: true
@@ -50,6 +42,9 @@ export default {
     legendHorizontal: {
       type: Boolean,
       default: true
+    },
+    layout: {
+      default: 'square-and-legend'
     }
   },
 

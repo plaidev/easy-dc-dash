@@ -13,14 +13,6 @@ export default {
       type: String,
       default: 'rowChart'
     },
-    height: {
-      type: Number,
-      default: 400
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     scale: {
       type: String,
       default: 'linear'
