@@ -50,7 +50,8 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .cx(this.$el.clientHeight / 2)
+      .cx(this.layoutSettings.chartCenter.x)
+      .cy(this.layoutSettings.chartCenter.y)
 
     return chart.render()
   },

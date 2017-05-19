@@ -212,6 +212,8 @@ export default {
         legend: legendOptions
       } = this.layoutSettings;
 
+      if (legendOptions === null) return;
+
       this.legend = dc.legend()
         .legendText((d, i) => {
           const k = indexLabel? i: d.name;
