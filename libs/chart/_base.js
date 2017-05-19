@@ -4,18 +4,24 @@ import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
-import ResetButton from './components/reset-button.vue'
+
+import ResetButton from '../components/reset-button.vue'
+import CardContainer from '../components/card.vue'
 import KrtDcTooltip from './components/krt-dc-tooltip.vue'
 
 export default {
 
-  template: `<div class="krt-dc-component" :id="id">
-                    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-                    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-                    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-                  </div>`,
+  template: `
+    <card :title="title" :width="width" :height="height">
+      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
+        <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
+        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+      </div>
+    </card>
+  `,
 
   components: {
+    'card': CardContainer,
     'reset-button': ResetButton,
     'krt-dc-tooltip': KrtDcTooltip
   },
@@ -41,13 +47,13 @@ export default {
       type: String,
       default: ''
     },
-    dateKey: {
-      type: String
-    },
     volume: {
       type: String
     },
     scale: {
+      type: String
+    },
+    dateKey: {
       type: String
     },
     timeScale: {
@@ -55,12 +61,6 @@ export default {
     },
     timeFormat: {
       type: String
-    },
-    width: {
-      type: Number
-    },
-    height: {
-      type: Number
     },
     margins: {
       type: Object
@@ -98,6 +98,14 @@ export default {
       default: 750
     },
     labels: {
+    },
+    width: {
+    },
+    height: {
+    },
+    layout: {
+      type: String,
+      default: 'overlay-legend'
     },
     renderTooltip: {
       type: Boolean,
@@ -154,6 +162,10 @@ export default {
 
       return scale().domain([this.min, this.max])
     },
+    layoutSettings: function() {
+      const {width, height} = this.getContainerInnerSize()
+      return Store.getTheme().layout(this.layout, {width, height});
+    },
     tooltipSelector: function() {
       if(this.chartType === 'barChart') return `#${this.id} .bar`
       if(this.chartType === 'lineChart') return `#${this.id} .bar`
@@ -172,29 +184,6 @@ export default {
       this.chart.filterAll();
       dc.redrawAll();
     },
-    applyLegend: function(options={}) {
-      if(!this.useLegend || !this.legend) return
-
-      const {
-        indexLabel = false,
-        reverseOrder = false
-      } = options;
-
-      const l = this.legend
-
-      const legendInstance = dc.legend()
-        .x(l.x).y(l.y)
-        .gap(l.gap).legendWidth(l.width)
-        .itemWidth(l.itemWidth).itemHeight(l.itemHeight)
-        .horizontal(l.horizontal)
-        .legendText((d, i) => {
-          const k = indexLabel? i: d.name;
-          return this.getLabel(k)
-        })
-
-      this.chart.legend(legendInstance)
-      if(reverseOrder) reverseLegendOrder(this.chart)
-    },
     getLabel: function(key) {
       return Store.getLabel(key, {
         dataset: this.dataset,
@@ -212,6 +201,70 @@ export default {
       if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
+    },
+    applyLegend: function(options={}) {
+      const {
+        indexLabel = false,
+        reverseOrder = false
+      } = options;
+
+      const {
+        legend: legendOptions
+      } = this.layoutSettings;
+
+      this.legend = dc.legend()
+        .legendText((d, i) => {
+          const k = indexLabel? i: d.name;
+          return this.getLabel(k)
+        })
+
+      const {
+        x = 0, y = 0, width = 200, horizontal = true,
+        itemWidth = 70, itemHeight = 12, gap = 5
+      } = legendOptions || {};
+
+      this.legend
+        .x(x).y(y).legendWidth(width).horizontal(horizontal)
+        .itemWidth(itemWidth).itemHeight(itemHeight)
+        .gap(gap)
+
+      this.chart.legend(this.legend)
+
+      if(reverseOrder) reverseLegendOrder(this.chart)
+    },
+    getContainerInnerSize: function() {
+      let width, height;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        const el = document.querySelector(this.parent).parentNode
+        width = el.clientWidth
+        height = el.clientHeight
+      }
+      else {
+        width = this.parent.width()
+        height = this.parent.height()
+      }
+      if (this.width) width = parseFloat(this.width);
+      if (this.height) height = parseFloat(this.height);
+
+      return {width, height}
+    },
+    applyStyles: function() {
+      const chart = this.chart;
+      const legend = this.legend;
+
+      const {width: defaultWidth, height: defaultHeight} = this.getContainerInnerSize()
+      const {
+        width = defaultWidth,
+        height = defaultHeight,
+        margins,
+        legend: legendOptions
+      } = this.layoutSettings;
+
+      chart
+        .width(width)
+        .height(height)
+
+      if (this.margins) chart.margins(this.margins);
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill')
@@ -233,6 +286,8 @@ export default {
       {volume: this.volume}
     );
 
+    this.chart = chart;
+
     if (this.labels) {
       let labels = this.labels;
       if (typeof this.labels === 'string' || this.labels instanceof String)
@@ -249,11 +304,11 @@ export default {
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
-    if (this.width) chart.width(this.width);
-    if (this.height) chart.height(this.height);
-    if (this.margins) chart.margins(this.margins);
     if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
     if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
+
+    if (this.useLegend) this.applyLegend();
+    this.applyStyles();
 
     chart
       .renderLabel(this.renderLabel)

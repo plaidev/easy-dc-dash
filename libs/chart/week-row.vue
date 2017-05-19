@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-week-row" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 
@@ -22,16 +15,11 @@ export default {
       type: String,
       default: 'rowChart'
     },
-    height: {
-      type: Number,
-      default: 240
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     labels: {
       default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
+    },
+    useLegend: {
+      default: false
     }
   },
 
@@ -119,7 +107,7 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-week-row g.row text {
+g.row text {
     pointer-events: none;
   }
 </style>

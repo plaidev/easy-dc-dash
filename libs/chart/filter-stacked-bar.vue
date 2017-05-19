@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-filter-stacked" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 
@@ -52,10 +45,6 @@ export default {
     elasticY: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     }
   },
   computed: {
@@ -168,7 +157,7 @@ export default {
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
-      chart.selectAll('.krt-dc-filter-stacked rect.bar')
+      chart.selectAll('rect.bar')
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
           let x = d.x;
@@ -190,10 +179,10 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-filter-stacked g.chart-body {
-    clip-path: none;
+g.chart-body {
+  clip-path: none;
 }
-.krt-dc-filter-stacked rect.bar.stack-deselected {
+rect.bar.stack-deselected {
   opacity: .8;
   fill-opacity: .5;
 }

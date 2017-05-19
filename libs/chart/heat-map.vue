@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-heat-map" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 
@@ -164,7 +157,7 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-heat-map .box-group .heat-box:hover{
+.box-group .heat-box:hover{
   fill-opacity: 0.5;
 }
 </style>

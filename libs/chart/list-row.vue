@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-list-row" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 
@@ -19,14 +12,6 @@ export default {
     chartType: {
       type: String,
       default: 'rowChart'
-    },
-    height: {
-      type: Number,
-      default: 400
-    },
-    width: {
-      type: Number,
-      default: 200
     },
     scale: {
       type: String,
@@ -54,6 +39,9 @@ export default {
     labeloffsetY: {
       type: Number,
       default: 10
+    },
+    useLegend: {
+      default: false
     }
   },
   computed: {
@@ -104,10 +92,10 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-list-row g.row text {
-    pointer-events: none;
-  }
-.krt-dc-list-row g.row text.titlerow {
-    fill: #000000
-  }
+g.row text {
+  pointer-events: none;
+}
+g.row text.titlerow {
+  fill: #000000
+}
 </style>

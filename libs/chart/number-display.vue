@@ -47,6 +47,10 @@ export default {
       type: String,
       default: '.2s'
     },
+    useLegend: {
+      type: Boolean,
+      default: false
+    },
     renderTooltip: {
       type: Boolean,
       default: false

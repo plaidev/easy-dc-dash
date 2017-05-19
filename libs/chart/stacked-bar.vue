@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-stacked-bar" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 
@@ -29,10 +22,6 @@ export default {
     renderHorizontalGridLines: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     },
     removeEmptyRows: {
       type: Boolean,

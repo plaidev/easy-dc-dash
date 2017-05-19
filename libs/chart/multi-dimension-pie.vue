@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-multidim-pie" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 import dc from 'dc'
@@ -22,41 +15,12 @@ export default {
       type: String,
       default: 'pieChart'
     },
-    height: {
-      type: Number,
-      default: 160
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     useLegend: {
       type: Boolean,
       default: true
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
+    layout: {
+      default: 'square-and-legend'
     }
   },
 
@@ -85,14 +49,8 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
-
-    if(this.useLegend) {
-      chart.legend(dc.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal)
-        .legendText((d, i) => {
-          return this.getLabel(d.name)
-        })
-      )
-    }
+    chart
+      .cx(this.$el.clientHeight / 2)
 
     return chart.render()
   },
@@ -106,7 +64,7 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-multidim-pie .pie-label-group text {
+.pie-label-group text {
   pointer-events: none;
 }
 </style>

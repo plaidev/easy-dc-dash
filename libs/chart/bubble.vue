@@ -1,11 +1,3 @@
-<template>
-  <div class="krt-dc-bubble-chart" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
-
 <script lang='js'>
 
 import d3 from "d3"
@@ -225,7 +217,7 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-bubble-chart .node text {
+.node text {
   pointer-events: none;
 }
 </style>

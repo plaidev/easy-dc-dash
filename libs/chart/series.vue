@@ -1,11 +1,3 @@
-<template>
-  <div class="krt-dc-series-chart" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
-
 <script lang='js'>
 
 import d3 from "d3"
@@ -30,9 +22,6 @@ export default {
     chartType: {
       type: String,
       default: 'seriesChart'
-    },
-    dimension: {
-      type: String
     },
     width: {
       type: Number,
@@ -82,10 +71,6 @@ export default {
     useLegend: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     }
   },
   computed: {
@@ -105,9 +90,6 @@ export default {
     yKey: function() {
       return _extractName(this.reduce)
     },
-    dataKeys: function() {
-      return Object.keys(this.dimensionExtractor({}))
-    },
     dimensionExtractor: function() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey)
       return generateExtractor(this.dimensionName)
@@ -125,7 +107,7 @@ export default {
       }
     }
   },
-   methods: {
+  methods: {
     formatKey: function(axis, key) {
       const seriesTimeFormat = this.getTimeFormat(this.seriesKey)
       const xTimeFormat = this.getTimeFormat(this.xKey)
@@ -186,7 +168,6 @@ export default {
       .valueAccessor((d) => +d.value)
     chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
-    this.applyLegend()
     return chart.render();
   }
 }

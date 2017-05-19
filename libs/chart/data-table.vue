@@ -112,6 +112,9 @@ export default {
       type: Number,
       default: 10
     },
+    useLegend: {
+      default: false
+    },
     renderTooltip: {
       type: Boolean,
       default: false

@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-segment-pie" :id="id">
-    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang='js'>
 import dc from 'dc'
@@ -15,10 +8,6 @@ export default {
   extends: Base,
 
   props: {
-    dimension: {
-      type: String,
-      default: 'd.segments'
-    },
     chartType: {
       type: String,
       default: 'pieChart'
@@ -26,21 +15,13 @@ export default {
     segments: {
       required: true
     },
-    labels: {
-      type: Object
+    useLegend: {
+      type: Boolean,
+      default: true
     },
-    height: {
-      type: Number,
-      default: 160
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 200, itemWidth: 70, itemHeight: 12, horizontal: true}}
-    },
+    layout: {
+      default: 'square-and-legend'
+    }
   },
 
   computed: {
@@ -100,8 +81,8 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
+      .cx(this.$el.clientHeight / 2)
       .label((d) => this.segmentLabel(d.key))
-    this.applyLegend()
     return chart.render()
   },
 
@@ -113,7 +94,7 @@ export default {
 </script>
 
 <style scoped>
-.krt-dc-segment-pie .pie-label-group text {
+.pie-label-group text {
   pointer-events: none;
 }
 </style>
