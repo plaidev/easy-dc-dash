@@ -5,7 +5,6 @@
     <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
     <link rel="stylesheet" type="text/css" href="../../../dist/bundle.css" />
     <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
-    <script src="https://d3js.org/d3.v3.min.js"></script>
 
   </head>
 
@@ -81,10 +80,10 @@
     <stack-and-rate
       scale='time'
       dimension='d.session_end_date'
-      volume='date-volume-chart'
+      volume='krt-dc-date-volume-chart'
       reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
       labels='直帰,非直帰,直帰率'></stack-and-rate>
-    <volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv' id='date-volume-chart'></volume-chart>
+    <date-volume-chart scale='time' dimension='d.session_end_date' reduce='d.pv'></date-volume-chart>
   </div>
 
   <list-row
@@ -173,48 +172,6 @@
 
 <script type="text/javascript">
 
-//-------------------
-// デザインをカスタマイズしたコンポーネント
-
-const _ymdFormat = d3.time.format('%Y-%m-%d')
-const DateVolumeChart = {
-  extends: EasyDC.Chart.Base,
-  props: {
-    width: {default: 240*4},
-    height: {default: 60},
-    useLegend: {default: false}
-  },
-  mounted: function() {
-    this.chart
-      .margins({
-        top: 0,
-        right: 50,
-        bottom: 20,
-        left: 40
-      })
-      .centerBar(true)
-      .gap(1)
-      .elasticY(true)
-      .round(d3.time.day.round)
-      //.round(time.week.round)
-      .alwaysUseRounding(true)
-      .xUnits(d3.time.days)
-      .yAxis().ticks(0)
-
-    this.chart.filterPrinter(filters => {
-      return filters.map(filter => {
-        return filter.map(f => {
-          return `[${_ymdFormat(f)}]`
-        }).join(',').replace(/\,/, ' ~ ')
-      });
-    });
-    this.chart.render()
-  }
-}
-
-
-//--------------------
-
 EasyDC.Store.setLabels({
   bounce_rate: '離脱率',
 
@@ -228,19 +185,6 @@ EasyDC.Store.setLabels({
 
 //-------------------
 // メイン
-
-function run(content) {
-
-  // EasyDC.Store.registerData(content);
-
-  const DashboardApp = new Vue({
-    el: '#date-volume-chart',
-    data: EasyDC.Store.state.binds,
-    components: {
-      'volume-chart': DateVolumeChart // 追加のコンポーネント
-    }
-  });
-}
 
 const deviceSegments = {
   "5890222d3601a6183b69f151": 'SP',
@@ -262,7 +206,7 @@ for (let k in bindData) {
   EasyDC.Store.setBindData(k, bindData[k])
 }
 
-EasyDC.run(true, run)
+EasyDC.run(true)
 
     </script>
   </body>

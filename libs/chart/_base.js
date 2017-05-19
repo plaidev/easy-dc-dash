@@ -4,14 +4,17 @@ import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
+
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
+import KrtDcTooltip from './components/krt-dc-tooltip.vue'
 
 export default {
 
   template: `
     <card :title="title" :width="width" :height="height">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
+        <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
       </div>
     </card>
@@ -19,7 +22,8 @@ export default {
 
   components: {
     'card': CardContainer,
-    'reset-button': ResetButton
+    'reset-button': ResetButton,
+    'krt-dc-tooltip': KrtDcTooltip
   },
 
   props: {
@@ -43,16 +47,19 @@ export default {
       type: String,
       default: ''
     },
+    volume: {
+      type: String
+    },
+    scale: {
+      type: String
+    },
     dateKey: {
       type: String
     },
     timeScale: {
       type: String
     },
-    volume: {
-      type: String
-    },
-    scale: {
+    timeFormat: {
       type: String
     },
     margins: {
@@ -80,7 +87,7 @@ export default {
     },
     renderTitle: {
       type: Boolean,
-      default: true
+      default: false
     },
     useLegend: {
       type: Boolean,
@@ -99,6 +106,10 @@ export default {
     layout: {
       type: String,
       default: 'overlay-legend'
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -154,6 +165,17 @@ export default {
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
       return Store.getTheme().layout(this.layout, {width, height});
+    },
+    tooltipSelector: function() {
+      if(this.chartType === 'barChart') return `#${this.id} .bar`
+      if(this.chartType === 'lineChart') return `#${this.id} .bar`
+      if(this.chartType === 'heatMap') return `#${this.id} .heat-box`
+      if(this.chartType === 'rowChart') return `#${this.id} .row rect`
+      if(this.chartType === 'pieChart') return `#${this.id} .pie-slice`
+      if(this.chartType === 'bubbleChart') return `#${this.id} .bubble`
+      if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
+      if(this.chartType === 'compositeChart') return `#${this.id} .stack, #${this.id} circle.dot`
+      if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
     }
   },
 
@@ -172,11 +194,11 @@ export default {
       return this.reduceKeys && this.reduceKeys[idx] || idx
     },
     getTimeInterval: function(key) {
-      if((this.dateKey || this.timeScale) === undefined) return null
+      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else return TIME_INTERVALS[key]
     },
     getTimeFormat: function(key) {
-      if((this.dateKey || this.timeScale) === undefined) return null
+      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
     },
@@ -243,7 +265,16 @@ export default {
         .height(height)
 
       if (this.margins) chart.margins(this.margins);
-
+    },
+    showTooltip: function(d, i) {
+      const fill = d3.event.target.getAttribute('fill')
+      this.$refs.tooltip.show(d, fill)
+    },
+    moveTooltip: function() {
+      this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
+    },
+    removeTooltip: function() {
+      this.$refs.tooltip.remove();
     }
   },
 
@@ -259,7 +290,7 @@ export default {
 
     if (this.labels) {
       let labels = this.labels;
-      if (typeof this.labels === 'string' || this.labels instanceof String) 
+      if (typeof this.labels === 'string' || this.labels instanceof String)
         labels = this.labels.split(',');
       Store.setLabels(labels, {
         dataset: this.dataset,
@@ -293,6 +324,16 @@ export default {
           })
           .join(', ')
       })
+
+    if(this.renderTooltip) {
+      chart.on('renderlet', () => {
+        d3.selectAll(this.tooltipSelector)
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip)
+      })
+    }
+    this.chart = chart;
 
     return chart;
   },

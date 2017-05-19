@@ -56,6 +56,16 @@ export default {
       return Object.keys(this.reducerExtractor({}))
     }
   },
+  methods: {
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const data = {
+        key: d.data.key,
+        val: d.data.value.reduce((a,b) => a+b)
+      }
+      this.$refs.tooltip.show(data, fill)
+    }
+  },
   mounted: function() {
     const chart = this.chart;
 
@@ -67,12 +77,11 @@ export default {
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
-      .title(function(d) {
-        return d.key + '[' + this.layer + ']: ' + d.value
-      })
     // stack
     for (let i=1; i<this.reduceKeys.length; i++) {
-      chart.stack(this.combinedGroup, this.getLabel(i), (d) => d.value[i]);
+      chart
+        .stack(this.combinedGroup, this.getLabel(i), (d) => d.value[i])
+        .hidableStacks(true)
     }
     this.applyLegend({reverseOrder:true})
     return chart.render();

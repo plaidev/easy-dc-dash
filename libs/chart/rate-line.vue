@@ -50,6 +50,7 @@ export default {
 
   mounted: function() {
     return this.chart
+      .hidableStacks(true)
       .render()
   }
 }

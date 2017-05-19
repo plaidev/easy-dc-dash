@@ -118,6 +118,15 @@ export default {
     },
     extractKey: function(k) {
       return k.replace(/\'/g, '')
+    },
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const k = this.getLabel(d.data.key)
+      const data = {
+        key: `${k}[${d.layer}]`,
+        val: d.data.value[d.layer]
+      }
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -140,12 +149,11 @@ export default {
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
-      .title(function(d) {
-        return d.key + '[' + this.layer + ']: ' + d.value[this.layer]
-      })
     // stack
     for (let i=1; i<barNum; i++) {
-      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
+      chart
+        .stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]))
+        .hidableStacks(true)
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
@@ -172,8 +180,7 @@ export default {
 
 <style scoped>
 g.chart-body {
-  test: 'abc';
-    clip-path: none;
+  clip-path: none;
 }
 rect.bar.stack-deselected {
   opacity: .8;

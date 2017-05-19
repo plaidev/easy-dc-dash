@@ -50,6 +50,10 @@ export default {
     useLegend: {
       type: Boolean,
       default: false
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

@@ -2,6 +2,7 @@ import Vue from 'vue/dist/vue.js'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {TIME_FORMATS} from '../utils/time-format'
 
 function _getReduceKeySuper(Component) {
   if (!Component) return;
@@ -32,6 +33,28 @@ export function compose(Left, Right) {
       elasticY: {
         type: Boolean,
         default: true
+      }
+    },
+    methods: {
+      showTooltip: function(d, i) {
+        const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
+        const fill = d3.event.target.getAttribute('fill');
+        const stroke = d3.event.target.getAttribute('stroke');
+        const color = fill || stroke;
+        let key = null;
+        let val = null;
+        if (d.x && d.y) {
+          key = this.scale ? format(d.x) : x;
+          val = d.y;
+        }
+        else {
+          key = this.getLabel(i);
+        }
+        const data = {
+          key: key,
+          val: val
+        }
+        this.$refs.tooltip.show(data, color)
       }
     },
     mounted: function() {
