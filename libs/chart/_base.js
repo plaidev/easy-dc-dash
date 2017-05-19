@@ -154,14 +154,14 @@ export default {
 
       return scale().domain([this.min, this.max])
     },
-    selector: function() {
+    tooltipSelector: function() {
+      if(this.chartType === 'barChart') return `#${this.id} .bar`
+      if(this.chartType === 'lineChart') return `#${this.id} .bar`
       if(this.chartType === 'heatMap') return `#${this.id} .heat-box`
       if(this.chartType === 'rowChart') return `#${this.id} .row rect`
       if(this.chartType === 'pieChart') return `#${this.id} .pie-slice`
-      if(this.chartType === 'barChart') return `#${this.id} .bar`
-      if(this.chartType === 'lineChart') return `#${this.id} .bar`
-      if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
       if(this.chartType === 'bubbleChart') return `#${this.id} .bubble`
+      if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
       if(this.chartType === 'compositeChart') return `#${this.id} .stack, #${this.id} circle.dot`
       if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
     }
@@ -272,7 +272,7 @@ export default {
 
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
-        d3.selectAll(this.selector)
+        d3.selectAll(this.tooltipSelector)
           .on("mouseover", this.showTooltip)
           .on("mousemove", this.moveTooltip)
           .on("mouseout", this.removeTooltip)
