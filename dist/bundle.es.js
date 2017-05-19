@@ -24358,8 +24358,10 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24437,6 +24439,46 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.setAttribute('download', filename);
   pom.click();
 }
+
+var DefaultTheme = {
+  layout: function layout(name) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var _options$width = options.width,
+        width = _options$width === undefined ? 377 : _options$width,
+        _options$height = options.height,
+        height = _options$height === undefined ? 233 : _options$height;
+
+
+    if (name === 'square-and-legend') {
+      return {
+        width: width,
+        height: height * 0.9,
+        legend: {
+          x: height,
+          width: width - height,
+          horizontal: false
+        }
+      };
+    } else if (name === 'overlay-legend') {
+      return {
+        width: width,
+        height: height * 0.9,
+        legend: {
+          x: height,
+          width: width - height,
+          horizontal: false
+        }
+      };
+    }
+
+    console.log('?? layout', name);
+
+    return {};
+  }
+};
+
+//-------------------------------------
+
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -24630,6 +24672,11 @@ var DashboardStore = function () {
       return null;
     }
   }, {
+    key: 'getTheme',
+    value: function getTheme() {
+      return DefaultTheme;
+    }
+  }, {
     key: 'downloadCSV',
     value: function downloadCSV$$1(filename) {
       var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
@@ -24800,7 +24847,7 @@ var TIME_INTERVALS = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .reset-button { display: flex; flex-direction: row; align-items: center; padding-left: 20px; padding-bottom: 5px; } .reset-button.reset { font-weight: bold; } .reset-button a.reset.btn { color: #fff; background-color: #969E9C; font-size: 10px; } span.reset { padding-left: 5px; font-size: 12px; } span.reset .badge { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; vertical-align: 8%; white-space: normal; word-wrap: break-all; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .reset-button { position: absolute; right: 0; top: 0; padding-right: 5px; padding-bottom: 5px; } .reset { vertical-align: middle; margin-left: 2px; } .reset i { vertical-align: middle; } .badge { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; vertical-align: 8%; white-space: normal; word-wrap: break-all; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -24809,10 +24856,43 @@ var TIME_INTERVALS = {
 })();
 
 var ResetButton = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button" }, [_c('a', { staticClass: "reset btn btn-secondary", staticStyle: { "display": "none" }, on: { "click": _vm.reset } }, [_vm._v("reset")]), _vm._v(" "), _vm._m(0)]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button" }, [_vm._m(0), _c('a', { staticClass: "reset", staticStyle: { "display": "none" }, on: { "click": _vm.reset } }, [_c('i', { staticClass: "fa fa-ban" }, [_vm._v(" ")])])]);
   }, staticRenderFns: [function () {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_vm._v("Selected: "), _c('span', { staticClass: "filter badge" })]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('span', { staticClass: "filter badge" })]);
   }],
+  methods: {
+    reset: function reset() {
+      this.$emit('reset');
+    }
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .outer-container { position: relative; padding: 2px; } .inner-container { background-color: white; width: 100%; height: 100%; } .card-container { margin: -2px; display: flex; align-items: center; justify-content: center; } .title { position: absolute; top: 0; left: 10px; opacity: 0.6; font-size: 24px; } .render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } /* h0系列 */ .fb-lv-h0 { display: flex; flex-direction: row; width: 987px; height: 610px; } .fb-lv-h0 .fb-lv, .fb-lv-v1 { display: flex; flex-direction: column; width: 377px; height: 610px; } .fb-lv-h0 .fb-lv .fb-lv, .fb-lv-v1 .fb-lv, .fb-lv-h2 { display: flex; flex-direction: row; width: 377px; height: 233px; } .fb-lv-h0 .fb-lv .fb-lv .fb-lv, .fb-lv-v1 .fb-lv .fb-lv, .fb-lv-h2 .fb-lv, .fb-lv-v3 { display: flex; flex-direction: column; width: 144px; height: 233px; } .fb-lv-h0 .fb-lv .fb-lv .fb-lv .fb-lv, .fb-lv-v1 .fb-lv .fb-lv .fb-lv, .fb-lv-h2 .fb-lv .fb-lv, .fb-lv-v3 .fb-lv, .fb-lv-h4 { display: flex; flex-direction: row; width: 144px; height: 88.9px; } /* h1系列 */ .fb-lv-h0 .fb-sq .fb-lv, .fb-lv-h1 { display: flex; flex-direction: row; width: 610px; height: 377px; } .fb-lv-h1 .fb-lv, .fb-lv-v2 { display: flex; flex-direction: column; width: 233px; height: 377px; } .fb-lv-h1 .fb-lv .fb-lv, .fb-lv-v2 .fb-lv, .fb-lv-h3 { display: flex; flex-direction: row; width: 233px; height: 144px; } .fb-lv-h1 .fb-lv .fb-lv .fb-lv, .fb-lv-v2 .fb-lv .fb-lv, .fb-lv-h3 .fb-lv, .fb-lv-v4 { display: flex; flex-direction: column; width: 88.9px; height: 144px; } /* sq系、.fb-sq > .fb-lvは考慮していない */ .fb-lv-h0 .fb-sq { width: 610px; height: 610px; } .fb-lv-h0 .fb-lv .fb-sq, .fb-lv-v1 .fb-sq, .fb-lv-h1 .fb-sq { width: 377px; height: 377px; } .fb-lv-h0 .fb-lv .fb-lv .fb-sq, .fb-lv-v1 .fb-lv .fb-sq, .fb-lv-h2 .fb-sq, .fb-lv-h1 .fb-lv .fb-sq, .fb-lv-v2 .fb-sq { width: 233px; height: 233px; } .fb-lv-h0 .fb-lv .fb-lv .fb-lv .fb-sq, .fb-lv-v1 .fb-lv .fb-lv .fb-sq, .fb-lv-h2 .fb-lv .fb-sq, .fb-lv-v3 .fb-sq, .fb-lv-h1 .fb-lv .fb-lv .fb-sq, .fb-lv-v2 .fb-lv .fb-sq, .fb-lv-h3 .fb-sq { width: 144px; height: 144px; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var CardContainer = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "outer-container", style: { width: _vm.width + 'px', height: _vm.height + 'px' } }, [_c('div', { staticClass: "inner-container" }, [_c('div', { staticClass: "card-container", style: { width: _vm.width + 'px', height: _vm.height + 'px' } }, [_c('h3', { staticClass: "title", domProps: { "textContent": _vm._s(_vm.title) } }), _c('div', { staticClass: "render-area" }, [_vm._t("default")], 2)])])]);
+  }, staticRenderFns: [],
+  props: {
+    title: {
+      type: String
+    },
+    width: {
+      default: 377
+    },
+    height: {
+      default: 233
+    }
+  },
   methods: {
     reset: function reset() {
       this.$emit('reset');
@@ -24867,9 +24947,10 @@ var KrtDcTooltip = { render: function render() {
 
 var Base = {
 
-  template: '<div class="krt-dc-component" :id="id">\n                    <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n                    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n                    <div v-text="title" style="font-size:24px; text-align:center;"></div>\n                  </div>',
+  template: '\n    <card :title="title" :width="width" :height="height">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      </div>\n    </card>\n  ',
 
   components: {
+    'card': CardContainer,
     'reset-button': ResetButton,
     'krt-dc-tooltip': KrtDcTooltip
   },
@@ -24893,13 +24974,13 @@ var Base = {
       type: String,
       default: ''
     },
-    dateKey: {
-      type: String
-    },
     volume: {
       type: String
     },
     scale: {
+      type: String
+    },
+    dateKey: {
       type: String
     },
     timeScale: {
@@ -24907,12 +24988,6 @@ var Base = {
     },
     timeFormat: {
       type: String
-    },
-    width: {
-      type: Number
-    },
-    height: {
-      type: Number
     },
     margins: {
       type: Object
@@ -24950,6 +25025,12 @@ var Base = {
       default: 750
     },
     labels: {},
+    width: {},
+    height: {},
+    layout: {
+      type: String,
+      default: 'overlay-legend'
+    },
     renderTooltip: {
       type: Boolean,
       default: true
@@ -25004,6 +25085,13 @@ var Base = {
 
       return scale().domain([this.min, this.max]);
     },
+    layoutSettings: function layoutSettings() {
+      var _getContainerInnerSiz = this.getContainerInnerSize(),
+          width = _getContainerInnerSiz.width,
+          height = _getContainerInnerSiz.height;
+
+      return Store.getTheme().layout(this.layout, { width: width, height: height });
+    },
     tooltipSelector: function tooltipSelector() {
       if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
       if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
@@ -25022,29 +25110,6 @@ var Base = {
       this.chart.filterAll();
       index$2.redrawAll();
     },
-    applyLegend: function applyLegend() {
-      var _this = this;
-
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-      if (!this.useLegend || !this.legend) return;
-
-      var _options$indexLabel = options.indexLabel,
-          indexLabel = _options$indexLabel === undefined ? false : _options$indexLabel,
-          _options$reverseOrder = options.reverseOrder,
-          reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
-
-
-      var l = this.legend;
-
-      var legendInstance = index$2.legend().x(l.x).y(l.y).gap(l.gap).legendWidth(l.width).itemWidth(l.itemWidth).itemHeight(l.itemHeight).horizontal(l.horizontal).legendText(function (d, i) {
-        var k = indexLabel ? i : d.name;
-        return _this.getLabel(k);
-      });
-
-      this.chart.legend(legendInstance);
-      if (reverseOrder) reverseLegendOrder(this.chart);
-    },
     getLabel: function getLabel(key) {
       return Store.getLabel(key, {
         dataset: this.dataset,
@@ -25059,6 +25124,81 @@ var Base = {
     },
     getTimeFormat: function getTimeFormat(key) {
       if ((this.scale || this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
+    },
+    applyLegend: function applyLegend() {
+      var _this = this;
+
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _options$indexLabel = options.indexLabel,
+          indexLabel = _options$indexLabel === undefined ? false : _options$indexLabel,
+          _options$reverseOrder = options.reverseOrder,
+          reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
+      var legendOptions = this.layoutSettings.legend;
+
+
+      this.legend = index$2.legend().legendText(function (d, i) {
+        var k = indexLabel ? i : d.name;
+        return _this.getLabel(k);
+      });
+
+      var _ref = legendOptions || {},
+          _ref$x = _ref.x,
+          x = _ref$x === undefined ? 0 : _ref$x,
+          _ref$y = _ref.y,
+          y = _ref$y === undefined ? 0 : _ref$y,
+          _ref$width = _ref.width,
+          width = _ref$width === undefined ? 200 : _ref$width,
+          _ref$horizontal = _ref.horizontal,
+          horizontal = _ref$horizontal === undefined ? true : _ref$horizontal,
+          _ref$itemWidth = _ref.itemWidth,
+          itemWidth = _ref$itemWidth === undefined ? 70 : _ref$itemWidth,
+          _ref$itemHeight = _ref.itemHeight,
+          itemHeight = _ref$itemHeight === undefined ? 12 : _ref$itemHeight,
+          _ref$gap = _ref.gap,
+          gap = _ref$gap === undefined ? 5 : _ref$gap;
+
+      this.legend.x(x).y(y).legendWidth(width).horizontal(horizontal).itemWidth(itemWidth).itemHeight(itemHeight).gap(gap);
+
+      this.chart.legend(this.legend);
+
+      if (reverseOrder) reverseLegendOrder(this.chart);
+    },
+    getContainerInnerSize: function getContainerInnerSize() {
+      var width = void 0,
+          height = void 0;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        var el = document.querySelector(this.parent).parentNode;
+        width = el.clientWidth;
+        height = el.clientHeight;
+      } else {
+        width = this.parent.width();
+        height = this.parent.height();
+      }
+      if (this.width) width = parseFloat(this.width);
+      if (this.height) height = parseFloat(this.height);
+
+      return { width: width, height: height };
+    },
+    applyStyles: function applyStyles() {
+      var chart = this.chart;
+      var legend = this.legend;
+
+      var _getContainerInnerSiz2 = this.getContainerInnerSize(),
+          defaultWidth = _getContainerInnerSiz2.width,
+          defaultHeight = _getContainerInnerSiz2.height;
+
+      var _layoutSettings = this.layoutSettings,
+          _layoutSettings$width = _layoutSettings.width,
+          width = _layoutSettings$width === undefined ? defaultWidth : _layoutSettings$width,
+          _layoutSettings$heigh = _layoutSettings.height,
+          height = _layoutSettings$heigh === undefined ? defaultHeight : _layoutSettings$heigh,
+          margins = _layoutSettings.margins,
+          legendOptions = _layoutSettings.legend;
+
+
+      chart.width(width).height(height);
+
+      if (this.margins) chart.margins(this.margins);
     },
     showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -25077,6 +25217,8 @@ var Base = {
 
     var chart = Store.registerChart(this.parent, this.id, this.chartType, { volume: this.volume });
 
+    this.chart = chart;
+
     if (this.labels) {
       var labels = this.labels;
       if (typeof this.labels === 'string' || this.labels instanceof String) labels = this.labels.split(',');
@@ -25092,11 +25234,11 @@ var Base = {
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
-    if (this.width) chart.width(this.width);
-    if (this.height) chart.height(this.height);
-    if (this.margins) chart.margins(this.margins);
     if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel);
     if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel);
+
+    if (this.useLegend) this.applyLegend();
+    this.applyStyles();
 
     chart.renderLabel(this.renderLabel).renderTitle(this.renderTitle).transitionDuration(this.transitionDuration).label(function (d) {
       return _this2.getLabel(d.key);
@@ -33704,8 +33846,6 @@ function compose(Left, Right) {
   var ComponentObject = {
     extends: Base,
 
-    template: '<div class="krt-dc-composite" :id="id">\n                      <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n                      <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n                      <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>\n                    </div>',
-
     props: {
       chartType: {
         type: String,
@@ -33718,12 +33858,6 @@ function compose(Left, Right) {
       height: {
         type: Number,
         default: 240
-      },
-      legend: {
-        type: Object,
-        default: function _default() {
-          return { x: 0, y: 0, gap: 5, width: 800, itemWidth: 70, itemHeight: 12, horizontal: true };
-        }
       },
       elasticY: {
         type: Boolean,
@@ -33887,6 +34021,10 @@ var NumberDisplay = { render: function render() {
       type: String,
       default: '.2s'
     },
+    useLegend: {
+      type: Boolean,
+      default: false
+    },
     renderTooltip: {
       type: Boolean,
       default: false
@@ -33947,10 +34085,6 @@ var DateVolumeChart = { render: function render() {
       type: String,
       default: 'barChart'
     },
-    id: {
-      type: String,
-      default: 'krt-dc-date-volume-chart'
-    },
     width: {
       type: Number,
       default: 240 * 4
@@ -33958,6 +34092,12 @@ var DateVolumeChart = { render: function render() {
     height: {
       type: Number,
       default: 60
+    },
+    scale: {
+      default: 'time'
+    },
+    useLegend: {
+      default: false
     }
   },
   data: function data() {
@@ -33988,7 +34128,7 @@ var DateVolumeChart = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-segment-pie .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33996,18 +34136,10 @@ var DateVolumeChart = { render: function render() {
   }
 })();
 
-var SegmentPie = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var SegmentPie = {
   extends: Base,
 
   props: {
-    dimension: {
-      type: String,
-      default: 'd.segments'
-    },
     chartType: {
       type: String,
       default: 'pieChart'
@@ -34015,22 +34147,12 @@ var SegmentPie = { render: function render() {
     segments: {
       required: true
     },
-    labels: {
-      type: Object
+    useLegend: {
+      type: Boolean,
+      default: true
     },
-    height: {
-      type: Number,
-      default: 160
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
-    legend: {
-      type: Object,
-      default: function _default() {
-        return { x: 0, y: 0, gap: 5, width: 200, itemWidth: 70, itemHeight: 12, horizontal: true };
-      }
+    layout: {
+      default: 'square-and-legend'
     }
   },
 
@@ -34091,10 +34213,9 @@ var SegmentPie = { render: function render() {
     var _this = this;
 
     var chart = this.chart;
-    chart.label(function (d) {
+    chart.cx(this.$el.clientHeight / 2).label(function (d) {
       return _this.segmentLabel(d.key);
     });
-    this.applyLegend();
     return chart.render();
   },
 
@@ -34107,7 +34228,7 @@ var SegmentPie = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-multidim-pie .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34115,11 +34236,7 @@ var SegmentPie = { render: function render() {
   }
 })();
 
-var MultiDimensionPie = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-multidim-pie", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var MultiDimensionPie = {
   extends: Base,
 
   props: {
@@ -34130,41 +34247,12 @@ var MultiDimensionPie = { render: function render() {
       type: String,
       default: 'pieChart'
     },
-    height: {
-      type: Number,
-      default: 160
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     useLegend: {
       type: Boolean,
       default: true
     },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendX: {
-      type: Number,
-      default: 0
-    },
-    legendY: {
-      type: Number,
-      default: 0
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 12
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
+    layout: {
+      default: 'square-and-legend'
     }
   },
 
@@ -34192,15 +34280,8 @@ var MultiDimensionPie = { render: function render() {
   },
 
   mounted: function mounted() {
-    var _this = this;
-
     var chart = this.chart;
-
-    if (this.useLegend) {
-      chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal).legendText(function (d, i) {
-        return _this.getLabel(d.name);
-      }));
-    }
+    chart.cx(this.$el.clientHeight / 2);
 
     return chart.render();
   },
@@ -34214,7 +34295,7 @@ var MultiDimensionPie = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-week-row g.row text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " g.row text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34222,11 +34303,7 @@ var MultiDimensionPie = { render: function render() {
   }
 })();
 
-var WeekRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var WeekRow = {
   extends: Base,
 
   props: {
@@ -34234,16 +34311,11 @@ var WeekRow = { render: function render() {
       type: String,
       default: 'rowChart'
     },
-    height: {
-      type: Number,
-      default: 240
-    },
-    width: {
-      type: Number,
-      default: 200
-    },
     labels: {
       default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
+    },
+    useLegend: {
+      default: false
     }
   },
 
@@ -34323,7 +34395,7 @@ var WeekRow = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-list-row g.row text { pointer-events: none; } .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " g.row text { pointer-events: none; } g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34331,25 +34403,13 @@ var WeekRow = { render: function render() {
   }
 })();
 
-var ListRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var ListRow = {
   extends: Base,
 
   props: {
     chartType: {
       type: String,
       default: 'rowChart'
-    },
-    height: {
-      type: Number,
-      default: 400
-    },
-    width: {
-      type: Number,
-      default: 200
     },
     scale: {
       type: String,
@@ -34377,6 +34437,9 @@ var ListRow = { render: function render() {
     labeloffsetY: {
       type: Number,
       default: 10
+    },
+    useLegend: {
+      default: false
     }
   },
   computed: {
@@ -34435,11 +34498,7 @@ var ListRow = { render: function render() {
   }
 })();
 
-var RateLine = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var RateLine = {
   extends: Base,
 
   props: {
@@ -34501,11 +34560,7 @@ var RateLine = { render: function render() {
   }
 })();
 
-var StackedLines = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var StackedLines = {
   extends: Base,
 
   props: {
@@ -34578,11 +34633,7 @@ var StackedLines = { render: function render() {
   }
 })();
 
-var OrdinalBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var OrdinalBar = {
   extends: Base,
 
   props: {
@@ -34649,11 +34700,7 @@ var OrdinalBar = { render: function render() {
   }
 })();
 
-var StackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var StackedBar = {
   extends: Base,
 
   props: {
@@ -34667,12 +34714,6 @@ var StackedBar = { render: function render() {
     renderHorizontalGridLines: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: function _default() {
-        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
-      }
     },
     removeEmptyRows: {
       type: Boolean,
@@ -34754,7 +34795,7 @@ var StackedBar = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-filter-stacked g.chart-body { clip-path: none; } .krt-dc-filter-stacked rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " g.chart-body { clip-path: none; } rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34772,11 +34813,7 @@ function _multikey(x, y) {
   return x + ',' + y;
 }
 
-var FilterStackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var FilterStackedBar = {
   extends: Base,
 
   props: {
@@ -34803,12 +34840,6 @@ var FilterStackedBar = { render: function render() {
     elasticY: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: function _default() {
-        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
-      }
     }
   },
   computed: {
@@ -34912,7 +34943,7 @@ var FilterStackedBar = { render: function render() {
     }
     // select <-> deselect && redraw
     chart.on('pretransition', function (chart) {
-      chart.selectAll('.krt-dc-filter-stacked rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
+      chart.selectAll('rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
         var x = d.x;
         if (_this3.scale === 'time') x = ymdFormat(x);
         var key = _multikey(x, d.layer);
@@ -35195,6 +35226,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -35295,6 +35340,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -35306,6 +35354,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -35333,6 +35383,10 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -35505,6 +35559,9 @@ var DataTable = { render: function render() {
     rowsPerPage: {
       type: Number,
       default: 10
+    },
+    useLegend: {
+      default: false
     },
     renderTooltip: {
       type: Boolean,
@@ -35704,7 +35761,7 @@ var DataTable = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-heat-map .box-group .heat-box:hover{ fill-opacity: 0.5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .box-group .heat-box:hover{ fill-opacity: 0.5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35720,11 +35777,7 @@ function _extractName(dimension) {
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
 }
 
-var HeatMap = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var HeatMap = {
   extends: Base,
 
   props: {
@@ -35887,20 +35940,13 @@ function _extractName$1(dimension) {
   return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '');
 }
 
-var Series = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var Series = {
   extends: Base,
 
   props: {
     chartType: {
       type: String,
       default: 'seriesChart'
-    },
-    dimension: {
-      type: String
     },
     width: {
       type: Number,
@@ -35950,12 +35996,6 @@ var Series = { render: function render() {
     useLegend: {
       type: Boolean,
       default: true
-    },
-    legend: {
-      type: Object,
-      default: function _default() {
-        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
-      }
     }
   },
   computed: {
@@ -35974,9 +36014,6 @@ var Series = { render: function render() {
     },
     yKey: function yKey() {
       return _extractName$1(this.reduce);
-    },
-    dataKeys: function dataKeys() {
-      return Object.keys(this.dimensionExtractor({}));
     },
     dimensionExtractor: function dimensionExtractor() {
       if (this.dateKey != undefined) return generateExtractor(this.dateKey);
@@ -36060,7 +36097,6 @@ var Series = { render: function render() {
     chart.yAxis().tickFormat(function (d) {
       return d + ('' + _this.yAxisFormat);
     });
-    this.applyLegend();
     return chart.render();
   }
 };
@@ -36069,7 +36105,7 @@ var Series = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-bubble-chart .node text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .node text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36077,11 +36113,7 @@ var Series = { render: function render() {
   }
 })();
 
-var Bubble = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-bubble-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var Bubble = {
   extends: Base,
 
   props: {
