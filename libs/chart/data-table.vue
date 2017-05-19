@@ -114,6 +114,10 @@ export default {
     },
     useLegend: {
       default: false
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -164,6 +168,7 @@ export default {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
     },
     linkCol: function() {
+      if(!this.linkColmn) return null
       return this.linkColumn.replace(/\s/g, '').split(',')
     },
     grouping: function() {

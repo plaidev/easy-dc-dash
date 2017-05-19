@@ -1,3 +1,10 @@
+<template>
+  <div class="krt-dc-geo-chart" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
+    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+    <div v-text="title" style="font-size:24px; text-align:center;"></div>
+  </div>
+</template>
 
 <script lang='js'>
 import d3 from 'd3'
@@ -25,7 +32,16 @@ export default {
       default: 2000
     }
   },
-
+  methods: {
+    showTooltip(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const data = {
+        key: d.properties.nam_ja
+        // val: null
+      }
+      this.$refs.tooltip.show(data, fill)
+    }
+  },
   mounted: function() {
     const chart = this.chart;
 
@@ -56,8 +72,6 @@ export default {
         .interpolate(d3.interpolateHcl)
         .range(['#f7fcfd', '#00441b'])
       )
-      .title((d) => d.key)
-
     return this.chart;
   }
 }

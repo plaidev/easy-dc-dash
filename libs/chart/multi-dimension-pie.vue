@@ -36,6 +36,17 @@ export default {
     }
   },
 
+  methods: {
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const data = {
+        key: d.data.key,
+        val: d.data.value
+      }
+      this.$refs.tooltip.show(data, fill)
+    }
+  },
+
   mounted: function() {
     const chart = this.chart;
     chart
@@ -51,3 +62,9 @@ export default {
 
 
 </script>
+
+<style scoped>
+.pie-label-group text {
+  pointer-events: none;
+}
+</style>

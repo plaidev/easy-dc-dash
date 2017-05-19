@@ -16,9 +16,6 @@ export default {
       type: String,
       default: 'bubbleChart'
     },
-    timeFormat: {
-      type: String
-    },
     // labels, formats
     xAxis: {
       type: String,
@@ -166,6 +163,21 @@ export default {
       const format = this.getTimeFormat(this.timeScale)
       if (format === null) return key
       return format(key)
+    },
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const v = d.value
+      const format = this.getTimeFormat(this.timeScale)
+      const k = format ? format(d.key) : d.key
+      const data = {
+        key: k,
+        vals: {
+          [this.xAxis]: v[this.xAxis].per ? v[this.xAxis].per : v.x,
+          [this.yAxis]: v[this.yAxis].per ? v[this.yAxis].per : v.y,
+          [this.radius]: v[this.radius].per ? v[this.radius].per : v.radius
+        }
+      }
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -190,12 +202,6 @@ export default {
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
       .renderVerticalGridLines(this.renderVerticalGridLines)
       .label((p) => this.formatKey(p.key))
-      .title((p) => {
-        return `[${this.formatKey(p.key)}]\n`
-          + `${this.xAxis}: ${this.extractValue(p.value[this.xAxis])}${this.xAxisFormat}\n`
-          + `${this.yAxis}: ${this.extractValue(p.value[this.yAxis])}${this.yAxisFormat}\n`
-          + `${this.radius}: ${this.extractValue(p.value[this.radius])}${this.radiusFormat}`
-      })
     chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
     if(this.timeScale) {
@@ -209,3 +215,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.node text {
+  pointer-events: none;
+}
+</style>

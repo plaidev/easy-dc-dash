@@ -1,6 +1,7 @@
 import Base from './_base'
 import {compose} from './_composite'
 import NumberDisplay from './number-display.vue'
+import DateVolumeChart from './date-volume-chart.vue'
 import SegmentPie from './segment-pie.vue'
 import MultiDimensionPie from './multi-dimension-pie.vue'
 import WeekRow from './week-row.vue'
@@ -20,6 +21,7 @@ import csvDownloadButton from './csv-download-button.vue'
 
 const components = {
   'number-display': NumberDisplay,
+  'date-volume-chart': DateVolumeChart,
   'segment-pie': SegmentPie,
   'multidim-pie': MultiDimensionPie,
   'week-row': WeekRow,
@@ -52,6 +54,7 @@ export default {
   WeekRow: WeekRow,
   ListRow: ListRow,
   NumberDisplay: NumberDisplay,
+  DateVolumeChart: DateVolumeChart,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
   StackedBar: StackedBar,

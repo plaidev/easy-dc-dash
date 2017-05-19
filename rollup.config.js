@@ -18,6 +18,8 @@ export default {
   // entry
   entry: 'index.js',
 
+  sourceMap: true,
+
   // output
   targets: [
     { dest: 'dist/bundle.js', format: 'cjs' },

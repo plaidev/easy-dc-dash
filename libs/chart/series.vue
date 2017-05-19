@@ -72,6 +72,13 @@ export default {
       type: Boolean,
       default: true
     },
+<<<<<<< HEAD
+=======
+    legend: {
+      type: Object,
+      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
+    }
+>>>>>>> master
   },
   computed: {
     dimensionName: function() {
@@ -117,6 +124,34 @@ export default {
       }
       if(FORMATS[axis] === null) return +key
       return Number(FORMATS[axis](key))
+    },
+    showTooltip: function(d) {
+      const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
+      const fill = d3.event.target.getAttribute('fill');
+      const stroke = d3.event.target.getAttribute('stroke');
+      const color = fill || stroke;
+
+      if (d.x && d.y) {
+        const key = d.layer
+        const vals = {
+          x: d.x,
+          y: d.y
+        }
+        const data = {
+          key: key,
+          vals: vals
+        }
+        this.$refs.tooltip.show(data, color)
+      }
+      else {
+        const key = d.name
+        const vals = d.values.reduce((a,b) => a.y+b.y);
+        const data = {
+          key: key,
+          val: val
+        }
+        this.$refs.tooltip.show(data, color)
+      }
     }
   },
   mounted: function() {
@@ -127,6 +162,8 @@ export default {
       .chart((c) => dc.lineChart(c).interpolate('basis'))
       .brushOn(this.brushOn)
       .renderLabel(this.renderLabel)
+      .renderVerticalGridLines(true)
+      .renderHorizontalGridLines(true)
       .xAxisLabel(this.xAxisLabel)
       .yAxisLabel(this.yAxisLabel)
       .clipPadding(10)
@@ -136,11 +173,6 @@ export default {
       .seriesAccessor((d) => this.formatKey('series', d.key[0]))
       .keyAccessor((d) => this.formatKey('x', d.key[1]))
       .valueAccessor((d) => +d.value)
-      .title((d) => {
-        return `${this.seriesLabel}[${this.seriesKey}]: ${this.formatKey('series', d.key[0])}\n`
-          + `${this.xAxisLabel}[${this.xKey}]: ${this.formatKey('x', d.key[1])}\n`
-          + `${this.yAxisLabel}[${this.yKey}]: ${d.value}`
-      })
     chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
     chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
     return chart.render();
