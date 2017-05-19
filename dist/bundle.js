@@ -24358,10 +24358,8 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    
+    //# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24439,9 +24437,6 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.setAttribute('download', filename);
   pom.click();
 }
-
-//-------------------------------------
-
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -24825,12 +24820,58 @@ var ResetButton = { render: function render() {
   }
 };
 
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip .circle-box { height: 100%; width: 30px; } .krt-dc-tooltip .circle-box .circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip .chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip .chart-data .key { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var KrtDcTooltip = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "circle-box" }, [_c('div', { staticClass: "circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "chart-data" }, [_c('div', { staticClass: "key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
+      return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
+    })], 2), _c('div', { staticClass: "val" }, [_vm.data.val ? _c('div', [_vm._v(_vm._s(_vm.data.val))]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
+      return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
+    })], 2)])]) : _vm._e();
+  }, staticRenderFns: [],
+  name: 'KrtDcTooltip',
+  data: function data() {
+    return {
+      data: null,
+      color: null
+    };
+  },
+
+  methods: {
+    show: function show(data, color) {
+      if (!data) return;
+      this.data = data;
+      this.color = color;
+    },
+    move: function move(left, top) {
+      if (!this.data) return;
+      var el = this.$el;
+      el.style.left = left + 50 + "px";
+      el.style.top = top - 10 + "px";
+    },
+    remove: function remove() {
+      this.data = null;
+    }
+  }
+};
+
 var Base = {
 
-  template: '\n    <div class="krt-dc-component" :id="id">\n      <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      <div v-text="title" style="font-size:24px; text-align:center;"></div>\n    </div>\n  ',
+  template: '<div class="krt-dc-component" :id="id">\n                    <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n                    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n                    <div v-text="title" style="font-size:24px; text-align:center;"></div>\n                  </div>',
 
   components: {
-    'reset-button': ResetButton
+    'reset-button': ResetButton,
+    'krt-dc-tooltip': KrtDcTooltip
   },
 
   props: {
@@ -24859,6 +24900,12 @@ var Base = {
       type: String
     },
     scale: {
+      type: String
+    },
+    timeScale: {
+      type: String
+    },
+    timeFormat: {
       type: String
     },
     width: {
@@ -24892,7 +24939,7 @@ var Base = {
     },
     renderTitle: {
       type: Boolean,
-      default: true
+      default: false
     },
     useLegend: {
       type: Boolean,
@@ -24902,7 +24949,11 @@ var Base = {
       type: Number,
       default: 750
     },
-    labels: {}
+    labels: {},
+    renderTooltip: {
+      type: Boolean,
+      default: true
+    }
   },
 
   computed: {
@@ -24952,6 +25003,17 @@ var Base = {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max]);
+    },
+    tooltipSelector: function tooltipSelector() {
+      if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
+      if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
+      if (this.chartType === 'heatMap') return '#' + this.id + ' .heat-box';
+      if (this.chartType === 'rowChart') return '#' + this.id + ' .row rect';
+      if (this.chartType === 'pieChart') return '#' + this.id + ' .pie-slice';
+      if (this.chartType === 'bubbleChart') return '#' + this.id + ' .bubble';
+      if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
+      if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack, #' + this.id + ' circle.dot';
+      if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
     }
   },
 
@@ -24993,10 +25055,20 @@ var Base = {
       return this.reduceKeys && this.reduceKeys[idx] || idx;
     },
     getTimeInterval: function getTimeInterval(key) {
-      if ((this.dateKey || this.timeScale) === undefined) return null;else return TIME_INTERVALS[key];
+      if ((this.scale || this.dateKey || this.timeScale) === undefined) return null;else return TIME_INTERVALS[key];
     },
     getTimeFormat: function getTimeFormat(key) {
-      if ((this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
+      if ((this.scale || this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
+    },
+    showTooltip: function showTooltip(d, i) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      this.$refs.tooltip.show(d, fill);
+    },
+    moveTooltip: function moveTooltip() {
+      this.$refs.tooltip.move(d3$1.event.clientX, d3$1.event.clientY);
+    },
+    removeTooltip: function removeTooltip() {
+      this.$refs.tooltip.remove();
     }
   },
 
@@ -25034,6 +25106,11 @@ var Base = {
       }).join(', ');
     });
 
+    if (this.renderTooltip) {
+      chart.on('renderlet', function () {
+        d3$1.selectAll(_this2.tooltipSelector).on("mouseover", _this2.showTooltip).on("mousemove", _this2.moveTooltip).on("mouseout", _this2.removeTooltip);
+      });
+    }
     this.chart = chart;
 
     return chart;
@@ -33627,7 +33704,7 @@ function compose(Left, Right) {
   var ComponentObject = {
     extends: Base,
 
-    template: '<div class="krt-dc-composite" :id="id">\n                <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n                <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>\n              </div>',
+    template: '<div class="krt-dc-composite" :id="id">\n                      <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n                      <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n                      <div v-text="title" style="font-size:24px; text-align:center;">{{title}}</div>\n                    </div>',
 
     props: {
       chartType: {
@@ -33651,6 +33728,27 @@ function compose(Left, Right) {
       elasticY: {
         type: Boolean,
         default: true
+      }
+    },
+    methods: {
+      showTooltip: function showTooltip(d, i) {
+        var format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
+        var fill = d3.event.target.getAttribute('fill');
+        var stroke = d3.event.target.getAttribute('stroke');
+        var color = fill || stroke;
+        var key = null;
+        var val = null;
+        if (d.x && d.y) {
+          key = this.scale ? format(d.x) : x;
+          val = d.y;
+        } else {
+          key = this.getLabel(i);
+        }
+        var data = {
+          key: key,
+          val: val
+        };
+        this.$refs.tooltip.show(data, color);
       }
     },
     mounted: function mounted() {
@@ -33788,6 +33886,10 @@ var NumberDisplay = { render: function render() {
     numberFormat: {
       type: String,
       default: '.2s'
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -33834,8 +33936,68 @@ var NumberDisplay = { render: function render() {
   }
 })();
 
+var DateVolumeChart = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-date-volume-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
+  }, staticRenderFns: [],
+  extends: Base,
+  props: {
+    chartType: {
+      type: String,
+      default: 'barChart'
+    },
+    id: {
+      type: String,
+      default: 'krt-dc-date-volume-chart'
+    },
+    width: {
+      type: Number,
+      default: 240 * 4
+    },
+    height: {
+      type: Number,
+      default: 60
+    }
+  },
+  data: function data() {
+    return Store.state.binds;
+  },
+
+  methods: {
+    showTooltip: function showTooltip(d) {
+      var fill = d3.event.target.getAttribute('fill');
+      var data = {
+        key: d.data.key,
+        val: d.data.value
+      };
+      this.$refs.tooltip.show(data, fill);
+    }
+  },
+  mounted: function mounted() {
+    var chart = this.chart;
+    chart.centerBar(true).gap(1).elasticY(true).round(d3.time.day.round)
+    //.round(time.week.round)
+    .alwaysUseRounding(true).xUnits(d3.time.days).yAxis().ticks(0);
+
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .krt-dc-segment-pie .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
 var SegmentPie = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -33914,6 +34076,14 @@ var SegmentPie = { render: function render() {
         label = Store.getLabel(segmentId);
       }
       return label;
+    },
+    showTooltip: function showTooltip(d) {
+      var fill = d3.event.target.getAttribute('fill');
+      var data = {
+        key: this.segmentLabel(d.data.key),
+        val: d.data.value
+      };
+      this.$refs.tooltip.show(data, fill);
     }
   },
 
@@ -33937,7 +34107,7 @@ var SegmentPie = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-multidim-pie .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -33946,7 +34116,7 @@ var SegmentPie = { render: function render() {
 })();
 
 var MultiDimensionPie = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-multidim-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-multidim-pie", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34010,6 +34180,17 @@ var MultiDimensionPie = { render: function render() {
     }
   },
 
+  methods: {
+    showTooltip: function showTooltip(d) {
+      var fill = d3.event.target.getAttribute('fill');
+      var data = {
+        key: d.data.key,
+        val: d.data.value
+      };
+      this.$refs.tooltip.show(data, fill);
+    }
+  },
+
   mounted: function mounted() {
     var _this = this;
 
@@ -34017,10 +34198,7 @@ var MultiDimensionPie = { render: function render() {
 
     if (this.useLegend) {
       chart.legend(index$2.legend().gap(this.legendGap).x(this.legendX).y(this.legendY).legendWidth(this.width).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal).legendText(function (d, i) {
-        return Store.getLabel(d.name, {
-          dataset: _this.dataset,
-          chartName: _this.id
-        });
+        return _this.getLabel(d.name);
       }));
     }
 
@@ -34036,7 +34214,7 @@ var MultiDimensionPie = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-week-row g.row text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34045,7 +34223,7 @@ var MultiDimensionPie = { render: function render() {
 })();
 
 var WeekRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-week-row", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34122,6 +34300,17 @@ var WeekRow = { render: function render() {
     }
   },
 
+  methods: {
+    showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var data = {
+        key: this.getLabel(d.key),
+        val: d.value.value
+      };
+      this.$refs.tooltip.show(data, fill);
+    }
+  },
+
   mounted: function mounted() {
     var chart = this.chart;
 
@@ -34134,7 +34323,7 @@ var WeekRow = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-list-row g.row text { pointer-events: none; } .krt-dc-list-row g.row text.titlerow { fill: #000000 } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34143,7 +34332,7 @@ var WeekRow = { render: function render() {
 })();
 
 var ListRow = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-list-row", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34188,14 +34377,6 @@ var ListRow = { render: function render() {
     labeloffsetY: {
       type: Number,
       default: 10
-    },
-    titleLabelOffsetX: {
-      type: Number,
-      default: 2
-    },
-    renderTitleLabel: {
-      type: Boolean,
-      default: true
     }
   },
   computed: {
@@ -34220,6 +34401,14 @@ var ListRow = { render: function render() {
           return group.top(_this.rowNums);
         }
       };
+    },
+    showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var data = {
+        key: d.key,
+        val: d.value
+      };
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -34227,7 +34416,7 @@ var ListRow = { render: function render() {
 
     var chart = this.chart;
 
-    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).titleLabelOffsetX(this.titleLabelOffsetX).renderTitleLabel(this.renderTitleLabel).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
+    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
       return _this2.descending ? -d.value : d.value;
     });
     return chart.render();
@@ -34247,7 +34436,7 @@ var ListRow = { render: function render() {
 })();
 
 var RateLine = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-segment-pie", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34296,7 +34485,7 @@ var RateLine = { render: function render() {
   },
 
   mounted: function mounted() {
-    return this.chart.render();
+    return this.chart.hidableStacks(true).render();
   }
 };
 
@@ -34313,7 +34502,7 @@ var RateLine = { render: function render() {
 })();
 
 var StackedLines = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-lines", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34367,7 +34556,7 @@ var StackedLines = { render: function render() {
     var _loop2 = function _loop2(i) {
       chart.stack(_this.combinedGroup, _this.getLabel(_this.getReduceKey(i)), function (d) {
         return d.value[i];
-      });
+      }).hidableStacks(true);
     };
 
     for (var i = 1; i < lineNum; i++) {
@@ -34390,7 +34579,7 @@ var StackedLines = { render: function render() {
 })();
 
 var OrdinalBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-ordinal-bar", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34430,6 +34619,16 @@ var OrdinalBar = { render: function render() {
       return this.removeEmptyRows ? removeEmptyBins(group) : group;
     }
   },
+  methods: {
+    showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var data = {
+        key: d.data.key,
+        val: d.data.value
+      };
+      this.$refs.tooltip.show(data, fill);
+    }
+  },
   mounted: function mounted() {
     var chart = this.chart;
 
@@ -34451,7 +34650,7 @@ var OrdinalBar = { render: function render() {
 })();
 
 var StackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-stacked-bar", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34515,6 +34714,18 @@ var StackedBar = { render: function render() {
       return Object.keys(this.reducerExtractor({}));
     }
   },
+  methods: {
+    showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var data = {
+        key: d.data.key,
+        val: d.data.value.reduce(function (a, b) {
+          return a + b;
+        })
+      };
+      this.$refs.tooltip.show(data, fill);
+    }
+  },
   mounted: function mounted() {
     var _this = this;
 
@@ -34522,15 +34733,13 @@ var StackedBar = { render: function render() {
 
     chart.group(this.combinedGroup, this.getLabel(0), function (d) {
       return d.value[0];
-    }).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines).title(function (d) {
-      return d.key + '[' + this.layer + ']: ' + d.value;
-    });
+    }).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines);
     // stack
 
     var _loop2 = function _loop2(i) {
       chart.stack(_this.combinedGroup, _this.getLabel(i), function (d) {
         return d.value[i];
-      });
+      }).hidableStacks(true);
     };
 
     for (var i = 1; i < this.reduceKeys.length; i++) {
@@ -34564,7 +34773,7 @@ function _multikey(x, y) {
 }
 
 var FilterStackedBar = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-filter-stacked", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -34676,6 +34885,15 @@ var FilterStackedBar = { render: function render() {
     },
     extractKey: function extractKey(k) {
       return k.replace(/\'/g, '');
+    },
+    showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var k = this.getLabel(d.data.key);
+      var data = {
+        key: k + '[' + d.layer + ']',
+        val: d.data.value[d.layer]
+      };
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -34687,12 +34905,10 @@ var FilterStackedBar = { render: function render() {
 
     if (!this.scale) chart.x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal);else chart.xUnits(d3$1.time.days); // FIXME
 
-    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).mouseZoomable(false).title(function (d) {
-      return d.key + '[' + this.layer + ']: ' + d.value[this.layer];
-    });
+    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).mouseZoomable(false);
     // stack
     for (var i = 1; i < barNum; i++) {
-      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
+      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
     }
     // select <-> deselect && redraw
     chart.on('pretransition', function (chart) {
@@ -34979,20 +35195,6 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -35093,9 +35295,6 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
-// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
-// point sequences are identified. The topology can then be subsequently deduped
-// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -35107,8 +35306,6 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
-
-// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -35137,10 +35334,6 @@ function reverse$1(array, start, end) {
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
 
-// Constructs the TopoJSON Topology for the specified hash of features.
-// Each object in the specified hash must be a GeoJSON object,
-// meaning FeatureCollection, a Feature or a geometry object.
-
 (function () {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
@@ -35153,7 +35346,11 @@ function reverse$1(array, start, end) {
   }
 })();
 
-var GeoJP = {
+var GeoJP = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-geo-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
+          _vm.removeFilterAndRedrawChart();
+        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
+  }, staticRenderFns: [],
   extends: Base,
 
   props: {
@@ -35174,7 +35371,16 @@ var GeoJP = {
       default: 2000
     }
   },
-
+  methods: {
+    showTooltip: function showTooltip(d) {
+      var fill = d3$1.event.target.getAttribute('fill');
+      var data = {
+        key: d.properties.nam_ja
+        // val: null
+      };
+      this.$refs.tooltip.show(data, fill);
+    }
+  },
   mounted: function mounted() {
     var _this = this;
 
@@ -35189,10 +35395,7 @@ var GeoJP = {
 
     var max = this.reducer.top(1)[0].value;
 
-    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.scale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b'])).title(function (d) {
-      return d.key;
-    });
-
+    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.scale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b']));
     return this.chart;
   }
 };
@@ -35302,6 +35505,10 @@ var DataTable = { render: function render() {
     rowsPerPage: {
       type: Number,
       default: 10
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: false
     }
   },
   data: function data() {
@@ -35353,6 +35560,7 @@ var DataTable = { render: function render() {
       return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
     },
     linkCol: function linkCol() {
+      if (!this.linkColmn) return null;
       return this.linkColumn.replace(/\s/g, '').split(',');
     },
     grouping: function grouping() {
@@ -35496,7 +35704,7 @@ var DataTable = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-heat-map .box-group .heat-box:hover{ fill-opacity: 0.5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35513,7 +35721,7 @@ function _extractName(dimension) {
 }
 
 var HeatMap = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-heat-map", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -35613,6 +35821,18 @@ var HeatMap = { render: function render() {
       };
       if (FORMATS[axis] === null) return key;
       return Number(FORMATS[axis](key));
+    },
+    showTooltip: function showTooltip(d) {
+      var _keys;
+
+      var fill = d3$1.event.target.getAttribute('fill');
+      var xAxisLabel = this.xAxisLabel || this.xKey;
+      var yAxisLabel = this.xAxisLabel || this.yKey;
+      var data = {
+        keys: (_keys = {}, defineProperty(_keys, xAxisLabel, this.formatKey('x', d.key[0])), defineProperty(_keys, yAxisLabel, this.formatKey('y', d.key[1])), _keys),
+        val: d.value
+      };
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -35633,8 +35853,6 @@ var HeatMap = { render: function render() {
       return d + ('' + _this.xAxisFormat);
     }).rowsLabel(function (d) {
       return d + ('' + _this.yAxisFormat);
-    }).title(function (d) {
-      return xAxisLabel + ': ' + _this.formatKey('x', d.key[0]) + _this.xAxisFormat + '\n' + (yAxisLabel + ': ' + _this.formatKey('y', d.key[1]) + _this.yAxisFormat + '\n') + (valueLabel + ': ' + +d.value + _this.valueFormat);
     });
     if (this.dateKey) {
       chart.filterPrinter(function (filters) {
@@ -35670,7 +35888,7 @@ function _extractName$1(dimension) {
 }
 
 var Series = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-series-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -35729,39 +35947,15 @@ var Series = { render: function render() {
       type: String,
       default: ''
     },
-    // legend
-    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
     useLegend: {
       type: Boolean,
       default: true
     },
-    legendX: {
-      type: Number,
-      default: 350
-    },
-    legendY: {
-      type: Number,
-      default: 350
-    },
-    legendWidth: {
-      type: Number,
-      default: 140
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 13
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
+    legend: {
+      type: Object,
+      default: function _default() {
+        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
+      }
     }
   },
   computed: {
@@ -35803,12 +35997,6 @@ var Series = { render: function render() {
     }
   },
   methods: {
-    getTimeInterval: function getTimeInterval(key) {
-      if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
-    },
-    getTimeFormat: function getTimeFormat(key) {
-      if (this.dateKey === undefined) return null;else return TIME_FORMATS[key];
-    },
     formatKey: function formatKey(axis, key) {
       var seriesTimeFormat = this.getTimeFormat(this.seriesKey);
       var xTimeFormat = this.getTimeFormat(this.xKey);
@@ -35818,6 +36006,35 @@ var Series = { render: function render() {
       };
       if (FORMATS[axis] === null) return +key;
       return Number(FORMATS[axis](key));
+    },
+    showTooltip: function showTooltip(d) {
+      var format = this.timeFormat ? this.timeFormat : d3$1.time.format('%Y-%m-%d');
+      var fill = d3$1.event.target.getAttribute('fill');
+      var stroke = d3$1.event.target.getAttribute('stroke');
+      var color = fill || stroke;
+
+      if (d.x && d.y) {
+        var key = d.layer;
+        var vals = {
+          x: d.x,
+          y: d.y
+        };
+        var data = {
+          key: key,
+          vals: vals
+        };
+        this.$refs.tooltip.show(data, color);
+      } else {
+        var _key = d.name;
+        var _vals = d.values.reduce(function (a, b) {
+          return a.y + b.y;
+        });
+        var _data = {
+          key: _key,
+          val: val
+        };
+        this.$refs.tooltip.show(_data, color);
+      }
     }
   },
   mounted: function mounted() {
@@ -35828,7 +36045,7 @@ var Series = { render: function render() {
 
     chart.chart(function (c) {
       return index$2.lineChart(c).interpolate('basis');
-    }).brushOn(this.brushOn).renderLabel(this.renderLabel).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).clipPadding(10).elasticY(this.elasticY).mouseZoomable(false).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+    }).brushOn(this.brushOn).renderLabel(this.renderLabel).renderVerticalGridLines(true).renderHorizontalGridLines(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).clipPadding(10).elasticY(this.elasticY).mouseZoomable(false).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
       return _this.formatKey('x', d.key[1]);
     }))).seriesAccessor(function (d) {
       return _this.formatKey('series', d.key[0]);
@@ -35836,8 +36053,6 @@ var Series = { render: function render() {
       return _this.formatKey('x', d.key[1]);
     }).valueAccessor(function (d) {
       return +d.value;
-    }).title(function (d) {
-      return _this.seriesLabel + '[' + _this.seriesKey + ']: ' + _this.formatKey('series', d.key[0]) + '\n' + (_this.xAxisLabel + '[' + _this.xKey + ']: ' + _this.formatKey('x', d.key[1]) + '\n') + (_this.yAxisLabel + '[' + _this.yKey + ']: ' + d.value);
     });
     chart.xAxis().tickFormat(function (d) {
       return d + ('' + _this.xAxisFormat);
@@ -35845,9 +36060,7 @@ var Series = { render: function render() {
     chart.yAxis().tickFormat(function (d) {
       return d + ('' + _this.yAxisFormat);
     });
-    if (this.useLegend) {
-      chart.legend(index$2.legend().x(this.legendX).y(this.legendY).gap(this.legendGap).legendWidth(this.legendWidth).itemWidth(this.legendItemWidth).itemHeight(this.legendItemHeight).horizontal(this.legendHorizontal));
-    }
+    this.applyLegend();
     return chart.render();
   }
 };
@@ -35856,7 +36069,7 @@ var Series = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-bubble-chart .node text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35865,7 +36078,7 @@ var Series = { render: function render() {
 })();
 
 var Bubble = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-bubble-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-bubble-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
           _vm.removeFilterAndRedrawChart();
         } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
   }, staticRenderFns: [],
@@ -35875,12 +36088,6 @@ var Bubble = { render: function render() {
     chartType: {
       type: String,
       default: 'bubbleChart'
-    },
-    timeScale: {
-      type: String
-    },
-    timeFormat: {
-      type: String
     },
     // labels, formats
     xAxis: {
@@ -36024,6 +36231,19 @@ var Bubble = { render: function render() {
       var format = this.getTimeFormat(this.timeScale);
       if (format === null) return key;
       return format(key);
+    },
+    showTooltip: function showTooltip(d) {
+      var _vals;
+
+      var fill = d3$1.event.target.getAttribute('fill');
+      var v = d.value;
+      var format = this.getTimeFormat(this.timeScale);
+      var k = format ? format(d.key) : d.key;
+      var data = {
+        key: k,
+        vals: (_vals = {}, defineProperty(_vals, this.xAxis, v[this.xAxis].per ? v[this.xAxis].per : v.x), defineProperty(_vals, this.yAxis, v[this.yAxis].per ? v[this.yAxis].per : v.y), defineProperty(_vals, this.radius, v[this.radius].per ? v[this.radius].per : v.radius), _vals)
+      };
+      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -36046,8 +36266,6 @@ var Bubble = { render: function render() {
       return _this3.extractValue(d.value[_this3.radius]);
     }))).elasticX(this.elasticX).elasticY(this.elasticY).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding).renderHorizontalGridLines(this.renderHorizontalGridLines).renderVerticalGridLines(this.renderVerticalGridLines).label(function (p) {
       return _this3.formatKey(p.key);
-    }).title(function (p) {
-      return '[' + _this3.formatKey(p.key) + ']\n' + (_this3.xAxis + ': ' + _this3.extractValue(p.value[_this3.xAxis]) + _this3.xAxisFormat + '\n') + (_this3.yAxis + ': ' + _this3.extractValue(p.value[_this3.yAxis]) + _this3.yAxisFormat + '\n') + (_this3.radius + ': ' + _this3.extractValue(p.value[_this3.radius]) + _this3.radiusFormat);
     });
     chart.xAxis().tickFormat(function (v) {
       return v + ('' + _this3.xAxisFormat);
@@ -36116,6 +36334,7 @@ var csvDownloadButton = { render: function render() {
 
 var components = {
   'number-display': NumberDisplay,
+  'date-volume-chart': DateVolumeChart,
   'segment-pie': SegmentPie,
   'multidim-pie': MultiDimensionPie,
   'week-row': WeekRow,
@@ -36148,6 +36367,7 @@ var Chart = {
   WeekRow: WeekRow,
   ListRow: ListRow,
   NumberDisplay: NumberDisplay,
+  DateVolumeChart: DateVolumeChart,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
   StackedBar: StackedBar,

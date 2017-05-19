@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-ordinal-bar" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -48,6 +49,16 @@ export default {
       const reducer = this.reducerExtractor;
       const group = dim.group().reduceSum(reducer)
       return this.removeEmptyRows ? removeEmptyBins(group) : group
+    }
+  },
+  methods: {
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const data = {
+        key: d.data.key,
+        val: d.data.value
+      }
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {

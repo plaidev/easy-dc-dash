@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-list-row" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -53,14 +54,6 @@ export default {
     labeloffsetY: {
       type: Number,
       default: 10
-    },
-    titleLabelOffsetX: {
-      type: Number,
-      default: 2
-    },
-    renderTitleLabel: {
-      type: Boolean,
-      default: true
     }
   },
   computed: {
@@ -83,6 +76,14 @@ export default {
           return group.top(this.rowNums)
         }
       }
+    },
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const data = {
+        key: d.key,
+        val: d.value
+      }
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -94,8 +95,6 @@ export default {
       .elasticX(true)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
-      .titleLabelOffsetX(this.titleLabelOffsetX)
-      .renderTitleLabel(this.renderTitleLabel)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
       .ordering((d) => this.descending ? -d.value : d.value)
     return chart.render();
@@ -105,6 +104,9 @@ export default {
 </script>
 
 <style scoped>
+.krt-dc-list-row g.row text {
+    pointer-events: none;
+  }
 .krt-dc-list-row g.row text.titlerow {
     fill: #000000
   }

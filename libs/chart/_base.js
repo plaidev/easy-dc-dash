@@ -5,16 +5,19 @@ import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 import ResetButton from './components/reset-button.vue'
+import KrtDcTooltip from './components/krt-dc-tooltip.vue'
 
 export default {
 
   template: `<div class="krt-dc-component" :id="id">
-              <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-              <div v-text="title" style="font-size:24px; text-align:center;"></div>
-            </div>`,
+                    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
+                    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+                    <div v-text="title" style="font-size:24px; text-align:center;"></div>
+                  </div>`,
 
   components: {
-    'reset-button': ResetButton
+    'reset-button': ResetButton,
+    'krt-dc-tooltip': KrtDcTooltip
   },
 
   props: {
@@ -45,6 +48,12 @@ export default {
       type: String
     },
     scale: {
+      type: String
+    },
+    timeScale: {
+      type: String
+    },
+    timeFormat: {
       type: String
     },
     width: {
@@ -78,7 +87,7 @@ export default {
     },
     renderTitle: {
       type: Boolean,
-      default: true
+      default: false
     },
     useLegend: {
       type: Boolean,
@@ -89,6 +98,10 @@ export default {
       default: 750
     },
     labels: {
+    },
+    renderTooltip: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -140,6 +153,17 @@ export default {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max])
+    },
+    tooltipSelector: function() {
+      if(this.chartType === 'barChart') return `#${this.id} .bar`
+      if(this.chartType === 'lineChart') return `#${this.id} .bar`
+      if(this.chartType === 'heatMap') return `#${this.id} .heat-box`
+      if(this.chartType === 'rowChart') return `#${this.id} .row rect`
+      if(this.chartType === 'pieChart') return `#${this.id} .pie-slice`
+      if(this.chartType === 'bubbleChart') return `#${this.id} .bubble`
+      if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
+      if(this.chartType === 'compositeChart') return `#${this.id} .stack, #${this.id} circle.dot`
+      if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
     }
   },
 
@@ -157,7 +181,7 @@ export default {
       } = options;
 
       const l = this.legend
-      
+
       const legendInstance = dc.legend()
         .x(l.x).y(l.y)
         .gap(l.gap).legendWidth(l.width)
@@ -181,13 +205,23 @@ export default {
       return this.reduceKeys && this.reduceKeys[idx] || idx
     },
     getTimeInterval: function(key) {
-      if((this.dateKey || this.timeScale) === undefined) return null
+      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else return TIME_INTERVALS[key]
     },
     getTimeFormat: function(key) {
-      if((this.dateKey || this.timeScale) === undefined) return null
+      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
+    },
+    showTooltip: function(d, i) {
+      const fill = d3.event.target.getAttribute('fill')
+      this.$refs.tooltip.show(d, fill)
+    },
+    moveTooltip: function() {
+      this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
+    },
+    removeTooltip: function() {
+      this.$refs.tooltip.remove();
     }
   },
 
@@ -201,7 +235,7 @@ export default {
 
     if (this.labels) {
       let labels = this.labels;
-      if (typeof this.labels === 'string' || this.labels instanceof String) 
+      if (typeof this.labels === 'string' || this.labels instanceof String)
         labels = this.labels.split(',');
       Store.setLabels(labels, {
         dataset: this.dataset,
@@ -236,6 +270,14 @@ export default {
           .join(', ')
       })
 
+    if(this.renderTooltip) {
+      chart.on('renderlet', () => {
+        d3.selectAll(this.tooltipSelector)
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip)
+      })
+    }
     this.chart = chart;
 
     return chart;
