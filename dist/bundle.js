@@ -25004,14 +25004,14 @@ var Base = {
 
       return scale().domain([this.min, this.max]);
     },
-    selector: function selector() {
+    tooltipSelector: function tooltipSelector() {
+      if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
+      if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
       if (this.chartType === 'heatMap') return '#' + this.id + ' .heat-box';
       if (this.chartType === 'rowChart') return '#' + this.id + ' .row rect';
       if (this.chartType === 'pieChart') return '#' + this.id + ' .pie-slice';
-      if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
-      if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
-      if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .bubble';
+      if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
       if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack, #' + this.id + ' circle.dot';
       if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
     }
@@ -25108,7 +25108,7 @@ var Base = {
 
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
-        d3$1.selectAll(_this2.selector).on("mouseover", _this2.showTooltip).on("mousemove", _this2.moveTooltip).on("mouseout", _this2.removeTooltip);
+        d3$1.selectAll(_this2.tooltipSelector).on("mouseover", _this2.showTooltip).on("mousemove", _this2.moveTooltip).on("mouseout", _this2.removeTooltip);
       });
     }
     this.chart = chart;
