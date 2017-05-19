@@ -24,12 +24,6 @@ export default {
       type: String,
       default: 'bubbleChart'
     },
-    timeScale: {
-      type: String
-    },
-    timeFormat: {
-      type: String
-    },
     // labels, formats
     xAxis: {
       type: String,

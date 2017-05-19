@@ -50,6 +50,12 @@ export default {
     scale: {
       type: String
     },
+    timeScale: {
+      type: String
+    },
+    timeFormat: {
+      type: String
+    },
     width: {
       type: Number
     },
@@ -154,9 +160,9 @@ export default {
       if(this.chartType === 'pieChart') return `#${this.id} .pie-slice`
       if(this.chartType === 'barChart') return `#${this.id} .bar`
       if(this.chartType === 'lineChart') return `#${this.id} .bar`
-      if(this.chartType === 'seriesChart') return `#${this.id} .line`
+      if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
       if(this.chartType === 'bubbleChart') return `#${this.id} .bubble`
-      if(this.chartType === 'compositeChart') return `#${this.id} .stack`
+      if(this.chartType === 'compositeChart') return `#${this.id} .stack, #${this.id} circle.dot`
       if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
     }
   },
@@ -199,17 +205,17 @@ export default {
       return this.reduceKeys && this.reduceKeys[idx] || idx
     },
     getTimeInterval: function(key) {
-      if((this.dateKey || this.timeScale) === undefined) return null
+      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else return TIME_INTERVALS[key]
     },
     getTimeFormat: function(key) {
-      if((this.dateKey || this.timeScale) === undefined) return null
+      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
       else if (this.timeFormat) return d3.time.format(this.timeFormat)
       else return TIME_FORMATS[key]
     },
-    showTooltip: function(data) {
+    showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill')
-      this.$refs.tooltip.show(data, fill)
+      this.$refs.tooltip.show(d, fill)
     },
     moveTooltip: function() {
       this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
@@ -265,7 +271,7 @@ export default {
       })
 
     if(this.renderTooltip) {
-      chart.on('postRender', () => {
+      chart.on('renderlet', () => {
         d3.selectAll(this.selector)
           .on("mouseover", this.showTooltip)
           .on("mousemove", this.moveTooltip)

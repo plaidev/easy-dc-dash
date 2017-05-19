@@ -79,39 +79,13 @@ export default {
       type: String,
       default: ''
     },
-    // legend
-    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
     useLegend: {
       type: Boolean,
       default: true
     },
-    legendX: {
-      type: Number,
-      default: 350
-    },
-    legendY: {
-      type: Number,
-      default: 350
-    },
-    legendWidth: {
-      type: Number,
-      default: 140
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 13
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
+    legend: {
+      type: Object,
+      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     }
   },
   computed: {
@@ -152,14 +126,6 @@ export default {
     }
   },
    methods: {
-    getTimeInterval: function(key) {
-      if(this.dateKey === undefined) return null
-      else return TIME_INTERVALS[key]
-    },
-    getTimeFormat: function(key) {
-      if(this.dateKey === undefined) return null
-      else return TIME_FORMATS[key]
-    },
     formatKey: function(axis, key) {
       const seriesTimeFormat = this.getTimeFormat(this.seriesKey)
       const xTimeFormat = this.getTimeFormat(this.xKey)
@@ -171,12 +137,32 @@ export default {
       return Number(FORMATS[axis](key))
     },
     showTooltip: function(d) {
-      const stroke = d3.event.target.getAttribute('stroke')
-      const data = {
-        key: d.name,
-        // val: d.values
+      const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
+      const fill = d3.event.target.getAttribute('fill');
+      const stroke = d3.event.target.getAttribute('stroke');
+      const color = fill || stroke;
+
+      if (d.x && d.y) {
+        const key = d.layer
+        const vals = {
+          x: d.x,
+          y: d.y
+        }
+        const data = {
+          key: key,
+          vals: vals
+        }
+        this.$refs.tooltip.show(data, color)
       }
-      this.$refs.tooltip.show(data, stroke)
+      else {
+        const key = d.name
+        const vals = d.values.reduce((a,b) => a.y+b.y);
+        const data = {
+          key: key,
+          val: val
+        }
+        this.$refs.tooltip.show(data, color)
+      }
     }
   },
   mounted: function() {
@@ -187,6 +173,8 @@ export default {
       .chart((c) => dc.lineChart(c).interpolate('basis'))
       .brushOn(this.brushOn)
       .renderLabel(this.renderLabel)
+      .renderVerticalGridLines(true)
+      .renderHorizontalGridLines(true)
       .xAxisLabel(this.xAxisLabel)
       .yAxisLabel(this.yAxisLabel)
       .clipPadding(10)

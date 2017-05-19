@@ -115,7 +115,6 @@
       :labels="['PV', 'セッション数', '離脱数']"
       :width=300
       :height=250
-      :legend-x=250
       x-axis-label='name'
       y-axis-label='pv + session_cnt + bounce_cnt'
     ></stacked-bar>
@@ -130,8 +129,6 @@
       reduce='d.pv'
       :width=300
       :height=250
-      :legend-x=250
-      :legend-y=0
     ></filter-stacked-bar>
     <segment-pie
       dimension='d.name'

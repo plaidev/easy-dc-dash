@@ -162,7 +162,9 @@ export default {
       .mouseZoomable(false)
     // stack
     for (let i=1; i<barNum; i++) {
-      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
+      chart
+        .stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]))
+        .hidableStacks(true)
     }
     // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {

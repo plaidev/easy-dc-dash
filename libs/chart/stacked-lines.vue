@@ -51,7 +51,9 @@ export default {
       .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), (d) => d.value[0])
       .renderArea(true)
     for (let i=1; i<lineNum; i++) {
-      chart.stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), (d) => d.value[i]);
+      chart
+        .stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), (d) => d.value[i])
+        .hidableStacks(true)
     }
     return chart.render()
   }
