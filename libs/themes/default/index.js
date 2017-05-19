@@ -7,7 +7,8 @@ export default {
       height = 233
     } = options;
 
-    const heightCoef = chartType === 'pieChart' ? 0.8: 1;
+    const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
+    const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
 
     if (name === 'square-and-legend') {
       return {
@@ -25,7 +26,7 @@ export default {
         },
         legend: {
           x: height + 20,
-          y: height * 0.2,
+          y: height * legendYCoef,
           width: width - height - 20,
           horizontal: false
         },
@@ -76,7 +77,7 @@ export default {
         },
         legend: {
           x: height,
-          y: height * 0.2,
+          y: height * legendYCoef,
           width: width - height,
           horizontal: false
         },
