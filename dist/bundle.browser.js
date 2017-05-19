@@ -33712,9 +33712,6 @@ function compose(Left, Right) {
         type: String,
         default: 'compositeChart'
       },
-      timeFormat: {
-        type: String
-      },
       width: {
         type: Number,
         default: 240 * 4
@@ -34489,7 +34486,6 @@ var RateLine = { render: function render() {
   },
 
   mounted: function mounted() {
-
     return this.chart.hidableStacks(true).render();
   }
 };
