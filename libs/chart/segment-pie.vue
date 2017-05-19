@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-segment-pie" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -85,6 +86,14 @@ export default {
         label = Store.getLabel(segmentId)
       }
       return label;
+    },
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const data = {
+        key: this.segmentLabel(d.data.key),
+        val: d.data.value
+      }
+      this.$refs.tooltip.show(data, fill)
     }
   },
 
@@ -101,5 +110,10 @@ export default {
   }
 }
 
-
 </script>
+
+<style scoped>
+.krt-dc-segment-pie .pie-label-group text {
+  pointer-events: none;
+}
+</style>

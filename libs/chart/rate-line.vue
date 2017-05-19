@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-segment-pie" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -56,6 +57,7 @@ export default {
 
   mounted: function() {
     return this.chart
+      .hidableStacks(true)
       .render()
   }
 }

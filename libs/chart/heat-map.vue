@@ -1,5 +1,6 @@
 <template>
   <div class="krt-dc-heat-map" :id="id">
+    <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
     <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
     <div v-text="title" style="font-size:24px; text-align:center;"></div>
   </div>
@@ -118,6 +119,19 @@ export default {
       }
       if(FORMATS[axis] === null) return key
       return Number(FORMATS[axis](key))
+    },
+    showTooltip: function(d) {
+      const fill = d3.event.target.getAttribute('fill')
+      const xAxisLabel = this.xAxisLabel || this.xKey
+      const yAxisLabel = this.xAxisLabel || this.yKey
+      const data = {
+        keys: {
+          [xAxisLabel]: this.formatKey('x', d.key[0]),
+          [yAxisLabel]: this.formatKey('y', d.key[1])
+        },
+        val: d.value
+      }
+      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {
@@ -134,11 +148,6 @@ export default {
       .yBorderRadius(this.yBorderRadius)
       .colsLabel((d) => d + `${this.xAxisFormat}`)
       .rowsLabel((d) => d + `${this.yAxisFormat}`)
-      .title((d) => {
-          return `${xAxisLabel}: ${this.formatKey('x', d.key[0])}${this.xAxisFormat}\n`
-                 + `${yAxisLabel}: ${this.formatKey('y', d.key[1])}${this.yAxisFormat}\n`
-                 + `${valueLabel}: ${+d.value}${this.valueFormat}`
-      })
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {
@@ -153,3 +162,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.krt-dc-heat-map .box-group .heat-box:hover{
+  fill-opacity: 0.5;
+}
+</style>
