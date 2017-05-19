@@ -24441,32 +24441,94 @@ function downloadCSV(name_or_data, filename, labels) {
 }
 
 var DefaultTheme = {
-  layout: function layout(name) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  containerComponent: function containerComponent() {
+    return 'card-container';
+  },
+
+  layout: function layout(chartType, name) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var _options$width = options.width,
         width = _options$width === undefined ? 377 : _options$width,
         _options$height = options.height,
         height = _options$height === undefined ? 233 : _options$height;
 
 
+    var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
+    var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
+
     if (name === 'square-and-legend') {
       return {
         width: width,
-        height: height * 0.9,
+        height: height * heightCoef,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: width - height
+        },
+        chartCenter: {
+          x: height / 2,
+          y: height * heightCoef / 2
+        },
         legend: {
-          x: height,
-          width: width - height,
+          x: height + 20,
+          y: height * legendYCoef,
+          width: width - height - 20,
           horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15 },
+          yLabel: { padding: 20 }
+        }
+      };
+    }
+
+    if (name === 'square') {
+      var length = Math.min(width, height * heightCoef);
+
+      return {
+        width: length,
+        height: length,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: 40
+        },
+        chartCenter: {
+          x: length / 2,
+          y: length / 2
+        },
+        legend: null,
+        axis: {
+          xLabel: { padding: 15 },
+          yLabel: { padding: 20 }
         }
       };
     } else if (name === 'overlay-legend') {
       return {
         width: width,
-        height: height * 0.9,
+        height: height * heightCoef,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: 40
+        },
+        chartCenter: {
+          x: width / 2,
+          y: height * heightCoef / 2
+        },
         legend: {
           x: height,
+          y: height * legendYCoef,
           width: width - height,
           horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15 },
+          yLabel: { padding: 20 }
         }
       };
     }
@@ -24871,7 +24933,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .outer-container { position: relative; padding: 2px; } .inner-container { background-color: white; width: 100%; height: 100%; } .card-container { margin: -2px; display: flex; align-items: center; justify-content: center; } .title { position: absolute; top: 0; left: 10px; opacity: 0.6; font-size: 24px; } .render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } /* h0系列 */ .fb-lv-h0 { display: flex; flex-direction: row; width: 987px; height: 610px; } .fb-lv-h0 .fb-lv, .fb-lv-v1 { display: flex; flex-direction: column; width: 377px; height: 610px; } .fb-lv-h0 .fb-lv .fb-lv, .fb-lv-v1 .fb-lv, .fb-lv-h2 { display: flex; flex-direction: row; width: 377px; height: 233px; } .fb-lv-h0 .fb-lv .fb-lv .fb-lv, .fb-lv-v1 .fb-lv .fb-lv, .fb-lv-h2 .fb-lv, .fb-lv-v3 { display: flex; flex-direction: column; width: 144px; height: 233px; } .fb-lv-h0 .fb-lv .fb-lv .fb-lv .fb-lv, .fb-lv-v1 .fb-lv .fb-lv .fb-lv, .fb-lv-h2 .fb-lv .fb-lv, .fb-lv-v3 .fb-lv, .fb-lv-h4 { display: flex; flex-direction: row; width: 144px; height: 88.9px; } /* h1系列 */ .fb-lv-h0 .fb-sq .fb-lv, .fb-lv-h1 { display: flex; flex-direction: row; width: 610px; height: 377px; } .fb-lv-h1 .fb-lv, .fb-lv-v2 { display: flex; flex-direction: column; width: 233px; height: 377px; } .fb-lv-h1 .fb-lv .fb-lv, .fb-lv-v2 .fb-lv, .fb-lv-h3 { display: flex; flex-direction: row; width: 233px; height: 144px; } .fb-lv-h1 .fb-lv .fb-lv .fb-lv, .fb-lv-v2 .fb-lv .fb-lv, .fb-lv-h3 .fb-lv, .fb-lv-v4 { display: flex; flex-direction: column; width: 88.9px; height: 144px; } /* sq系、.fb-sq > .fb-lvは考慮していない */ .fb-lv-h0 .fb-sq { width: 610px; height: 610px; } .fb-lv-h0 .fb-lv .fb-sq, .fb-lv-v1 .fb-sq, .fb-lv-h1 .fb-sq { width: 377px; height: 377px; } .fb-lv-h0 .fb-lv .fb-lv .fb-sq, .fb-lv-v1 .fb-lv .fb-sq, .fb-lv-h2 .fb-sq, .fb-lv-h1 .fb-lv .fb-sq, .fb-lv-v2 .fb-sq { width: 233px; height: 233px; } .fb-lv-h0 .fb-lv .fb-lv .fb-lv .fb-sq, .fb-lv-v1 .fb-lv .fb-lv .fb-sq, .fb-lv-h2 .fb-lv .fb-sq, .fb-lv-v3 .fb-sq, .fb-lv-h1 .fb-lv .fb-lv .fb-sq, .fb-lv-v2 .fb-lv .fb-sq, .fb-lv-h3 .fb-sq { width: 144px; height: 144px; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .outer-container { position: relative; } .inner-container { background-color: white; position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; } .card-container { margin: -2px; display: flex; align-items: center; justify-content: center; } .title { position: absolute; top: 0; left: 10px; opacity: 0.6; font-size: 24px; } .render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -24880,7 +24942,7 @@ var ResetButton = { render: function render() {
 })();
 
 var CardContainer = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "outer-container", style: { width: _vm.width + 'px', height: _vm.height + 'px' } }, [_c('div', { staticClass: "inner-container" }, [_c('div', { staticClass: "card-container", style: { width: _vm.width + 'px', height: _vm.height + 'px' } }, [_c('h3', { staticClass: "title", domProps: { "textContent": _vm._s(_vm.title) } }), _c('div', { staticClass: "render-area" }, [_vm._t("default")], 2)])])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "outer-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "inner-container" }, [_c('div', { staticClass: "card-container", style: _vm.sizeStyle }, [_c('h3', { staticClass: "title", domProps: { "textContent": _vm._s(_vm.title) } }), _c('div', { staticClass: "render-area" }, [_vm._t("default")], 2)])])]);
   }, staticRenderFns: [],
   props: {
     title: {
@@ -24891,6 +24953,14 @@ var CardContainer = { render: function render() {
     },
     height: {
       default: 233
+    }
+  },
+  computed: {
+    sizeStyle: function sizeStyle() {
+      var style = {};
+      if (this.width) style.width = this.width + 'px';
+      if (this.height) style.height = this.height + 'px';
+      return style;
     }
   },
   methods: {
@@ -24947,10 +25017,10 @@ var KrtDcTooltip = { render: function render() {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      </div>\n    </card>\n  ',
+  template: '\n    <div :is="containerComponent" :title="title" :width="width" :height="height">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      </div>\n    </div>\n  ',
 
   components: {
-    'card': CardContainer,
+    'card-container': CardContainer,
     'reset-button': ResetButton,
     'krt-dc-tooltip': KrtDcTooltip
   },
@@ -24988,9 +25058,6 @@ var Base = {
     },
     timeFormat: {
       type: String
-    },
-    margins: {
-      type: Object
     },
     xAxisLabel: {
       type: String,
@@ -25085,12 +25152,15 @@ var Base = {
 
       return scale().domain([this.min, this.max]);
     },
+    containerComponent: function containerComponent() {
+      return Store.getTheme().containerComponent();
+    },
     layoutSettings: function layoutSettings() {
       var _getContainerInnerSiz = this.getContainerInnerSize(),
           width = _getContainerInnerSiz.width,
           height = _getContainerInnerSiz.height;
 
-      return Store.getTheme().layout(this.layout, { width: width, height: height });
+      return Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height });
     },
     tooltipSelector: function tooltipSelector() {
       if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
@@ -25135,6 +25205,8 @@ var Base = {
           reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
       var legendOptions = this.layoutSettings.legend;
 
+
+      if (legendOptions === null) return;
 
       this.legend = index$2.legend().legendText(function (d, i) {
         var k = indexLabel ? i : d.name;
@@ -25193,12 +25265,21 @@ var Base = {
           _layoutSettings$heigh = _layoutSettings.height,
           height = _layoutSettings$heigh === undefined ? defaultHeight : _layoutSettings$heigh,
           margins = _layoutSettings.margins,
-          legendOptions = _layoutSettings.legend;
+          legendOptions = _layoutSettings.legend,
+          axis = _layoutSettings.axis;
 
 
       chart.width(width).height(height);
 
-      if (this.margins) chart.margins(this.margins);
+      if (margins && chart.margins) {
+        chart.margins(margins);
+        console.log('xx', margins);
+      }
+
+      if (chart.xAxisLabel) {
+        if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding);
+        if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding);
+      }
     },
     showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -25234,8 +25315,6 @@ var Base = {
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
-    if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel);
-    if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel);
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();
@@ -34213,7 +34292,7 @@ var SegmentPie = {
     var _this = this;
 
     var chart = this.chart;
-    chart.cx(this.$el.clientHeight / 2).label(function (d) {
+    chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).label(function (d) {
       return _this.segmentLabel(d.key);
     });
     return chart.render();
@@ -34281,7 +34360,7 @@ var MultiDimensionPie = {
 
   mounted: function mounted() {
     var chart = this.chart;
-    chart.cx(this.$el.clientHeight / 2);
+    chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y);
 
     return chart.render();
   },
