@@ -18,10 +18,6 @@ export default {
       type: String,
       default: 'barChart'
     },
-    id: {
-      type: String,
-      default: 'krt-dc-date-volume-chart'
-    },
     width: {
       type: Number,
       default: 240 * 4
@@ -29,6 +25,12 @@ export default {
     height: {
       type: Number,
       default: 60
+    },
+    scale: {
+      default: 'time'
+    },
+    useLegend: {
+      default: false
     }
   },
   data () {
