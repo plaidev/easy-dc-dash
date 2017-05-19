@@ -71,14 +71,7 @@ export default {
     useLegend: {
       type: Boolean,
       default: true
-    },
-<<<<<<< HEAD
-=======
-    legend: {
-      type: Object,
-      default: () => {return {x:0, y:0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false}}
     }
->>>>>>> master
   },
   computed: {
     dimensionName: function() {
