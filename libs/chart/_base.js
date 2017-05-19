@@ -62,9 +62,6 @@ export default {
     timeFormat: {
       type: String
     },
-    margins: {
-      type: Object
-    },
     xAxisLabel: {
       type: String,
       default: ''
@@ -164,7 +161,7 @@ export default {
     },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
-      return Store.getTheme().layout(this.layout, {width, height});
+      return Store.getTheme().layout(this.chartType, this.layout, {width, height});
     },
     tooltipSelector: function() {
       if(this.chartType === 'barChart') return `#${this.id} .bar`
@@ -259,14 +256,22 @@ export default {
         width = defaultWidth,
         height = defaultHeight,
         margins,
-        legend: legendOptions
+        legend: legendOptions,
+        axis
       } = this.layoutSettings;
 
       chart
         .width(width)
         .height(height)
 
-      if (this.margins) chart.margins(this.margins);
+      if (margins && chart.margins) {
+        chart.margins(margins)
+      }
+
+      if (chart.xAxisLabel) {
+        if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding)
+        if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding)
+      }
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill')
@@ -306,8 +311,6 @@ export default {
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
     if (this.xScale) chart.x(this.xScale);
-    if (this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel)
-    if (this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel)
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();
