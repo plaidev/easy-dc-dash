@@ -7,7 +7,7 @@ import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
-import KrtDcTooltip from './components/krt-dc-tooltip.vue'
+import KrtDcTooltip from '../components/krt-dc-tooltip.vue'
 
 export default {
 
