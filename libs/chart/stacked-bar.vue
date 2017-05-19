@@ -90,7 +90,9 @@ export default {
       .renderHorizontalGridLines(this.renderHorizontalGridLines)
     // stack
     for (let i=1; i<this.reduceKeys.length; i++) {
-      chart.stack(this.combinedGroup, this.getLabel(i), (d) => d.value[i]);
+      chart
+        .stack(this.combinedGroup, this.getLabel(i), (d) => d.value[i])
+        .hidableStacks(true)
     }
     this.applyLegend({reverseOrder:true})
     return chart.render();

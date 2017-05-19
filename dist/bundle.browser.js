@@ -24903,6 +24903,12 @@ var Base = {
     scale: {
       type: String
     },
+    timeScale: {
+      type: String
+    },
+    timeFormat: {
+      type: String
+    },
     width: {
       type: Number
     },
@@ -25005,9 +25011,9 @@ var Base = {
       if (this.chartType === 'pieChart') return '#' + this.id + ' .pie-slice';
       if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
       if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
-      if (this.chartType === 'seriesChart') return '#' + this.id + ' .line';
+      if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .bubble';
-      if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack';
+      if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack, #' + this.id + ' circle.dot';
       if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
     }
   },
@@ -25050,14 +25056,14 @@ var Base = {
       return this.reduceKeys && this.reduceKeys[idx] || idx;
     },
     getTimeInterval: function getTimeInterval(key) {
-      if ((this.dateKey || this.timeScale) === undefined) return null;else return TIME_INTERVALS[key];
+      if ((this.scale || this.dateKey || this.timeScale) === undefined) return null;else return TIME_INTERVALS[key];
     },
     getTimeFormat: function getTimeFormat(key) {
-      if ((this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
+      if ((this.scale || this.dateKey || this.timeScale) === undefined) return null;else if (this.timeFormat) return d3$1.time.format(this.timeFormat);else return TIME_FORMATS[key];
     },
-    showTooltip: function showTooltip(data) {
+    showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
-      this.$refs.tooltip.show(data, fill);
+      this.$refs.tooltip.show(d, fill);
     },
     moveTooltip: function moveTooltip() {
       this.$refs.tooltip.move(d3$1.event.clientX, d3$1.event.clientY);
@@ -25102,7 +25108,7 @@ var Base = {
     });
 
     if (this.renderTooltip) {
-      chart.on('postRender', function () {
+      chart.on('renderlet', function () {
         d3$1.selectAll(_this2.selector).on("mouseover", _this2.showTooltip).on("mousemove", _this2.moveTooltip).on("mouseout", _this2.removeTooltip);
       });
     }
@@ -33706,6 +33712,9 @@ function compose(Left, Right) {
         type: String,
         default: 'compositeChart'
       },
+      timeFormat: {
+        type: String
+      },
       width: {
         type: Number,
         default: 240 * 4
@@ -33726,12 +33735,22 @@ function compose(Left, Right) {
       }
     },
     methods: {
-      showTooltip: function showTooltip(d) {
+      showTooltip: function showTooltip(d, i) {
+        var format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
         var fill = d3.event.target.getAttribute('fill');
         var stroke = d3.event.target.getAttribute('stroke');
         var color = fill || stroke;
+        var key = null;
+        var val = null;
+        if (d.x && d.y) {
+          key = this.scale ? format(d.x) : x;
+          val = d.y;
+        } else {
+          key = this.getLabel(i);
+        }
         var data = {
-          key: d.name
+          key: key,
+          val: val
         };
         this.$refs.tooltip.show(data, color);
       }
@@ -34470,7 +34489,8 @@ var RateLine = { render: function render() {
   },
 
   mounted: function mounted() {
-    return this.chart.render();
+
+    return this.chart.hidableStacks(true).render();
   }
 };
 
@@ -34541,7 +34561,7 @@ var StackedLines = { render: function render() {
     var _loop2 = function _loop2(i) {
       chart.stack(_this.combinedGroup, _this.getLabel(_this.getReduceKey(i)), function (d) {
         return d.value[i];
-      });
+      }).hidableStacks(true);
     };
 
     for (var i = 1; i < lineNum; i++) {
@@ -34724,7 +34744,7 @@ var StackedBar = { render: function render() {
     var _loop2 = function _loop2(i) {
       chart.stack(_this.combinedGroup, _this.getLabel(i), function (d) {
         return d.value[i];
-      });
+      }).hidableStacks(true);
     };
 
     for (var i = 1; i < this.reduceKeys.length; i++) {
@@ -34893,7 +34913,7 @@ var FilterStackedBar = { render: function render() {
     chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).mouseZoomable(false);
     // stack
     for (var i = 1; i < barNum; i++) {
-      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]));
+      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
     }
     // select <-> deselect && redraw
     chart.on('pretransition', function (chart) {
@@ -35932,39 +35952,15 @@ var Series = { render: function render() {
       type: String,
       default: ''
     },
-    // legend
-    // TODO: refactoring => legend="{x: 350, y:350, w: 140, itemHeight: 13}..."
     useLegend: {
       type: Boolean,
       default: true
     },
-    legendX: {
-      type: Number,
-      default: 350
-    },
-    legendY: {
-      type: Number,
-      default: 350
-    },
-    legendWidth: {
-      type: Number,
-      default: 140
-    },
-    legendItemWidth: {
-      type: Number,
-      default: 70
-    },
-    legendItemHeight: {
-      type: Number,
-      default: 13
-    },
-    legendGap: {
-      type: Number,
-      default: 5
-    },
-    legendHorizontal: {
-      type: Boolean,
-      default: true
+    legend: {
+      type: Object,
+      default: function _default() {
+        return { x: 0, y: 0, gap: 5, width: 300, itemWidth: 70, itemHeight: 12, horizontal: false };
+      }
     }
   },
   computed: {
@@ -36006,12 +36002,6 @@ var Series = { render: function render() {
     }
   },
   methods: {
-    getTimeInterval: function getTimeInterval(key) {
-      if (this.dateKey === undefined) return null;else return TIME_INTERVALS[key];
-    },
-    getTimeFormat: function getTimeFormat(key) {
-      if (this.dateKey === undefined) return null;else return TIME_FORMATS[key];
-    },
     formatKey: function formatKey(axis, key) {
       var seriesTimeFormat = this.getTimeFormat(this.seriesKey);
       var xTimeFormat = this.getTimeFormat(this.xKey);
@@ -36023,11 +36013,33 @@ var Series = { render: function render() {
       return Number(FORMATS[axis](key));
     },
     showTooltip: function showTooltip(d) {
+      var format = this.timeFormat ? this.timeFormat : d3$1.time.format('%Y-%m-%d');
+      var fill = d3$1.event.target.getAttribute('fill');
       var stroke = d3$1.event.target.getAttribute('stroke');
-      var data = {
-        key: d.name
-      };
-      this.$refs.tooltip.show(data, stroke);
+      var color = fill || stroke;
+
+      if (d.x && d.y) {
+        var key = d.layer;
+        var vals = {
+          x: d.x,
+          y: d.y
+        };
+        var data = {
+          key: key,
+          vals: vals
+        };
+        this.$refs.tooltip.show(data, color);
+      } else {
+        var _key = d.name;
+        var _vals = d.values.reduce(function (a, b) {
+          return a.y + b.y;
+        });
+        var _data = {
+          key: _key,
+          val: val
+        };
+        this.$refs.tooltip.show(_data, color);
+      }
     }
   },
   mounted: function mounted() {
@@ -36038,7 +36050,7 @@ var Series = { render: function render() {
 
     chart.chart(function (c) {
       return index$2.lineChart(c).interpolate('basis');
-    }).brushOn(this.brushOn).renderLabel(this.renderLabel).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).clipPadding(10).elasticY(this.elasticY).mouseZoomable(false).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+    }).brushOn(this.brushOn).renderLabel(this.renderLabel).renderVerticalGridLines(true).renderHorizontalGridLines(true).xAxisLabel(this.xAxisLabel).yAxisLabel(this.yAxisLabel).clipPadding(10).elasticY(this.elasticY).mouseZoomable(false).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
       return _this.formatKey('x', d.key[1]);
     }))).seriesAccessor(function (d) {
       return _this.formatKey('series', d.key[0]);
@@ -36081,12 +36093,6 @@ var Bubble = { render: function render() {
     chartType: {
       type: String,
       default: 'bubbleChart'
-    },
-    timeScale: {
-      type: String
-    },
-    timeFormat: {
-      type: String
     },
     // labels, formats
     xAxis: {
