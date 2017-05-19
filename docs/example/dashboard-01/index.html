@@ -108,6 +108,7 @@
       y-axis-label='pv'
     ></ordinal-bar>
     <stacked-bar
+      layout="square-and-legend"
       dimension='d.name'
       reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
       :labels="['PV', 'セッション数', '離脱数']"
