@@ -1,19 +1,21 @@
 <template>
-  <div class="container">
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-    <div class="table-paging" v-if="this.useTablePaging">
-      <!--
-        {{this.filteredDataSize}} selected out of {{this.cfSize}} records
-      -->
-      Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
-      <span> / total {{this.filteredSize}} rows</span>
-      <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
-      <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
+  <card :width="width" :height="height" :title="title">
+    <div class="container">
+      <div v-text="title" style="font-size:24px; text-align:center;"></div>
+      <div class="table-paging" v-if="this.useTablePaging">
+        <!--
+          {{this.filteredDataSize}} selected out of {{this.cfSize}} records
+        -->
+        Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
+        <span> / total {{this.filteredSize}} rows</span>
+        <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
+        <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
+      </div>
+      <div class="table-container">
+        <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
+      </div>
     </div>
-    <div :style="{width: width+'px', height: height+'px'}">
-      <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
-    </div>
-  </div>
+  </card>
 </template>
 
 <script lang='js'>
@@ -28,6 +30,12 @@ import 'font-awesome/scss/font-awesome.scss'
 
 function _valueAccessor(d, k) {
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
+}
+
+function _isDescendantOf(el, klass) {
+  if (!el) return false;
+  if (el.classList.contains(klass)) return el;
+  return _isDescendantOf(el.parentElement, klass)
 }
 
 // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
@@ -218,8 +226,10 @@ export default {
   },
   methods: {
     onclick: function(ev) {
-      if (ev && ev.target.classList.contains('dc-table-head')) {
-        let sortKey = Store.getKeyByLabel(ev.target.textContent, {dataset: this.dataset}) || ev.target.textContent
+      if (!ev) return;
+      const el = _isDescendantOf(ev.target, 'dc-table-head')
+      if (el) {
+        let sortKey = Store.getKeyByLabel(el.textContent, {dataset: this.dataset}) || el.textContent
         if (this.colsKeys.indexOf(sortKey) >= 0 ) {
           if (sortKey === this.sortKey) {
             this.sortOrder = (this.sortOrder === 'descending')? 'ascending': 'descending'
@@ -321,6 +331,15 @@ export default {
 .container {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding-top: 10px;
+  font-size: 14px;
+}
+.table-container {
+  overflow-y: auto;
+}
+table {
 }
 th.dc-table-head {
   cursor: pointer
