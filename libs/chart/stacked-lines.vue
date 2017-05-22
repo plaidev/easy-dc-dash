@@ -32,7 +32,6 @@ export default {
   },
   methods: {
     showTooltip: function(d, i) {
-      console.log(d, i);
       const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
       const fill = d3.event.target.getAttribute('fill');
       const stroke = d3.event.target.getAttribute('stroke');
