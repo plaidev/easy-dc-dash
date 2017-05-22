@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../dist/bundle.css" />
+  </head>
+
+  <style>
+    body {
+      background-color: #b0b7b7;
+    }
+    #krt-dc-dashboard {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: flex-start;
+    }
+  </style>
+
+  <body>
+
+    <div id="krt-dc-dashboard" class="container">
+      <list-row
+        dimension="d.expt"
+        reduce="d.v"
+      ></list-row>
+
+      <ordinal-bar
+        dimension='d.expt'
+        reduce='d.v'
+      ></ordinal-bar>
+
+      <stacked-bar
+        dimension="d.expt"
+        reduce="[d.run, d.v]"
+      ></stacked-bar>
+      <filter-stacked-bar
+        dimension="[d.expt, d.run]"
+        reduce="d.v"
+      ></filter-stacked-bar>
+    </div>
+    <script type="text/javascript">
+      EasyDC.Store.registerData([
+        {expt: 1, run: 1, v: 10},
+        {expt: 1, run: 2, v: 20},
+        {expt: 1, run: 3, v: 30},
+        {expt: 2, run: 1, v: -10},
+        {expt: 2, run: 2, v: -20},
+        {expt: 2, run: 3, v: -30},
+        {expt: 3, run: 1, v: 10},
+        {expt: 3, run: 2, v: -20},
+        {expt: 3, run: 3, v: 30},
+      ])
+      EasyDC.run()
+    </script>
+
+  </body>
+</html>
