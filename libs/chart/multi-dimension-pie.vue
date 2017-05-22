@@ -18,9 +18,6 @@ export default {
     useLegend: {
       type: Boolean,
       default: true
-    },
-    layout: {
-      default: 'square-and-legend'
     }
   },
 

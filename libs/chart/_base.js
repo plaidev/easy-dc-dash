@@ -102,7 +102,7 @@ export default {
     },
     layout: {
       type: String,
-      default: 'overlay-legend'
+      default: 'auto'
     },
     renderTooltip: {
       type: Boolean,

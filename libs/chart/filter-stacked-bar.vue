@@ -26,14 +26,6 @@ export default {
       type: String,
       default: 'barChart'
     },
-    height: {
-      type: Number,
-      default: 400
-    },
-    width: {
-      type: Number,
-      default: 600
-    },
     removeEmptyRows: {
       type: Boolean,
       default: true

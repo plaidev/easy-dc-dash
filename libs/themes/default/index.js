@@ -10,6 +10,27 @@ export default {
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
 
+    if (name === 'auto') {
+      if (width / height > 2) {
+        name = 'wide'
+      }
+      else if (Math.abs(width - height) < 10) {
+        name = 'square'
+      }
+      else if (Math.abs(1.618 - width / height) < 0.2 ) {
+        name = 'square-and-legend'
+      }
+      else {
+        name = 'overlay-legend'
+      }
+
+      if (width < 233 && name !== 'square') {
+        name = 'overlay-legend'
+      }
+
+    }
+
+
     if (name === 'square-and-legend') {
       return {
         width: width,
@@ -86,6 +107,34 @@ export default {
           yLabel: { padding: 20 }
         }
       }
+    }
+
+    else if (name === 'wide') {
+      return {
+        width: width,
+        height: height * heightCoef,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: height * heightCoef
+        },
+        chartCenter: {
+          x: height / 2,
+          y: height * heightCoef / 2
+        },
+        legend: {
+          x: width - height * heightCoef + 40,
+          y: height * legendYCoef,
+          width: height * heightCoef - 20,
+          horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15 },
+          yLabel: { padding: 20 }
+        }
+      }
+
     }
 
     console.log('?? layout', name)
