@@ -51,7 +51,7 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .slicesCap(this.cap)
+      .slicesCap(this.dimNums)
       .othersLabel(this.othersLabel)
       .cx(this.layoutSettings.chartCenter.x)
       .cy(this.layoutSettings.chartCenter.y)

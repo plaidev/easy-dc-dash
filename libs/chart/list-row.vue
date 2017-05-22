@@ -65,7 +65,7 @@ export default {
       .x(d3.scale[this.scale]())
       .gap(this.gap)
       .elasticX(true)
-      .rowsCap(this.cap)
+      .rowsCap(this.dimNums)
       .othersLabel(this.othersLabel)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
