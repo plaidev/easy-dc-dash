@@ -60,6 +60,28 @@ export default {
     reducer: function() {
       const cf = Store.getCf({dataset: this.dataset});
       const reducer = this.reducerExtractor;
+      if (this.isRateChart) {
+        return cf.groupAll().reduce(
+          (p, v) => {
+            const val = reducer(v)
+            p.count += vals[k].count;
+            p.value += vals[k].value;
+            p.per = p.count === 0 ? 0 : p.value / p.count;
+            return p;
+          },
+          (p, v) => {
+            const val = reducer(v)
+            p.count -= vals[k].count;
+            p.value -= vals[k].value;
+            p.per = p.count === 0 ? 0 : p.value / p.count;
+            return p;
+          },
+          () => {
+            return {count: 0, value: 0, per: 0}
+          }
+        );
+      }
+
       return cf.groupAll().reduce(
         (p,v) => {
           const val = reducer(v);
@@ -78,13 +100,17 @@ export default {
     },
     _boxLabel: function() {
       return this.reduce.replace(/d\./, '')
+    },
+    isRateChart: function() {
+      if (this.reducerExtractor({}).conut) return true;
+      return false
     }
   },
   mounted: function() {
     const chart = this.chart;
 
     chart
-      .valueAccessor((d) => d.value)
+      .valueAccessor((d) => this.isRateChart ? d.value.per : d.value)
       .formatNumber(d3.format(this.numberFormat))
       .html({
         none:"<span class=\"number-display\">0</span>"
