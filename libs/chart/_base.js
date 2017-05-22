@@ -53,6 +53,9 @@ export default {
     scale: {
       type: String
     },
+    filter: {
+      type: [String, Number]
+    },
     dateKey: {
       type: String
     },
@@ -351,6 +354,12 @@ export default {
           .on("mouseover", this.showTooltip)
           .on("mousemove", this.moveTooltip)
           .on("mouseout", this.removeTooltip)
+      })
+    }
+    if(this.filter) {
+      chart.on('postRender', () => {
+        chart.filter(this.filter)
+        dc.redrawAll()
       })
     }
     this.chart = chart;
