@@ -43,8 +43,8 @@ export function compose(Left, Right) {
         const color = fill || stroke;
         let key = null;
         let val = null;
-        if (d.x && d.y) {
-          key = this.scale ? format(d.x) : x;
+        if ((d.x && d.y) != undefined) {
+          key = (this.scale === 'time') ? format(d.x) : d.x;
           val = d.y;
         }
         else {

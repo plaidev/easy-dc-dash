@@ -132,6 +132,19 @@
   </div>
 
   <div class="container">
+    <stacked-lines
+      dimension='d.session_end_date'
+      scale="time"
+      reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
+    ></stacked-lines>
+    <rate-line
+      dimension='d.session_end_date'
+      reduce='{count: d.session_cnt, value: d.bounce_cnt}'
+      scale='time'
+    ></rate-line>
+  </div>
+
+  <div class="container">
     <heat-map
       date-key='d.session_end_date'
       dimension="[year, month]"
