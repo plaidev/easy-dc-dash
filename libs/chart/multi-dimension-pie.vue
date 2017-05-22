@@ -3,6 +3,7 @@
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
+import {removeEmptyBins} from '../utils'
 
 export default {
   extends: Base,
@@ -33,6 +34,11 @@ export default {
         return v.join(',');
       }
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
+    },
+    reducer: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const reducer = this.reducerExtractor;
+      return removeEmptyBins(dim.group().reduceSum(reducer))
     }
   },
 
@@ -50,6 +56,7 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
+      .slicesCap(this.dimNums)
       .cx(this.layoutSettings.chartCenter.x)
       .cy(this.layoutSettings.chartCenter.y)
 

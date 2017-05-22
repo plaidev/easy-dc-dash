@@ -73,6 +73,10 @@ export default {
         .stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), (d) => d.value[i])
         .hidableStacks(true)
     }
+    // FIXME:
+      // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
+      // this called from dc/line-chart.js and utils/reverseLegendOrder()
+    // if(this.useLegend) this.applyLegend({reverseOrder: true})
     return chart.render()
   }
 }

@@ -97,7 +97,7 @@
     height=400
     width=200
     :gap=10
-    :rows=6>
+    :cap=10>
   </list-row>
 
     <ordinal-bar
@@ -128,7 +128,8 @@
     <segment-pie
       dimension='d.name'
       segments="a,b,c,d,e,f"
-      reduce='d.pv'></segment-pie>
+      reduce='d.pv'
+      :cap='10'></segment-pie>
   </div>
 
   <div class="container">

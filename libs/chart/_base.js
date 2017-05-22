@@ -62,6 +62,14 @@ export default {
     timeFormat: {
       type: String
     },
+    cap: {
+      type: Number
+      default: 10
+    },
+    useCap: {
+      type: Number,
+      default: true
+    },
     xAxisLabel: {
       type: String,
       default: ''
@@ -158,6 +166,12 @@ export default {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max])
+    },
+    dimNums: function() {
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const size = dim.group().size()
+      if(!this.useCap) return size
+      return (this.cap > size) ? size : this.cap
     },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
