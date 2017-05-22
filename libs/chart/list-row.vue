@@ -4,6 +4,7 @@
 import d3 from "d3"
 import Base from './_base'
 import Store from '../store'
+import {removeEmptyBins} from '../utils'
 
 export default {
   extends: Base,
@@ -16,10 +17,6 @@ export default {
     scale: {
       type: String,
       default: 'linear'
-    },
-    // display limit
-    rows: {
-      type: Number
     },
     // order by
     descending: {
@@ -48,23 +45,10 @@ export default {
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const reducer = this.reducerExtractor;
-      return this.filteredGroup(dim.group().reduceSum(reducer))
-    },
-    rowNums: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const size = dim.group().size()
-      if(!this.rows) return size
-      return (this.rows > size) ? size : this.rows
+      return removeEmptyBins(dim.group().reduceSum(reducer))
     }
   },
   methods: {
-    filteredGroup: function(group) {
-      return {
-        all: () => {
-          return group.top(this.rowNums)
-        }
-      }
-    },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
       const data = {
@@ -81,10 +65,12 @@ export default {
       .x(d3.scale[this.scale]())
       .gap(this.gap)
       .elasticX(true)
+      .othersLabel(this.othersLabel)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
       .ordering((d) => this.descending ? -d.value : d.value)
+    if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart.render();
   }
 }

@@ -97,7 +97,7 @@
     height=400
     width=200
     :gap=10
-    :rows=6>
+    :cap=10>
   </list-row>
 
     <ordinal-bar
@@ -128,7 +128,23 @@
     <segment-pie
       dimension='d.name'
       segments="a,b,c,d,e,f"
-      reduce='d.pv'></segment-pie>
+      reduce='d.pv'
+      :cap=3
+      others-label='その他'
+      ></segment-pie>
+  </div>
+
+  <div class="container">
+    <stacked-lines
+      dimension='d.session_end_date'
+      scale="time"
+      reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
+    ></stacked-lines>
+    <rate-line
+      dimension='d.session_end_date'
+      reduce='{count: d.session_cnt, value: d.bounce_cnt}'
+      scale='time'
+    ></rate-line>
   </div>
 
   <div class="container">

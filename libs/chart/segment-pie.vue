@@ -3,6 +3,7 @@
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
+import {removeEmptyBins} from '../utils'
 
 export default {
   extends: Base,
@@ -78,9 +79,11 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
+      .othersLabel(this.othersLabel)
       .cx(this.layoutSettings.chartCenter.x)
       .cy(this.layoutSettings.chartCenter.y)
       .label((d) => this.segmentLabel(d.key))
+    if(this.cap && this.cap > 0) chart.slicesCap(this.cap)
     return chart.render()
   },
 

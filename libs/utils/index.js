@@ -103,6 +103,11 @@ export function removeEmptyBins(sourceGroup) {
   return {
     all: () => {
       return sourceGroup.all().filter((d) => d.value != 0)
+    },
+    top: (n) => {
+      return sourceGroup.top(Infinity)
+        .filter((d) => d.value != 0)
+        .slice(0, n);
     }
   };
 }

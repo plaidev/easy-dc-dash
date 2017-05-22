@@ -9,6 +9,7 @@ export const dayFormat = d3.time.format('%d')
 
 export const yearInterval = d3.time.year
 export const monthInterval = d3.time.month
+export const weekInterval = d3.time.week
 export const dayInterval = d3.time.day
 
 export const TIME_FORMATS = {
@@ -16,10 +17,12 @@ export const TIME_FORMATS = {
   ymFormat: ymFormat,
   year: yearFormat,
   month: monthFormat,
+  week: weekFormat,
   day: dayFormat
 }
 export const TIME_INTERVALS = {
   year: yearInterval,
   month: monthInterval,
+  week: weekInterval,
   day: dayInterval
 }

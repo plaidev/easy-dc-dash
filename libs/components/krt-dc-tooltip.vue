@@ -13,7 +13,9 @@
         </div>
       </div>
       <div class="val">
-        <div v-if="data.val">{{data.val}}</div>
+        <div v-if="data.val !== undefined && data.val !== null">
+          <span>{{data.val}}</span>
+        </div>
         <div v-if="data.vals" v-for="(v, k) in data.vals">
           <span>{{k}}: {{v}}</span>
         </div>
