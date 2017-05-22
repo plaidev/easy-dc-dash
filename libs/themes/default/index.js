@@ -27,9 +27,7 @@ export default {
       if (width < 233 && name !== 'square') {
         name = 'overlay-legend'
       }
-
     }
-
 
     if (name === 'square-and-legend') {
       return {
@@ -110,15 +108,23 @@ export default {
     }
 
     else if (name === 'wide') {
+      const margins = {
+        top: 40,
+        bottom: 30,
+        left: 60,
+        right: height * heightCoef
+      }
+
+      // FIXME: このあたり、どのくらい計算的に出すか難しい...
+      if (margins.top + margins.bottom > height / 2){
+        margins.top = height / 6;
+        margins.bottom = height / 3;
+      }
+
       return {
         width: width,
         height: height * heightCoef,
-        margins: {
-          top: 40,
-          bottom: 30,
-          left: 40,
-          right: height * heightCoef
-        },
+        margins: margins,
         chartCenter: {
           x: height / 2,
           y: height * heightCoef / 2

@@ -1,10 +1,3 @@
-<template>
-  <div class="krt-dc-date-volume-chart" :id="id">
-    <!-- <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip> -->
-    <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
-    <div v-text="title" style="font-size:24px; text-align:center;"></div>
-  </div>
-</template>
 
 <script lang="js">
 import Base from './_base'
@@ -28,13 +21,14 @@ export default {
     },
     scale: {
       default: 'time'
-    },
-    useLegend: {
-      default: false
     }
   },
-  data () {
-    return Store.state.binds
+  computed: {
+    layoutSettings: function() {
+      const settings = Base.computed.layoutSettings.apply(this)
+      settings.legend = null;
+      return settings;
+    }
   },
   methods: {
     showTooltip: function(d) {

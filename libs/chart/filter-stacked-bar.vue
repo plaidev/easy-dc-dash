@@ -171,9 +171,6 @@ export default {
 </script>
 
 <style scoped>
-g.chart-body {
-  clip-path: none;
-}
 rect.bar.stack-deselected {
   opacity: .8;
   fill-opacity: .5;
