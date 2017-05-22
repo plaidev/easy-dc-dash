@@ -196,6 +196,12 @@ export default {
         chartName: this.id
       })
     },
+    getKeyByLabel: function(label) {
+      return Store.getKeyByLabel(el.textContent, {
+        dataset: this.dataset,
+        chartName: this.id
+      })
+    },
     getReduceKey: function(idx) {
       return this.reduceKeys && this.reduceKeys[idx] || idx
     },

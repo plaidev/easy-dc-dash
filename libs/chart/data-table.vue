@@ -229,7 +229,7 @@ export default {
       if (!ev) return;
       const el = _isDescendantOf(ev.target, 'dc-table-head')
       if (el) {
-        let sortKey = Store.getKeyByLabel(el.textContent, {dataset: this.dataset}) || el.textContent
+        let sortKey = this.getKeyByLabel(el.textContent) || el.textContent
         if (this.colsKeys.indexOf(sortKey) >= 0 ) {
           if (sortKey === this.sortKey) {
             this.sortOrder = (this.sortOrder === 'descending')? 'ascending': 'descending'
@@ -277,7 +277,7 @@ export default {
     setColumnSettings: function() {
       this.colsKeys.forEach((k) => {
         this.columnSettings.push({
-          label: Store.getLabel(k, {dataset: this.dataset}),
+          label: this.getLabel(k),
           format: (d) => this.setFormat(d, k)
         })
       })
