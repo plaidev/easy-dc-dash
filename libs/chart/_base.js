@@ -190,6 +190,12 @@ export default {
 
   methods: {
     removeFilterAndRedrawChart: function() {
+      // for volume chart
+      Object.values(EasyDC.Store._charts).filter(f => {
+        if(f.filter() && f.filter().filterType === 'RangedFilter') {
+          return f.filterAll()
+        }
+      })
       this.chart.filterAll();
       dc.redrawAll();
     },
