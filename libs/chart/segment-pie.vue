@@ -41,11 +41,6 @@ export default {
       }
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
     },
-    reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.reducerExtractor;
-      return removeEmptyBins(dim.group().reduceSum(reducer))
-    },
     segmentIds: function() {
       if (this.segments instanceof Array) {
         return this.segments;
@@ -87,7 +82,8 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .slicesCap(this.dimNums)
+      .slicesCap(this.cap)
+      .othersLabel(this.othersLabel)
       .cx(this.layoutSettings.chartCenter.x)
       .cy(this.layoutSettings.chartCenter.y)
       .label((d) => this.segmentLabel(d.key))

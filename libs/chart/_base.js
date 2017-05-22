@@ -63,12 +63,13 @@ export default {
       type: String
     },
     cap: {
-      type: Number
-      default: 10
-    },
-    useCap: {
       type: Number,
-      default: true
+      default: 10,
+      validator: (val) => {return val > 0}
+    },
+    othersLabel: {
+      type: String,
+      default: 'Others'
     },
     xAxisLabel: {
       type: String,
@@ -166,12 +167,6 @@ export default {
       if (!scale) return null;
 
       return scale().domain([this.min, this.max])
-    },
-    dimNums: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const size = dim.group().size()
-      if(!this.useCap) return size
-      return (this.cap > size) ? size : this.cap
     },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
