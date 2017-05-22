@@ -57,6 +57,12 @@ export function compose(Left, Right) {
         this.$refs.tooltip.show(data, color)
       }
     },
+    computed: {
+      reduceKeys: function() {
+        const keys = this.reducerExtractor({})
+        return Object.keys([].concat.apply([], keys))
+      }
+    },
     mounted: function() {
 
       // TODO: refactoring.
@@ -138,7 +144,7 @@ export function compose(Left, Right) {
       // lines系なら問題ない。
       // TODO: bubbleチャート系だとうまくいかないかもしれない。
       // legendの利用有無も含めて再検討必要
-      this.applyLegend({indexLabel: true})
+      // this.applyLegend({indexLabel: true, reverseOrder: true})
 
       return composite.render();
     },

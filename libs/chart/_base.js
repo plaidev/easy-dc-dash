@@ -231,6 +231,7 @@ export default {
 
       this.legend = dc.legend()
         .legendText((d, i) => {
+          if(indexLabel && reverseOrder) i = +this.reduceKeys.slice().reverse()[i]
           const k = indexLabel? i: d.name;
           return this.getLabel(k)
         })
