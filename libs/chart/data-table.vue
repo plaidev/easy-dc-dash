@@ -338,6 +338,7 @@ export default {
 }
 .table-container {
   overflow-y: auto;
+  width: 100%;
 }
 table {
 }
