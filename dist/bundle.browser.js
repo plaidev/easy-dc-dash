@@ -24443,20 +24443,34 @@ function downloadCSV(name_or_data, filename, labels) {
 
 var DefaultTheme = {
 
-  containerComponent: function containerComponent() {
-    return 'card-container';
-  },
-
   layout: function layout(chartType, name) {
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var _options$width = options.width,
         width = _options$width === undefined ? 377 : _options$width,
         _options$height = options.height,
-        height = _options$height === undefined ? 233 : _options$height;
+        height = _options$height === undefined ? 233 : _options$height,
+        _options$useLegend = options.useLegend,
+        useLegend = _options$useLegend === undefined ? true : _options$useLegend;
 
 
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
     var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
+
+    if (name === 'auto') {
+      if (width / height > 2) {
+        name = 'wide';
+      } else if (Math.abs(width - height) < 10) {
+        name = 'square';
+      } else if (Math.abs(1.618 - width / height) < 0.2) {
+        name = 'square-and-legend';
+      } else {
+        name = 'overlay-legend';
+      }
+
+      if (width < 233 && name !== 'square') {
+        name = 'overlay-legend';
+      }
+    }
 
     if (name === 'square-and-legend') {
       return {
@@ -24525,6 +24539,39 @@ var DefaultTheme = {
           x: height,
           y: height * legendYCoef,
           width: width - height,
+          horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15 },
+          yLabel: { padding: 20 }
+        }
+      };
+    } else if (name === 'wide') {
+      var margins = {
+        top: 40,
+        bottom: 30,
+        left: 60,
+        right: height * heightCoef
+      };
+
+      // FIXME: このあたり、どのくらい計算的に出すか難しい...
+      if (margins.top + margins.bottom > height / 2) {
+        margins.top = height / 6;
+        margins.bottom = height / 3;
+      }
+
+      return {
+        width: width,
+        height: height * heightCoef,
+        margins: margins,
+        chartCenter: {
+          x: height / 2,
+          y: height * heightCoef / 2
+        },
+        legend: {
+          x: width - height * heightCoef + 40,
+          y: height * legendYCoef,
+          width: height * heightCoef - 20,
           horizontal: false
         },
         axis: {
@@ -24869,6 +24916,11 @@ function removeEmptyBins(sourceGroup) {
       return sourceGroup.all().filter(function (d) {
         return d.value != 0;
       });
+    },
+    top: function top(n) {
+      return sourceGroup.top(Infinity).filter(function (d) {
+        return d.value != 0;
+      }).slice(0, n);
     }
   };
 }
@@ -24891,6 +24943,7 @@ var dayFormat = d3$1.time.format('%d');
 
 var yearInterval = d3$1.time.year;
 var monthInterval = d3$1.time.month;
+var weekInterval = d3$1.time.week;
 var dayInterval = d3$1.time.day;
 
 var TIME_FORMATS = {
@@ -24898,11 +24951,13 @@ var TIME_FORMATS = {
   ymFormat: ymFormat,
   year: yearFormat,
   month: monthFormat,
+  week: weekFormat,
   day: dayFormat
 };
 var TIME_INTERVALS = {
   year: yearInterval,
   month: monthInterval,
+  week: weekInterval,
   day: dayInterval
 };
 
@@ -24986,7 +25041,7 @@ var CardContainer = { render: function render() {
 var KrtDcTooltip = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "circle-box" }, [_c('div', { staticClass: "circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "chart-data" }, [_c('div', { staticClass: "key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
       return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
-    })], 2), _c('div', { staticClass: "val" }, [_vm.data.val ? _c('div', [_vm._v(_vm._s(_vm.data.val))]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
+    })], 2), _c('div', { staticClass: "val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
       return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
     })], 2)])]) : _vm._e();
   }, staticRenderFns: [],
@@ -25018,10 +25073,10 @@ var KrtDcTooltip = { render: function render() {
 
 var Base = {
 
-  template: '\n    <div :is="containerComponent" :title="title" :width="width" :height="height">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      </div>\n    </div>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      </div>\n    </card>\n  ',
 
   components: {
-    'card-container': CardContainer,
+    'card': CardContainer,
     'reset-button': ResetButton,
     'krt-dc-tooltip': KrtDcTooltip
   },
@@ -25060,6 +25115,17 @@ var Base = {
     timeFormat: {
       type: String
     },
+    cap: {
+      type: Number,
+      default: 10,
+      validator: function validator(val) {
+        return val > 0;
+      }
+    },
+    othersLabel: {
+      type: String,
+      default: 'Others'
+    },
     xAxisLabel: {
       type: String,
       default: ''
@@ -25097,7 +25163,7 @@ var Base = {
     height: {},
     layout: {
       type: String,
-      default: 'overlay-legend'
+      default: 'auto'
     },
     renderTooltip: {
       type: Boolean,
@@ -25153,9 +25219,6 @@ var Base = {
 
       return scale().domain([this.min, this.max]);
     },
-    containerComponent: function containerComponent() {
-      return Store.getTheme().containerComponent();
-    },
     layoutSettings: function layoutSettings() {
       var _getContainerInnerSiz = this.getContainerInnerSize(),
           width = _getContainerInnerSiz.width,
@@ -25165,13 +25228,13 @@ var Base = {
     },
     tooltipSelector: function tooltipSelector() {
       if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
-      if (this.chartType === 'lineChart') return '#' + this.id + ' .bar';
+      if (this.chartType === 'lineChart') return '#' + this.id + ' .stack .area, #' + this.id + ' circle.dot';
       if (this.chartType === 'heatMap') return '#' + this.id + ' .heat-box';
       if (this.chartType === 'rowChart') return '#' + this.id + ' .row rect';
       if (this.chartType === 'pieChart') return '#' + this.id + ' .pie-slice';
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .bubble';
       if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
-      if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack, #' + this.id + ' circle.dot';
+      if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack .area, #' + this.id + ' circle.dot';
       if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
     }
   },
@@ -25274,7 +25337,6 @@ var Base = {
 
       if (margins && chart.margins) {
         chart.margins(margins);
-        console.log('xx', margins);
       }
 
       if (chart.xAxisLabel) {
@@ -33952,8 +34014,8 @@ function compose(Left, Right) {
         var color = fill || stroke;
         var key = null;
         var val = null;
-        if (d.x && d.y) {
-          key = this.scale ? format(d.x) : x;
+        if ((d.x && d.y) != undefined) {
+          key = this.scale === 'time' ? format(d.x) : d.x;
           val = d.y;
         } else {
           key = this.getLabel(i);
@@ -34154,11 +34216,7 @@ var NumberDisplay = { render: function render() {
   }
 })();
 
-var DateVolumeChart = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-date-volume-chart", attrs: { "id": _vm.id } }, [_c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var DateVolumeChart = {
   extends: Base,
   props: {
     chartType: {
@@ -34175,15 +34233,15 @@ var DateVolumeChart = { render: function render() {
     },
     scale: {
       default: 'time'
-    },
-    useLegend: {
-      default: false
     }
   },
-  data: function data() {
-    return Store.state.binds;
+  computed: {
+    layoutSettings: function layoutSettings() {
+      var settings = Base.computed.layoutSettings.apply(this);
+      settings.legend = null;
+      return settings;
+    }
   },
-
   methods: {
     showTooltip: function showTooltip(d) {
       var fill = d3.event.target.getAttribute('fill');
@@ -34230,9 +34288,6 @@ var SegmentPie = {
     useLegend: {
       type: Boolean,
       default: true
-    },
-    layout: {
-      default: 'square-and-legend'
     }
   },
 
@@ -34293,9 +34348,10 @@ var SegmentPie = {
     var _this = this;
 
     var chart = this.chart;
-    chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).label(function (d) {
+    chart.othersLabel(this.othersLabel).cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).label(function (d) {
       return _this.segmentLabel(d.key);
     });
+    if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart.render();
   },
 
@@ -34330,9 +34386,6 @@ var MultiDimensionPie = {
     useLegend: {
       type: Boolean,
       default: true
-    },
-    layout: {
-      default: 'square-and-legend'
     }
   },
 
@@ -34361,8 +34414,9 @@ var MultiDimensionPie = {
 
   mounted: function mounted() {
     var chart = this.chart;
-    chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y);
+    chart.othersLabel(this.othersLabel).cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y);
 
+    if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart.render();
   },
 
@@ -34495,10 +34549,6 @@ var ListRow = {
       type: String,
       default: 'linear'
     },
-    // display limit
-    rows: {
-      type: Number
-    },
     // order by
     descending: {
       type: Boolean,
@@ -34526,25 +34576,10 @@ var ListRow = {
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var reducer = this.reducerExtractor;
-      return this.filteredGroup(dim.group().reduceSum(reducer));
-    },
-    rowNums: function rowNums() {
-      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var size = dim.group().size();
-      if (!this.rows) return size;
-      return this.rows > size ? size : this.rows;
+      return removeEmptyBins(dim.group().reduceSum(reducer));
     }
   },
   methods: {
-    filteredGroup: function filteredGroup(group) {
-      var _this = this;
-
-      return {
-        all: function all() {
-          return group.top(_this.rowNums);
-        }
-      };
-    },
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
       var data = {
@@ -34555,13 +34590,14 @@ var ListRow = {
     }
   },
   mounted: function mounted() {
-    var _this2 = this;
+    var _this = this;
 
     var chart = this.chart;
 
-    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
-      return _this2.descending ? -d.value : d.value;
+    chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).othersLabel(this.othersLabel).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
+      return _this.descending ? -d.value : d.value;
     });
+    if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
     return chart.render();
   }
 };
@@ -34585,6 +34621,27 @@ var RateLine = {
     chartType: {
       type: String,
       default: 'lineChart'
+    }
+  },
+  methods: {
+    showTooltip: function showTooltip(d, i) {
+      var format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
+      var fill = d3.event.target.getAttribute('fill');
+      var stroke = d3.event.target.getAttribute('stroke');
+      var color = fill || stroke;
+      var key = null;
+      var val = null;
+      if ((d.x && d.y) != undefined) {
+        key = this.scale === 'time' ? format(d.x) : d.x;
+        val = d.y;
+      } else {
+        key = d.name;
+      }
+      var data = {
+        key: key,
+        val: val
+      };
+      this.$refs.tooltip.show(data, color);
     }
   },
 
@@ -34624,7 +34681,7 @@ var RateLine = {
   },
 
   mounted: function mounted() {
-    return this.chart.hidableStacks(true).render();
+    return this.chart.renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 8 }).hidableStacks(true).brushOn(false).render();
   }
 };
 
@@ -34672,6 +34729,27 @@ var StackedLines = {
       return null; // disable default reducer
     }
   },
+  methods: {
+    showTooltip: function showTooltip(d, i) {
+      var format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
+      var fill = d3.event.target.getAttribute('fill');
+      var stroke = d3.event.target.getAttribute('stroke');
+      var color = fill || stroke;
+      var key = null;
+      var val = null;
+      if ((d.x && d.y) != undefined) {
+        key = this.scale === 'time' ? format(d.x) : d.x;
+        val = d.y;
+      } else {
+        key = d.name;
+      }
+      var data = {
+        key: key,
+        val: val
+      };
+      this.$refs.tooltip.show(data, color);
+    }
+  },
 
   mounted: function mounted() {
     var _this = this;
@@ -34686,7 +34764,7 @@ var StackedLines = {
 
     chart.group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), function (d) {
       return d.value[0];
-    }).renderArea(true);
+    }).brushOn(false).renderArea(true).renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 8 });
 
     var _loop2 = function _loop2(i) {
       chart.stack(_this.combinedGroup, _this.getLabel(_this.getReduceKey(i)), function (d) {
@@ -34697,6 +34775,10 @@ var StackedLines = {
     for (var i = 1; i < lineNum; i++) {
       _loop2(i);
     }
+    // FIXME:
+    // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
+    // this called from dc/line-chart.js and utils/reverseLegendOrder()
+    // if(this.useLegend) this.applyLegend({reverseOrder: true})
     return chart.render();
   }
 };
@@ -34875,7 +34957,7 @@ var StackedBar = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " g.chart-body { clip-path: none; } rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34900,14 +34982,6 @@ var FilterStackedBar = {
     chartType: {
       type: String,
       default: 'barChart'
-    },
-    height: {
-      type: Number,
-      default: 400
-    },
-    width: {
-      type: Number,
-      default: 600
     },
     removeEmptyRows: {
       type: Boolean,
@@ -35538,7 +35612,7 @@ var GeoJP = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .container { display: flex; flex-direction: column; } th.dc-table-head { cursor: pointer } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .container { display: flex; flex-direction: column; align-items: flex-start; height: 100%; padding-top: 10px; font-size: 14px; } .table-container { overflow-y: auto; width: 100%; } table { } th.dc-table-head { cursor: pointer } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35548,6 +35622,12 @@ var GeoJP = { render: function render() {
 
 function _valueAccessor(d, k) {
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
+}
+
+function _isDescendantOf(el, klass) {
+  if (!el) return false;
+  if (el.classList.contains(klass)) return el;
+  return _isDescendantOf(el.parentElement, klass);
 }
 
 // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
@@ -35590,13 +35670,13 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "container" }, [_c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } }), this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title } }, [_c('div', { staticClass: "container" }, [_c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } }), this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
-        } } }, [_vm._v("Next")])]) : _vm._e(), _c('div', { style: { width: _vm.width + 'px', height: _vm.height + 'px' } }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
+        } } }, [_vm._v("Next")])]) : _vm._e(), _c('div', { staticClass: "table-container" }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
           _vm.onclick($event);
-        } } })])]);
+        } } })])])]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
@@ -35741,8 +35821,10 @@ var DataTable = { render: function render() {
   },
   methods: {
     onclick: function onclick(ev) {
-      if (ev && ev.target.classList.contains('dc-table-head')) {
-        var sortKey = Store.getKeyByLabel(ev.target.textContent, { dataset: this.dataset }) || ev.target.textContent;
+      if (!ev) return;
+      var el = _isDescendantOf(ev.target, 'dc-table-head');
+      if (el) {
+        var sortKey = Store.getKeyByLabel(el.textContent, { dataset: this.dataset }) || el.textContent;
         if (this.colsKeys.indexOf(sortKey) >= 0) {
           if (sortKey === this.sortKey) {
             this.sortOrder = this.sortOrder === 'descending' ? 'ascending' : 'descending';
