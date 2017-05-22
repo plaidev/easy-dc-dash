@@ -65,12 +65,12 @@ export default {
       .x(d3.scale[this.scale]())
       .gap(this.gap)
       .elasticX(true)
-      .rowsCap(this.dimNums)
       .othersLabel(this.othersLabel)
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
       .ordering((d) => this.descending ? -d.value : d.value)
+    if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart.render();
   }
 }

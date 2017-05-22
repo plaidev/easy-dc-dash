@@ -168,11 +168,6 @@ export default {
 
       return scale().domain([this.min, this.max])
     },
-    dimNums: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const size = dim.group().size()
-      return (!this.cap || this.cap <= 0) ? size : this.cap
-    },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
       return Store.getTheme().layout(this.chartType, this.layout, {width, height});
