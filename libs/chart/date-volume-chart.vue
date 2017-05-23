@@ -41,11 +41,10 @@ export default {
   mounted: function() {
     const chart = this.chart
     chart
-      .centerBar(true)
+      // .centerBar(true)
       .gap(1)
       .elasticY(true)
       .round(d3.time.day.round)
-      //.round(time.week.round)
       .alwaysUseRounding(true)
       .xUnits(d3.time.days)
       .yAxis().ticks(0)
