@@ -49,6 +49,14 @@ export default {
         return Object.keys(this.segments)
       }
       return []
+    },
+    tooltipAccessor: function() {
+      return (d, i) => {
+        return {
+          key: this.segmentLabel(d.data.key),
+          val: d.value
+        }
+      }
     }
   },
 
@@ -65,14 +73,6 @@ export default {
         label = Store.getLabel(segmentId)
       }
       return label;
-    },
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const data = {
-        key: this.segmentLabel(d.data.key),
-        val: d.data.value
-      }
-      this.$refs.tooltip.show(data, fill)
     }
   },
 

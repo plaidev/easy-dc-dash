@@ -210,6 +210,9 @@ export default {
       if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
       if(this.chartType === 'compositeChart') return `#${this.id} .stack .area, #${this.id} circle.dot`
       if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
+    },
+    tooltipAccessor: function() {
+      return (d, i) => d
     }
   },
 
@@ -318,7 +321,9 @@ export default {
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill')
-      this.$refs.tooltip.show(d, fill)
+      const data = this.tooltipAccessor(d, i)
+      data.key = this.getLabel(data.key)
+      this.$refs.tooltip.show(data, fill)
     },
     moveTooltip: function() {
       this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);
