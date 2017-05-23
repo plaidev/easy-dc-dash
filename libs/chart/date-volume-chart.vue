@@ -1,5 +1,6 @@
 
 <script lang="js">
+import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {ymdFormat} from '../utils/time-format'
@@ -28,6 +29,13 @@ export default {
       const settings = Base.computed.layoutSettings.apply(this)
       settings.legend = null;
       return settings;
+    }
+  },
+  methods: {
+    removeFilterAndRedrawChart: function() {
+      this.chart.focusChart().filterAll();
+      this.chart.filterAll();
+      dc.redrawAll();
     }
   },
   mounted: function() {
