@@ -24447,9 +24447,7 @@ var DefaultTheme = {
     var _options$width = options.width,
         width = _options$width === undefined ? 377 : _options$width,
         _options$height = options.height,
-        height = _options$height === undefined ? 233 : _options$height,
-        _options$useLegend = options.useLegend,
-        useLegend = _options$useLegend === undefined ? true : _options$useLegend;
+        height = _options$height === undefined ? 233 : _options$height;
 
 
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
@@ -24546,11 +24544,13 @@ var DefaultTheme = {
         }
       };
     } else if (name === 'wide') {
+      var legendWidth = Math.min(height * heightCoef, 200);
+
       var margins = {
         top: 40,
         bottom: 30,
         left: 60,
-        right: height * heightCoef
+        right: legendWidth
       };
 
       // FIXME: このあたり、どのくらい計算的に出すか難しい...
@@ -24568,9 +24568,9 @@ var DefaultTheme = {
           y: height * heightCoef / 2
         },
         legend: {
-          x: width - height * heightCoef + 40,
+          x: width - legendWidth + 40,
           y: height * legendYCoef,
-          width: height * heightCoef - 20,
+          width: legendWidth - 40,
           horizontal: false
         },
         axis: {
@@ -25188,14 +25188,38 @@ var Base = {
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     reducer: function reducer() {
-      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+      var dim = this.grouping;
       var reducer = this.reducerExtractor;
+      if (this.isRateReducer) {
+        return dim.group().reduce(function (p, v) {
+          var val = reducer(v);
+          p.count += val.count;
+          p.value += val.value;
+          return p;
+        }, function (p, v) {
+          var val = reducer(v);
+          p.count -= val.count;
+          p.value -= val.value;
+          return p;
+        }, function () {
+          return { count: 0, value: 0 };
+        });
+      }
       return dim.group().reduceSum(reducer);
+    },
+    isRateReducer: function isRateReducer() {
+      var v = this.reducerExtractor({});
+      if (v instanceof Object && 'count' in v) return true;
+      return false;
     },
     reduceKeys: function reduceKeys() {
       return [];
     },
     accessor: function accessor() {
+      if (this.isRateReducer) return function (d) {
+        console.log(d);
+        return d.value.count === 0 ? 0 : d.value.value / d.value.count;
+      };
       return null;
     },
     min: function min() {
@@ -25235,6 +25259,11 @@ var Base = {
       if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
       if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack .area, #' + this.id + ' circle.dot';
       if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
+    },
+    tooltipAccessor: function tooltipAccessor() {
+      return function (d, i) {
+        return d;
+      };
     }
   },
 
@@ -25245,6 +25274,12 @@ var Base = {
     },
     getLabel: function getLabel(key) {
       return Store.getLabel(key, {
+        dataset: this.dataset,
+        chartName: this.id
+      });
+    },
+    getKeyByLabel: function getKeyByLabel(label) {
+      return Store.getKeyByLabel(el.textContent, {
         dataset: this.dataset,
         chartName: this.id
       });
@@ -25302,9 +25337,9 @@ var Base = {
       var width = void 0,
           height = void 0;
       if (typeof this.parent === 'string' || this.parent instanceof String) {
-        var el = document.querySelector(this.parent).parentNode;
-        width = el.clientWidth;
-        height = el.clientHeight;
+        var _el = document.querySelector(this.parent).parentNode;
+        width = _el.clientWidth;
+        height = _el.clientHeight;
       } else {
         width = this.parent.width();
         height = this.parent.height();
@@ -25345,7 +25380,9 @@ var Base = {
     },
     showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
-      this.$refs.tooltip.show(d, fill);
+      var data = this.tooltipAccessor(d, i);
+      data.key = this.getLabel(data.key);
+      this.$refs.tooltip.show(data, fill);
     },
     moveTooltip: function moveTooltip() {
       this.$refs.tooltip.move(d3$1.event.clientX, d3$1.event.clientY);
@@ -34118,7 +34155,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 5px; border: 2px solid; background: #FFF; color: #FFF; } .nd-box span.number-display { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 5px; border: 2px solid; background: #FFF; color: #FFF; } .nd-box .number-display { font-weight: bold; } .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34127,7 +34164,7 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.fillBoxColor ? _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', background: _vm.themeColor, fontSize: _vm.fontSize + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]) : _c('div', { staticClass: "krt-dc-number-display nd-box", style: { width: _vm.width + 'px', height: _vm.height + 'px', color: _vm.themeColor, borderColor: _vm.themeColor, fontSize: _vm.fontSize + 'px' }, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.boxLabel || this._boxLabel) } })]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this._boxLabel) } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
@@ -34169,36 +34206,94 @@ var NumberDisplay = { render: function render() {
     renderTooltip: {
       type: Boolean,
       default: false
+    },
+    unitLabel: {
+      type: String,
+      default: ''
     }
   },
   computed: {
+    grouping: function grouping() {
+      return null;
+    },
     reducer: function reducer() {
       var cf = Store.getCf({ dataset: this.dataset });
       var reducer = this.reducerExtractor;
-      return cf.groupAll().reduce(function (p, v) {
-        var val = reducer(v);
-        typeof val === 'number' || val instanceof Number ? p.value += val : p.value++;
-        return p;
-      }, function (p, v) {
-        var val = reducer(v);
-        typeof val === 'number' || val instanceof Number ? p.value -= val : p.value--;
-        return p;
-      }, function () {
-        return { value: 0 };
-      });
+      if (this.isRateReducer) {
+        return cf.groupAll().reduce(function (p, v) {
+          var val = reducer(v);
+          p.count += val.count;
+          p.value += val.value;
+          return p;
+        }, function (p, v) {
+          var val = reducer(v);
+          p.count -= val.count;
+          p.value -= val.value;
+          return p;
+        }, function () {
+          return { count: 0, value: 0 };
+        });
+      }
+      return cf.groupAll().reduceSum(reducer);
+    },
+    accessor: function accessor() {
+      var _this = this;
+
+      if (this.isRateReducer) {
+        return function (d) {
+          var r = d.count === 0 ? 0 : d.value / d.count;
+          return _this._unitLabel == '%' ? r * 100 : r;
+        };
+      }
+      // 明示的なaccessorが必要なことは若干奇妙ではある
+      return function (d) {
+        return d;
+      };
     },
     _boxLabel: function _boxLabel() {
-      return this.reduce.replace(/d\./, '');
+      return this.boxLabel || this.reduce.replace(/d\./, '');
+    },
+    _unitLabel: function _unitLabel() {
+      if (this.unitLabel) return this.unitLabel;
+      if (this.isRateReducer) return '%';
+      return '';
+    },
+    boxStyles: function boxStyles() {
+      var styles = {
+        width: this.width + 'px',
+        height: this.height + 'px',
+        background: this.themeColor,
+        fontSize: this.fontSize + 'px'
+      };
+      if (!this.fillBoxColor) {
+        styles.color = this.themeColor;
+        styles.borderColor = this.themeColor;
+        styles.background = undefined;
+      }
+      return styles;
     }
   },
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.valueAccessor(function (d) {
-      return d.value;
-    }).formatNumber(d3$1.format(this.numberFormat)).html({
-      none: "<span class=\"number-display\">0</span>"
-    });
+    var templates = {
+      none: '<span class="number-display">0</span>',
+      one: '<span class="number-display">%number</span>',
+      some: '<span class="number-display">%number</span>'
+    };
+
+    var units = this._unitLabel.split(',');
+    if (units.length === 1) {
+      if (units[0]) {
+        templates.one += '<span class="number-unit">' + units[0] + '</span>';
+        templates.some += '<span class="number-unit">' + units[0] + '</span>';
+      }
+    } else if (units.length >= 2) {
+      if (units[0]) templates.one += '<span class="number-unit">' + units[0] + '</span>';
+      if (units[1]) templates.some += '<span class="number-unit">' + units[1] + '</span>';
+    }
+
+    chart.formatNumber(d3$1.format(this.numberFormat)).html(templates);
     return chart.render();
   }
 };
@@ -34318,6 +34413,16 @@ var SegmentPie = {
         return Object.keys(this.segments);
       }
       return [];
+    },
+    tooltipAccessor: function tooltipAccessor() {
+      var _this = this;
+
+      return function (d, i) {
+        return {
+          key: _this.segmentLabel(d.data.key),
+          val: d.value
+        };
+      };
     }
   },
 
@@ -34332,23 +34437,15 @@ var SegmentPie = {
         label = Store.getLabel(segmentId);
       }
       return label;
-    },
-    showTooltip: function showTooltip(d) {
-      var fill = d3.event.target.getAttribute('fill');
-      var data = {
-        key: this.segmentLabel(d.data.key),
-        val: d.data.value
-      };
-      this.$refs.tooltip.show(data, fill);
     }
   },
 
   mounted: function mounted() {
-    var _this = this;
+    var _this2 = this;
 
     var chart = this.chart;
     chart.othersLabel(this.othersLabel).cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).label(function (d) {
-      return _this.segmentLabel(d.key);
+      return _this2.segmentLabel(d.key);
     });
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart.render();
@@ -34397,17 +34494,14 @@ var MultiDimensionPie = {
         return v.join(',');
       };
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
-    }
-  },
-
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var fill = d3.event.target.getAttribute('fill');
-      var data = {
-        key: d.data.key,
-        val: d.data.value
+    },
+    tooltipAccessor: function tooltipAccessor() {
+      return function (d, i) {
+        return {
+          key: d.data.key,
+          val: d.value
+        };
       };
-      this.$refs.tooltip.show(data, fill);
     }
   },
 
@@ -35823,7 +35917,7 @@ var DataTable = { render: function render() {
       if (!ev) return;
       var el = _isDescendantOf(ev.target, 'dc-table-head');
       if (el) {
-        var sortKey = Store.getKeyByLabel(el.textContent, { dataset: this.dataset }) || el.textContent;
+        var sortKey = this.getKeyByLabel(el.textContent) || el.textContent;
         if (this.colsKeys.indexOf(sortKey) >= 0) {
           if (sortKey === this.sortKey) {
             this.sortOrder = this.sortOrder === 'descending' ? 'ascending' : 'descending';
@@ -35871,7 +35965,7 @@ var DataTable = { render: function render() {
 
       this.colsKeys.forEach(function (k) {
         _this4.columnSettings.push({
-          label: Store.getLabel(k, { dataset: _this4.dataset }),
+          label: _this4.getLabel(k),
           format: function format(d) {
             return _this4.setFormat(d, k);
           }
