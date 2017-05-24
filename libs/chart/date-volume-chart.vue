@@ -33,7 +33,8 @@ export default {
   },
   methods: {
     removeFilterAndRedrawChart: function() {
-      this.chart.focusChart().filterAll();
+      const focusChart = this.chart.focusChart()
+      if(focusChart) focusChart.filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     }
