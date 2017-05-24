@@ -17,7 +17,7 @@ export default {
       else if (Math.abs(width - height) < 10) {
         name = 'square'
       }
-      else if (Math.abs(1.618 - width / height) < 0.2 ) {
+      else if (Math.abs(1.618 - width / height) < 0.2) {
         name = 'square-and-legend'
       }
       else {
@@ -108,11 +108,13 @@ export default {
     }
 
     else if (name === 'wide') {
+      const legendWidth = Math.min(height * heightCoef, 200)
+
       const margins = {
         top: 40,
         bottom: 30,
         left: 60,
-        right: height * heightCoef
+        right: legendWidth
       }
 
       // FIXME: このあたり、どのくらい計算的に出すか難しい...
@@ -130,9 +132,9 @@ export default {
           y: height * heightCoef / 2
         },
         legend: {
-          x: width - height * heightCoef + 40,
+          x: width - legendWidth + 40,
           y: height * legendYCoef,
-          width: height * heightCoef - 20,
+          width: legendWidth - 40,
           horizontal: false
         },
         axis: {

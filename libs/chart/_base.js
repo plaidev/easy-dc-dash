@@ -137,14 +137,42 @@ export default {
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+      const dim = this.grouping;
       const reducer = this.reducerExtractor;
+      if (this.isRateReducer) {
+        return dim.group().reduce(
+          (p, v) => {
+            const val = reducer(v)
+            p.count += val.count;
+            p.value += val.value;
+            return p;
+          },
+          (p, v) => {
+            const val = reducer(v)
+            p.count -= val.count;
+            p.value -= val.value;
+            return p;
+          },
+          () => {
+            return {count: 0, value: 0}
+          }
+        );
+      }
       return dim.group().reduceSum(reducer)
+    },
+    isRateReducer: function() {
+      const v = this.reducerExtractor({});
+      if (v instanceof Object && 'count' in v)
+        return true;
+      return false
     },
     reduceKeys: function() {
       return []
     },
     accessor: function() {
+      if (this.isRateReducer) return (d) => {
+        return (d.value.count === 0 ? 0 : d.value.value / d.value.count)
+      }
       return null;
     },
     min: function() {
@@ -182,6 +210,9 @@ export default {
       if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
       if(this.chartType === 'compositeChart') return `#${this.id} .stack .area, #${this.id} circle.dot`
       if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
+    },
+    tooltipAccessor: function() {
+      return (d, i) => d
     }
   },
 
@@ -290,7 +321,9 @@ export default {
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill')
-      this.$refs.tooltip.show(d, fill)
+      const data = this.tooltipAccessor(d, i)
+      data.key = this.getLabel(data.key)
+      this.$refs.tooltip.show(data, fill)
     },
     moveTooltip: function() {
       this.$refs.tooltip.move(d3.event.clientX, d3.event.clientY);

@@ -31,17 +31,14 @@ export default {
         return v.join(',');
       }
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
-    }
-  },
-
-  methods: {
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const data = {
-        key: d.data.key,
-        val: d.data.value
+    },
+    tooltipAccessor: function() {
+      return (d, i) => {
+        return {
+          key: d.data.key,
+          val: d.value
+        }
       }
-      this.$refs.tooltip.show(data, fill)
     }
   },
 
