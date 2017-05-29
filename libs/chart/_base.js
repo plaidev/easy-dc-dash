@@ -56,9 +56,6 @@ export default {
     dateKey: {
       type: String
     },
-    timeScale: {
-      type: String
-    },
     timeFormat: {
       type: String
     },
@@ -127,7 +124,9 @@ export default {
       return this.dimension;
     },
     dimensionExtractor: function() {
-      return generateExtractor(this.dimension)
+      const getter = generateExtractor(this.dimension)
+      if (!this.dimensionUnit) return getter
+      return (d) => this.dimensionUnit(getter(d))
     },
     reducerExtractor: function() {
       return generateExtractor(this.reduce)
@@ -177,24 +176,32 @@ export default {
     },
     min: function() {
       const dim = this.grouping;
-      const dimExtractor = this.dimensionExtractor;
-      return dimExtractor(dim.bottom(1)[0]);
+      const getter = this.dimensionExtractor;
+      return getter(dim.bottom(1)[0]);
     },
     max: function() {
       const dim = this.grouping;
-      const dimExtractor = this.dimensionExtractor;
-      return dimExtractor(dim.top(1)[0]);
+      const getter = this.dimensionExtractor;
+      return getter(dim.top(1)[0]);
     },
-    xScale: function() {
-      let scale;
+    dimensionScale: function () {
       if (!this.scale) return null;
+      let [scale, unit] = this.scale.split('.');
+      let _scale;
 
-      if (this.scale === 'time') scale = d3.time.scale;
-      else scale = d3.scale[this.scale];
+      if (scale === 'time') _scale = d3.time.scale;
+      else _scale = d3.scale[this.scale];
 
-      if (!scale) return null;
-
-      return scale().domain([this.min, this.max])
+      if (!_scale) return null;
+      return _scale().domain([this.min, this.min])
+    },
+    dimensionUnit: function () {
+      if (!this.scale) return null;
+      const [scale, unit] = this.scale.split('.')
+      if (scale === 'time' && unit && TIME_INTERVALS[unit]) {
+        return TIME_INTERVALS[unit]
+      }
+      return null;
     },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
@@ -213,6 +220,13 @@ export default {
     },
     tooltipAccessor: function() {
       return (d, i) => d
+    },
+    timeScale: function() { // 互換性のための一時的なメソッド
+      if (!this.scale) return null;
+      const [scale, unit] = this.scale.split('.')
+      if (scale === 'time' && unit && unit in TIME_INTERVALS) {
+        return unit
+      }
     }
   },
 
@@ -358,7 +372,8 @@ export default {
       chart.group(this.reducer, this.getReduceKey(0));
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
-    if (this.xScale) chart.x(this.xScale);
+    if (this.dimensionScale) chart.x(this.dimensionScale);
+    if (this.dimensionUnit) chart.xUnits(this.dimensionUnit);
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();

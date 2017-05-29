@@ -49,7 +49,6 @@ export default {
       .round(d3.time.day.round)
       //.round(time.week.round)
       .alwaysUseRounding(true)
-      .xUnits(d3.time.days)
       .yAxis().ticks(0)
 
     return chart.render()
