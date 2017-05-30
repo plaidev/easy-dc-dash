@@ -28,26 +28,20 @@ export default {
     elasticY: {
       type: Boolean,
       default: true
+    },
+    scale: {
+      default: "ordinal.ordinal"
     }
   },
   computed: {
     dimensionName: function() {
-      return this.dimension
-    },
-    dimensionExtractor: function() {
-      const extractor = generateExtractor(this.dimension)
-      // TODO: dateに限ってしまっているのを修正、unitを作るか...
-      return (d) => {
-        const v = extractor(d)
-        if (this.scale === 'time') {
-          v[0] = d3.time.format('%Y-%m-%d')(v[0])
-        }
-        return joinKey(v)
-      }
+      return [this.dimension, this.extraDimension].join(',')
     },
     grouping: function() {
-      const grouping = this.dimensionExtractor
-      return Store.registerDimension(this.dimensionName, grouping, {dataest: this.dataset});
+      const grouping = (d) => {
+        return _joinkey([this.dimensionExtractor(d), this.extraDimensionExtractor(d)])
+      }
+      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
@@ -115,14 +109,6 @@ export default {
     const chart = this.chart;
     const stackKeys = this.stackKeys
     const barNum = stackKeys.length;
-
-    if (!this.scale)
-      chart
-        .x(d3.scale.ordinal())
-        .xUnits(dc.units.ordinal)
-    else
-      chart
-        .xUnits(d3.time.days) // FIXME
 
     chart
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))

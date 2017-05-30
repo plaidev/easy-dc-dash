@@ -13,9 +13,34 @@ export default {
       type: String,
       default: 'seriesChart'
     },
-    elasticY: {
-      type: Boolean,
-      default: true
+    seriesLabel: {
+      type: String,
+      default: ''
+    },
+    seriesFormat: {
+      type: String,
+      default: ''
+    }
+  },
+  computed: {
+    dimensionName: function() {
+      if(this.dateKey != undefined) return `${this.seriesKey}(${this.dateKey})`
+      return this.dimension
+    },
+    dimensionKeys: function() {
+      return _splitkey(_extractName(this.dimension))
+    },
+    seriesKey: function() {
+      return this.dimensionKeys[0]
+    },
+    xKey: function() {
+      return this.dimensionKeys[1]
+    },
+    dimensionScale: function() {
+      const all = this.reducer.all()
+      const scale = d3.scale.linear()
+      const range = d3.extent(all, (d) => d.key[1])
+      return scale.domain(range)
     }
   },
   methods: {
@@ -41,7 +66,7 @@ export default {
         const vals = d.values.reduce((a,b) => a.y+b.y);
         const data = {
           key: key,
-          val: val
+          val: vals
         }
         this.$refs.tooltip.show(data, color)
       }
@@ -56,10 +81,10 @@ export default {
       .brushOn(false)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
-      .seriesAccessor(this.firstKeyAccessor)
-      .keyAccessor(this.secondKeyAccessor)
-      .valueAccessor(this.valueAccessor)
-    return chart.render()
+      .seriesAccessor((d) => Number(d.key[0]))
+      .keyAccessor((d) => d.key[1])
+
+    return chart.render();
   }
 }
 

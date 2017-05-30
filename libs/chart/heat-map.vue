@@ -4,7 +4,8 @@
 import d3 from "d3"
 import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
-import {splitKey, extractName} from '../utils'
+import {generateExtractor, splitKey, extractName} from '../utils'
+
 
 export default {
   extends: coordinateGridBase,
@@ -14,17 +15,24 @@ export default {
       type: String,
       default: 'heatMap'
     },
-    width: {
-      type: Number,
-      default: 45 * 20 + 80
-    },
-    height: {
-      type: Number,
-      default: 45 * 5 + 40
-    },
     yBorderRadius: {
       type: Number,
       defaulat: 6.75
+    }
+  },
+  computed: {
+    dimensionKeys: function() {
+      return _splitkey(_extractName(this.dimension))
+    },
+    firstRow: function() {
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
+      return dim.top(1)[0]
+    },
+    data: function() {
+      return (this.dimensionExtractor)(this.firstRow)
+    },
+    dataKeys: function() {
+      return Object.keys(this.data)
     }
   },
   methods: {
@@ -34,8 +42,8 @@ export default {
       const yAxisLabel = this.yAxisLabel || this.secondKey
       const data = {
         keys: {
-          [xAxisLabel]: this.formatKey('x', d.key[0]),
-          [yAxisLabel]: this.formatKey('y', d.key[1])
+          [xAxisLabel]: d.key[0],
+          [yAxisLabel]: d.key[1]
         },
         val: d.value
       }
@@ -46,9 +54,9 @@ export default {
     const chart = this.chart;
 
     chart
-      .keyAccessor(this.firstKeyAccessor)
-      .valueAccessor(this.secondKeyAccessor)
-      .colorAccessor(this.valueAccessor)
+      .keyAccessor((d) => d.key[0])
+      .valueAccessor((d) => d.key[1])
+      .colorAccessor((d) => +d.value)
       .yBorderRadius(this.yBorderRadius)
       .colsLabel((d) => d + `${this.xAxisFormat}`)
       .rowsLabel((d) => d + `${this.yAxisFormat}`)
@@ -58,6 +66,16 @@ export default {
               .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
           }
       })
+    if(this.dateKey) {
+      chart.filterPrinter(filters => {
+        return filters.map(filter => {
+          return filter.map((f,i) => {
+            return f
+          }).join(',').replace(/\,/, '-')
+        });
+      });
+    }
+
     return chart.render();
   }
 }

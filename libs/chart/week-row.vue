@@ -66,8 +66,6 @@ export default {
       );
     },
     accessor: function() {
-      const dim = this.grouping;
-      const dimExtractor = this.dimensionExtractor;
       const methodNames = [
         'sundays', 'mondays', 'tuesdays', 'wednesdays', 'thursdays', 'fridays', 'saturdays'
       ];
@@ -79,6 +77,9 @@ export default {
         const cnt = d3.time[methodNames[p.key]](min, max).length;
         return cnt > 0 ? p.value.value / cnt: 0;
       }
+    },
+    dimensionScale: function() {
+      return d3.scale.linear().domain([0, 6])
     }
   },
 
@@ -98,7 +99,6 @@ export default {
 
     chart
       .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
-      .x(d3.scale.linear().domain([0, 7]))
       .elasticX(true)
     return chart.render();
   }

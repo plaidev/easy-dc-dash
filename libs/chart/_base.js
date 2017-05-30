@@ -32,6 +32,8 @@ export default {
     },
     dimension: {
     },
+    extraDimension: {
+    },
     reduce: {
     },
     id: {
@@ -50,6 +52,13 @@ export default {
       type: String
     },
     scale: {
+      type: String,
+      default: 'ordinal'
+    },
+    dateKey: {
+      type: String
+    },
+    timeFormat: {
       type: String
     },
     cap: {
@@ -118,13 +127,19 @@ export default {
       return `#${this.id}`;
     },
     dimensionName: function() {
+      if(this.dateKey !== undefined) return `${this.dateKey}.${this.dimension}`
       return this.dimension;
     },
     dimensionExtractor: function() {
-      return generateExtractor(this.dimension)
+      const getter = generateExtractor(this.dimension, this.dateKey)
+      if (!this.dimensionInterval) return getter
+      return (d) => this.dimensionInterval(getter(d))
+    },
+    extraDimensionExtractor: function() {
+      return generateExtractor(this.extraDimension, this.dateKey)
     },
     reducerExtractor: function() {
-      return generateExtractor(this.reduce)
+      return generateExtractor(this.reduce, this.dateKey)
     },
     grouping: function() {
       const grouping = this.dimensionExtractor;
@@ -132,6 +147,7 @@ export default {
     },
     reducer: function() {
       const dim = this.grouping;
+      if (!dim) return;
       const reducer = this.reducerExtractor;
       if (this.isRateReducer) {
         return dim.group().reduce(
@@ -171,28 +187,49 @@ export default {
     },
     min: function() {
       const dim = this.grouping;
-      const dimExtractor = this.dimensionExtractor;
-      return dimExtractor(dim.bottom(1)[0]);
+      const getter = this.dimensionExtractor;
+      if (!dim) return undefined;
+      return getter(dim.bottom(1)[0]);
     },
     max: function() {
       const dim = this.grouping;
-      const dimExtractor = this.dimensionExtractor;
-      return dimExtractor(dim.top(1)[0]);
+      const getter = this.dimensionExtractor;
+      if (!dim) return undefined;
+      return getter(dim.top(1)[0]);
     },
     all: function() {
       const dim = this.grouping;
       return dim.group().all()
     },
-    xScale: function() {
-      let scale;
+    dimensionScale: function () {
       if (!this.scale) return null;
+      let [scale, unit] = this.scale.split('.');
+      let _scale;
 
-      if (this.scale === 'time') scale = d3.time.scale;
-      else scale = d3.scale[this.scale];
+      if (scale == 'time') _scale = d3.time.scale;
+      else _scale = d3.scale[scale];
 
-      if (!scale) return null;
-
-      return scale().domain([this.min, this.max])
+      if (!_scale) return null;
+      return _scale().domain([this.min, this.max])
+    },
+    dimensionInterval: function () {
+      if (!this.scale) return null;
+      const [scale, unit] = this.scale.split('.')
+      if (scale === 'time' && unit && TIME_INTERVALS[unit]) {
+        return TIME_INTERVALS[unit]
+      }
+      return null;
+    },
+    dimensionUnit: function () {
+      if (!this.scale) return null;
+      const [scale, unit] = this.scale.split('.')
+      if (scale == 'time' && unit && TIME_INTERVALS[unit]) {
+        return TIME_INTERVALS[unit].range
+      }
+      if (scale == 'ordinal' && dc.units[unit]) {
+        return dc.units[unit]
+      }
+      return null;
     },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
@@ -211,6 +248,13 @@ export default {
     },
     tooltipAccessor: function() {
       return (d, i) => d
+    },
+    timeScale: function() { // 互換性のための一時的なメソッド
+      if (!this.scale) return null;
+      const [scale, unit] = this.scale.split('.')
+      if (scale === 'time' && unit && unit in TIME_INTERVALS) {
+        return unit
+      }
     }
   },
 
@@ -348,7 +392,10 @@ export default {
       chart.group(this.reducer, this.getReduceKey(0));
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
-    if (this.xScale) chart.x(this.xScale);
+    if (chart.x) {
+      if (this.dimensionScale) chart.x(this.dimensionScale);
+      if (this.dimensionUnit) chart.xUnits(this.dimensionUnit);
+    }
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();

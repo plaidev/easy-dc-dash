@@ -6,6 +6,7 @@ import DateVolumeChart from './date-volume-chart.vue'
 import SegmentPie from './segment-pie.vue'
 import MultiDimensionPie from './multi-dimension-pie.vue'
 import WeekRow from './week-row.vue'
+import WeeklySeries from './weekly-series.vue'
 import ListRow from './list-row.vue'
 import RateLine from './rate-line.vue'
 import StackedLines from './stacked-lines.vue'
@@ -26,6 +27,7 @@ const components = {
   'segment-pie': SegmentPie,
   'multidim-pie': MultiDimensionPie,
   'week-row': WeekRow,
+  'weekly-series': WeeklySeries,
   'list-row': ListRow,
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
@@ -54,6 +56,7 @@ export default {
   RateLine: RateLine,
   StackedLines: StackedLines,
   WeekRow: WeekRow,
+  WeeklySeries: WeeklySeries,
   ListRow: ListRow,
   NumberDisplay: NumberDisplay,
   DateVolumeChart: DateVolumeChart,

@@ -185,6 +185,9 @@ export default {
       if(!this.linkColmn) return null
       return this.linkColumn.replace(/\s/g, '').split(',')
     },
+    reducer: function() {
+      return null
+    },
     grouping: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
       const dimensionKey = this.extractDimensionName(this.dimension);

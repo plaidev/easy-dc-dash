@@ -21,7 +21,7 @@ export default {
       default: 60
     },
     scale: {
-      default: 'time'
+      default: 'time.day'
     }
   },
   computed: {
@@ -47,7 +47,8 @@ export default {
       .elasticY(true)
       .round(d3.time.day.round)
       .alwaysUseRounding(true)
-      .xUnits(d3.time.days)
+
+    chart
       .yAxis().ticks(0)
 
     return chart.render()
