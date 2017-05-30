@@ -2,21 +2,13 @@
 <script lang='js'>
 
 import d3 from "d3"
-import dc from 'dc'
-import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
-import {generateExtractor} from '../utils'
+import {generateExtractor, splitKey, extractName} from '../utils'
 
-function _splitkey(k) {
-  return k.split(',')
-}
-function _extractName(dimension) {
-  // FIXME: Replace if there is a better way
-  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
-}
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -26,21 +18,6 @@ export default {
     yBorderRadius: {
       type: Number,
       defaulat: 6.75
-    },
-    xAxisFormat: {
-      type: String,
-      default: ''
-    },
-    yAxisFormat: {
-      type: String,
-      default: ''
-    },
-    valueLabel: {
-      type: String
-    },
-    valueFormat: {
-      type: String,
-      default: ''
     }
   },
   computed: {
@@ -61,8 +38,8 @@ export default {
   methods: {
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
-      const xAxisLabel = this.xAxisLabel || this.dimensionKeys[0]
-      const yAxisLabel = this.yAxisLabel || this.dimensionKeys[1]
+      const xAxisLabel = this.xAxisLabel || this.firstKey
+      const yAxisLabel = this.yAxisLabel || this.secondKey
       const data = {
         keys: {
           [xAxisLabel]: d.key[0],
@@ -75,18 +52,20 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const xAxisLabel = this.xAxisLabel || this.xKey
-    const yAxisLabel = this.xAxisLabel || this.yKey
-    const valueLabel = this.valueLabel || _extractName(this.reduce)
 
     chart
       .keyAccessor((d) => d.key[0])
       .valueAccessor((d) => d.key[1])
       .colorAccessor((d) => +d.value)
-      .colors(d3.scale.category20b())
       .yBorderRadius(this.yBorderRadius)
       .colsLabel((d) => d + `${this.xAxisFormat}`)
       .rowsLabel((d) => d + `${this.yAxisFormat}`)
+      .on('postRender', () => {
+          if(!this.dateKey) {
+            chart.selectAll('g.cols.axis text')
+              .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+          }
+      })
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {
@@ -96,6 +75,7 @@ export default {
         });
       });
     }
+
     return chart.render();
   }
 }

@@ -2,39 +2,16 @@
 
 import d3 from "d3"
 import dc from 'dc'
-import Base from './_base'
-import Store from '../store'
-import {generateExtractor} from '../utils'
-import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
-
-function _splitkey(k) {
-  return k.split(',')
-}
-function _extractName(dimension) {
-  // FIXME: Replace if there is a better way
-  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
-}
+import coordinateGridBase from './_coordinateGridBase.js'
+import {splitKey, extractName} from '../utils'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
       type: String,
       default: 'seriesChart'
-    },
-    brushOn: {
-      type: Boolean,
-      default: false
-    },
-    elasticY: {
-      type: Boolean,
-      default: true
-    },
-    // label
-    renderLabel: {
-      type: Boolean,
-      default: true
     },
     seriesLabel: {
       type: String,
@@ -43,18 +20,6 @@ export default {
     seriesFormat: {
       type: String,
       default: ''
-    },
-    xAxisFormat: {
-      type: String,
-      default: ''
-    },
-    yAxisFormat: {
-      type: String,
-      default: ''
-    },
-    useLegend: {
-      type: Boolean,
-      default: true
     }
   },
   computed: {
@@ -80,7 +45,6 @@ export default {
   },
   methods: {
     showTooltip: function(d) {
-      const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
       const fill = d3.event.target.getAttribute('fill');
       const stroke = d3.event.target.getAttribute('stroke');
       const color = fill || stroke;
@@ -110,14 +74,11 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const all = this.reducer.all()
 
     chart
       .chart((c) => dc.lineChart(c).interpolate('basis'))
-      .brushOn(this.brushOn)
-      .renderVerticalGridLines(true)
-      .renderHorizontalGridLines(true)
       .clipPadding(10)
+      .brushOn(false)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
       .seriesAccessor((d) => Number(d.key[0]))

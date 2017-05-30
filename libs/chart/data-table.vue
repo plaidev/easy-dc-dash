@@ -152,6 +152,12 @@ export default {
     getColsExtractor: function() {
       return generateExtractor(this.columns)
     },
+    reducer: function() {
+      return null
+    },
+    isRateReducer: function() {
+      return null
+    },
     cols: function() {
       return (this.getColsExtractor)(this.firstRow)
     },

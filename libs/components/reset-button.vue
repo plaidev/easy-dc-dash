@@ -35,6 +35,11 @@ export default {
 .reset i {
   vertical-align: middle;
 }
+.filter {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: nowrap;
+}
 .badge {
   max-width: 200px;
   background-color: #2FAB9F;

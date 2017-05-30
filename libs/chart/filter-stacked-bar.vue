@@ -6,17 +6,8 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {splitKey, joinKey, multiKey} from '../utils'
 import {ymdFormat} from '../utils/time-format'
-
-function _joinkey(k) {
-  return k.join(',')
-}
-function _splitkey(k) {
-  return k.split(',')
-}
-function _multikey(x, y) {
-  return x + ',' + y;
-}
 
 export default {
   extends: Base,
@@ -60,10 +51,9 @@ export default {
     },
     stackKeys: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const all = dim.group().all()
       const stackKeys = [];
-      all.forEach((obj) => {
-        const stackKey = _splitkey(obj.key)[1];
+      this.all.forEach((obj) => {
+        const stackKey = splitKey(obj.key)[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey)
       })
       return stackKeys
@@ -76,14 +66,14 @@ export default {
           all: () => {
             let all = group.all();
             const m = {};
-            // build matrix from multikey/value pairs
             if(this.removeEmptyRows) {
               all = all.filter((kv) => {
                 return kv.value != 0
               })
             }
+            // build matrix from multikey/value pairs
             all.forEach((kv) => {
-                const ks = _splitkey(kv.key);
+                const ks = splitKey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};
                 m[ks[0]][ks[1]] = kv.value;
             });
@@ -133,20 +123,28 @@ export default {
         .stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]))
         .hidableStacks(true)
     }
-    // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
+        if(!this.scale) {
+          chart.selectAll('g.x text')
+            .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+        }
+        if(this.rotateXAxisLabel) {
+          chart.selectAll('g.x text')
+            .attr('transform', 'translate(-10,5) rotate(330)')
+        }
+      // select <-> deselect && redraw
       chart.selectAll('rect.bar')
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
           let x = d.x;
           if (this.scale === 'time') x = ymdFormat(x)
-          const key = _multikey(x, d.layer);
+          const key = multiKey(x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
           let x = d.x;
           if (this.scale === 'time') x = ymdFormat(x)
-          chart.filter(_multikey(x, d.layer));
+          chart.filter(multiKey(x, d.layer));
           dc.redrawAll();
         })
     });

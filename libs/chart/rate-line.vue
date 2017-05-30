@@ -72,7 +72,7 @@ export default {
 
   mounted: function() {
     return this.chart
-      .renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 8})
+      .renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 6})
       .hidableStacks(true)
       .brushOn(false)
       .render()
