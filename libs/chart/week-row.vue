@@ -66,8 +66,6 @@ export default {
       );
     },
     accessor: function() {
-      const dim = this.grouping;
-      const dimExtractor = this.dimensionExtractor;
       const methodNames = [
         'sundays', 'mondays', 'tuesdays', 'wednesdays', 'thursdays', 'fridays', 'saturdays'
       ];
