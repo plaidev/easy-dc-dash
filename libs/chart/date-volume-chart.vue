@@ -47,8 +47,9 @@ export default {
       .gap(1)
       .elasticY(true)
       .round(d3.time.day.round)
-      //.round(time.week.round)
       .alwaysUseRounding(true)
+
+    chart
       .yAxis().ticks(0)
 
     return chart.render()
