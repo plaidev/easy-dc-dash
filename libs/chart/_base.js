@@ -33,6 +33,8 @@ export default {
     },
     dimension: {
     },
+    extraDimension: {
+    },
     reduce: {
     },
     id: {
@@ -129,6 +131,9 @@ export default {
       const getter = generateExtractor(this.dimension, this.dateKey)
       if (!this.dimensionInterval) return getter
       return (d) => this.dimensionInterval(getter(d))
+    },
+    extraDimensionExtractor: function() {
+      return generateExtractor(this.extraDimension, this.dateKey)
     },
     reducerExtractor: function() {
       return generateExtractor(this.reduce, this.dateKey)
