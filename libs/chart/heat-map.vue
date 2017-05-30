@@ -141,6 +141,12 @@ export default {
       .yBorderRadius(this.yBorderRadius)
       .colsLabel((d) => d + `${this.xAxisFormat}`)
       .rowsLabel((d) => d + `${this.yAxisFormat}`)
+      .on('postRender', () => {
+          if(!this.dateKey) {
+            chart.selectAll('g.cols.axis text')
+              .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+          }
+      })
     if(this.dateKey) {
       chart.x(d3.time.scale().domain([this.min, this.max]).nice(d3.time[this.timeScale]))
       chart.filterPrinter(filters => {

@@ -147,7 +147,11 @@ export default {
         .hidableStacks(true)
     }
     chart.on('pretransition', (chart) => {
-      if(this.rotateXAxisLabel) {
+        if(!this.scale) {
+          chart.selectAll('g.x text')
+            .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+        }
+        if(this.rotateXAxisLabel) {
           chart.selectAll('g.x text')
             .attr('transform', 'translate(-10,5) rotate(330)')
         }

@@ -268,7 +268,8 @@ export default {
       this.legend = dc.legend()
         .legendText((d, i) => {
           const k = indexLabel? i: d.name;
-          return this.getLabel(k)
+          const key = this.getLabel(k)
+          return key.length > 10 ? key.substring(0,10)+'...' : key
         })
 
       const {
@@ -386,12 +387,16 @@ export default {
           })
           .join(', ')
       })
-    if(this.rotateXAxisLabel) {
-      chart.on('pretransition', () => {
-        chart.selectAll('g.x text')
-          .attr('transform', 'translate(-10,5) rotate(330)')
-      })
-    }
+    chart.on('pretransition', () => {
+        if(!this.scale && !this.dateKey && !this.timeScale) {
+          chart.selectAll('g.x text')
+            .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+        }
+        if(this.rotateXAxisLabel) {
+          chart.selectAll('g.x text')
+            .attr('transform', 'translate(-10,5) rotate(330)')
+        }
+    })
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
         d3.selectAll(this.tooltipSelector)
