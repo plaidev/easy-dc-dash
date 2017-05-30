@@ -23,14 +23,6 @@ export default {
       type: String,
       default: 'seriesChart'
     },
-    width: {
-      type: Number,
-      default: 768
-    },
-    height: {
-      type: Number,
-      default: 480
-    },
     brushOn: {
       type: Boolean,
       default: false
@@ -52,15 +44,7 @@ export default {
       type: String,
       default: ''
     },
-    xAxisLabel: {
-      type: String,
-      default: ''
-    },
     xAxisFormat: {
-      type: String,
-      default: ''
-    },
-    yAxisLabel: {
       type: String,
       default: ''
     },
@@ -87,37 +71,14 @@ export default {
     xKey: function() {
       return this.dimensionKeys[1]
     },
-    yKey: function() {
-      return _extractName(this.reduce)
-    },
-    dimensionExtractor: function() {
-      if (this.dateKey != undefined) return generateExtractor(this.dateKey)
-      return generateExtractor(this.dimensionName)
-    },
-    grouping: function() {
-      const getter = this.dimensionExtractor;
-      const yInterval = this.getTimeInterval(this.seriesKey)
-      const xInterval = this.getTimeInterval(this.xKey)
-      if((xInterval && yInterval) === null) {
-        return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
-      }
-      else {
-        const grouping = (d) => [yInterval(getter(d)), xInterval(getter(d))]
-        return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
-      }
+    dimensionScale: function() {
+      const all = this.reducer.all()
+      const scale = d3.scale.linear()
+      const range = d3.extent(all, (d) => d.key[1])
+      return scale.domain(range)
     }
   },
   methods: {
-    formatKey: function(axis, key) {
-      const seriesTimeFormat = this.getTimeFormat(this.seriesKey)
-      const xTimeFormat = this.getTimeFormat(this.xKey)
-      const FORMATS = {
-        series: seriesTimeFormat,
-        x: xTimeFormat
-      }
-      if(FORMATS[axis] === null) return +key
-      return Number(FORMATS[axis](key))
-    },
     showTooltip: function(d) {
       const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
       const fill = d3.event.target.getAttribute('fill');
@@ -141,7 +102,7 @@ export default {
         const vals = d.values.reduce((a,b) => a.y+b.y);
         const data = {
           key: key,
-          val: val
+          val: vals
         }
         this.$refs.tooltip.show(data, color)
       }
@@ -154,20 +115,14 @@ export default {
     chart
       .chart((c) => dc.lineChart(c).interpolate('basis'))
       .brushOn(this.brushOn)
-      .renderLabel(this.renderLabel)
       .renderVerticalGridLines(true)
       .renderHorizontalGridLines(true)
-      .xAxisLabel(this.xAxisLabel)
-      .yAxisLabel(this.yAxisLabel)
       .clipPadding(10)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
-      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.formatKey('x', d.key[1]))))
-      .seriesAccessor((d) => this.formatKey('series', d.key[0]))
-      .keyAccessor((d) => this.formatKey('x', d.key[1]))
-      .valueAccessor((d) => +d.value)
-    chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
-    chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
+      .seriesAccessor((d) => Number(d.key[0]))
+      .keyAccessor((d) => d.key[1])
+
     return chart.render();
   }
 }
