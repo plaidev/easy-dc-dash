@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+  <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
+
+    <weekly-series
+      width="600"
+      title="weekly-series"
+      dimension="d.date"
+      reduce="d.v">
+    </weekly-series>
+
+    <script type="text/javascript">
+      EasyDC.Store.registerData([
+        {date: new Date('2017-05-18 10:00'), v: 1+23},
+        {date: new Date('2017-05-19 10:00'), v: 1+21},
+        {date: new Date('2017-05-20 10:00'), v: 1+19},
+        {date: new Date('2017-05-21 10:00'), v: 1+17},
+        {date: new Date('2017-05-22 10:00'), v: 1+15},
+        {date: new Date('2017-05-23 10:00'), v: 1+13},
+        {date: new Date('2017-05-24 10:00'), v: 1+11},
+        {date: new Date('2017-05-24 11:00'), v: 1+50},
+        {date: new Date('2017-05-25 12:00'), v: 2+7},
+        {date: new Date('2017-05-26 14:00'), v: 4+5},
+        {date: new Date('2017-05-27 16:00'), v: 8+3},
+        {date: new Date('2017-05-28 18:00'), v: 16+1},
+        {date: new Date('2017-05-29 20:00'), v: 32+3},
+        {date: new Date('2017-05-30 22:00'), v: 64+5},
+        {date: new Date('2017-05-31 23:00'), v: 128+7},
+      ])
+
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>
