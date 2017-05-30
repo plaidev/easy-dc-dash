@@ -111,7 +111,7 @@
       layout="square-and-legend"
       dimension='d.name'
       reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
-      :labels="['PV', 'セッション数', '離脱数']"
+      labels='PV,セッション数,離脱数'
       x-axis-label='name'
       y-axis-label='pv + session_cnt + bounce_cnt'
     ></stacked-bar>
