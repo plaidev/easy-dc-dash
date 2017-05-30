@@ -66,7 +66,7 @@ export default {
       .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), (d) => d.value[0])
       .brushOn(false)
       .renderArea(true)
-      .renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 8})
+      .renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 6})
     for (let i=1; i<lineNum; i++) {
       chart
         .stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), (d) => d.value[i])

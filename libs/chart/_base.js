@@ -3,7 +3,6 @@ import dc from 'dc'
 import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
-import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
@@ -53,15 +52,6 @@ export default {
     scale: {
       type: String
     },
-    dateKey: {
-      type: String
-    },
-    timeScale: {
-      type: String
-    },
-    timeFormat: {
-      type: String
-    },
     cap: {
       type: Number,
       default: 10,
@@ -74,6 +64,10 @@ export default {
     xAxisLabel: {
       type: String,
       default: ''
+    },
+    rotateXAxisLabel: {
+      type: Boolean,
+      default: true
     },
     xAxisFormat: {
       type: String,
@@ -185,6 +179,10 @@ export default {
       const dimExtractor = this.dimensionExtractor;
       return dimExtractor(dim.top(1)[0]);
     },
+    all: function() {
+      const dim = this.grouping;
+      return dim.group().all()
+    },
     xScale: function() {
       let scale;
       if (!this.scale) return null;
@@ -228,22 +226,13 @@ export default {
       })
     },
     getKeyByLabel: function(label) {
-      return Store.getKeyByLabel(el.textContent, {
+      return Store.getKeyByLabel(label, {
         dataset: this.dataset,
         chartName: this.id
       })
     },
     getReduceKey: function(idx) {
       return this.reduceKeys && this.reduceKeys[idx] || idx
-    },
-    getTimeInterval: function(key) {
-      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
-      else return TIME_INTERVALS[key]
-    },
-    getTimeFormat: function(key) {
-      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
-      else if (this.timeFormat) return d3.time.format(this.timeFormat)
-      else return TIME_FORMATS[key]
     },
     applyLegend: function(options={}) {
       const {
@@ -260,7 +249,8 @@ export default {
       this.legend = dc.legend()
         .legendText((d, i) => {
           const k = indexLabel? i: d.name;
-          return this.getLabel(k)
+          const key = this.getLabel(k)
+          return key.length > 10 ? key.substring(0,10)+'...' : key
         })
 
       const {
@@ -377,7 +367,16 @@ export default {
           })
           .join(', ')
       })
-
+    chart.on('pretransition', () => {
+        if(!this.scale && !this.dateKey && !this.timeScale) {
+          chart.selectAll('g.x text')
+            .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+        }
+        if(this.rotateXAxisLabel) {
+          chart.selectAll('g.x text')
+            .attr('transform', 'translate(-10,5) rotate(330)')
+        }
+    })
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
         d3.selectAll(this.tooltipSelector)

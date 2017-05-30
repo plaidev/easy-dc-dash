@@ -70,6 +70,10 @@ export default {
       .labelOffsetY(this.labeloffsetY)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
       .ordering((d) => this.descending ? -d.value : d.value)
+      .on('pretransition', () => {
+          chart.selectAll('g.row text')
+            .text(d => d.key.length > 10 ? d.key.substring(0,10)+'...' : d.key)
+      })
     if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart.render();
   }
@@ -78,10 +82,8 @@ export default {
 </script>
 
 <style scoped>
-g.row text {
+.krt-dc-component svg g.row text {
+  fill: #000;
   pointer-events: none;
-}
-g.row text.titlerow {
-  fill: #000000
 }
 </style>

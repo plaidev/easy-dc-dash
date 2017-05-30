@@ -1,5 +1,6 @@
 
 <script lang="js">
+import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {ymdFormat} from '../utils/time-format'
@@ -31,23 +32,20 @@ export default {
     }
   },
   methods: {
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const data = {
-        key: d.data.key,
-        val: d.data.value
-      }
-      this.$refs.tooltip.show(data, fill)
+    removeFilterAndRedrawChart: function() {
+      const focusChart = this.chart.focusChart()
+      if(focusChart) focusChart.filterAll();
+      this.chart.filterAll();
+      dc.redrawAll();
     }
   },
   mounted: function() {
     const chart = this.chart
     chart
-      .centerBar(true)
+      // .centerBar(true)
       .gap(1)
       .elasticY(true)
       .round(d3.time.day.round)
-      //.round(time.week.round)
       .alwaysUseRounding(true)
       .xUnits(d3.time.days)
       .yAxis().ticks(0)

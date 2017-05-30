@@ -16,9 +16,6 @@ export default {
       type: String,
       default: 'barChart'
     },
-    labels: {
-      type: Array
-    },
     renderHorizontalGridLines: {
       type: Boolean,
       default: true
