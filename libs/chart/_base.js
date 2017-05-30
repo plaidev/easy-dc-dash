@@ -75,6 +75,10 @@ export default {
       type: String,
       default: ''
     },
+    rotateXAxisLabel: {
+      type: Boolean,
+      default: true
+    },
     xAxisFormat: {
       type: String,
       default: ''
@@ -228,7 +232,7 @@ export default {
       })
     },
     getKeyByLabel: function(label) {
-      return Store.getKeyByLabel(el.textContent, {
+      return Store.getKeyByLabel(label, {
         dataset: this.dataset,
         chartName: this.id
       })
@@ -373,11 +377,17 @@ export default {
       .filterPrinter((filters) => {
         return filters
           .map((filter) => {
+            console.log(this.getLabel(dc.printers.filter(filter)))
             return this.getLabel(dc.printers.filter(filter))
           })
           .join(', ')
       })
-
+    if(this.rotateXAxisLabel) {
+      chart.on('pretransition', () => {
+        chart.selectAll('g.x text')
+          .attr('transform', 'translate(-10,5) rotate(330)')
+      })
+    }
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
         d3.selectAll(this.tooltipSelector)

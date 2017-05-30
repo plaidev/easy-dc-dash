@@ -82,12 +82,12 @@ export default {
           all: () => {
             let all = group.all();
             const m = {};
-            // build matrix from multikey/value pairs
             if(this.removeEmptyRows) {
               all = all.filter((kv) => {
                 return kv.value != 0
               })
             }
+            // build matrix from multikey/value pairs
             all.forEach((kv) => {
                 const ks = _splitkey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};
@@ -147,8 +147,12 @@ export default {
         .stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]))
         .hidableStacks(true)
     }
-    // select <-> deselect && redraw
     chart.on('pretransition', (chart) => {
+      if(this.rotateXAxisLabel) {
+          chart.selectAll('g.x text')
+            .attr('transform', 'translate(-10,5) rotate(330)')
+        }
+      // select <-> deselect && redraw
       chart.selectAll('rect.bar')
         .classed('deselected', false)
         .classed('stack-deselected', (d) => {
