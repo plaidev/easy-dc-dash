@@ -12,7 +12,7 @@ function _splitkey(k) {
 }
 function _extractName(dimension) {
   // FIXME: Replace if there is a better way
-  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
+  return dimension.replace(/(\[)|(\s)|(d\.)|(\])/g, '')
 }
 
 export default {
@@ -98,7 +98,8 @@ export default {
       const getter = this.dimensionExtractor;
       const yInterval = this.getTimeInterval(this.seriesKey)
       const xInterval = this.getTimeInterval(this.xKey)
-      if((xInterval && yInterval) === null) {
+      if(!xInterval && !yInterval) {
+        const grouping = (d) => [getter(d)[0], getter(d)[1]]
         return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
       }
       else {
@@ -115,8 +116,7 @@ export default {
         series: seriesTimeFormat,
         x: xTimeFormat
       }
-      if(FORMATS[axis] === null) return +key
-      return Number(FORMATS[axis](key))
+      return !FORMATS[axis] ? key : FORMATS[axis](key)
     },
     showTooltip: function(d) {
       const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
@@ -149,7 +149,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const all = this.reducer.all()
 
     chart
       .chart((c) => dc.lineChart(c).interpolate('basis'))
@@ -162,12 +161,25 @@ export default {
       .clipPadding(10)
       .elasticY(this.elasticY)
       .mouseZoomable(false)
-      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.formatKey('x', d.key[1]))))
       .seriesAccessor((d) => this.formatKey('series', d.key[0]))
       .keyAccessor((d) => this.formatKey('x', d.key[1]))
       .valueAccessor((d) => +d.value)
-    chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
-    chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
+
+    if(this.dateKey) {
+      chart.x(d3.time.scale().domain([this.min, this.max]).nice(d3.time[this.timeScale]))
+      chart.xAxis().tickFormat((d) => this.formatKey('x', d))
+    }
+    else if(!this.dateKey && this.scale === 'linear') {
+      chart.x(d3.scale.linear().domain(d3.extent(this.all, (d) => this.formatKey('x', d.key[1]))))
+      chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
+      chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
+    }
+    else {
+      const xKeys = this.all.map(a => a.key[1]).filter((x,i,self) => self.indexOf(x) === i)
+      chart.x(d3.scale.ordinal().domain(xKeys))
+      chart.xAxis().tickFormat((d) => d + `${this.xAxisFormat}`)
+      chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
+    }
     return chart.render();
   }
 }

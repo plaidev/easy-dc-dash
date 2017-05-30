@@ -13,7 +13,7 @@ function _splitkey(k) {
 }
 function _extractName(dimension) {
   // FIXME: Replace if there is a better way
-  return dimension.replace(/(\s)|(d\.)/g, '')
+  return dimension.replace(/(\[)|(\s)|(d\.)|(\])/g, '')
 }
 
 export default {
@@ -93,7 +93,7 @@ export default {
       const getter = this.dimensionExtractor;
       const xInterval = this.getTimeInterval(this.xKey)
       const yInterval = this.getTimeInterval(this.yKey)
-      if((xInterval && yInterval) === null) {
+      if(!xInterval && !yInterval) {
         const grouping = (d) => [getter(d)[0], getter(d)[1]]
         return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
       }
@@ -111,7 +111,7 @@ export default {
         x: xTimeFormat,
         y: yTimeFormat
       }
-      return FORMATS[axis] === null ? key : FORMATS[axis](key)
+      return !FORMATS[axis] ? key : FORMATS[axis](key)
     },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
@@ -142,6 +142,7 @@ export default {
       .colsLabel((d) => d + `${this.xAxisFormat}`)
       .rowsLabel((d) => d + `${this.yAxisFormat}`)
     if(this.dateKey) {
+      chart.x(d3.time.scale().domain([this.min, this.max]).nice(d3.time[this.timeScale]))
       chart.filterPrinter(filters => {
         return filters.map(filter => {
           return filter.map((f,i) => {

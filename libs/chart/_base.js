@@ -189,6 +189,10 @@ export default {
       const dimExtractor = this.dimensionExtractor;
       return dimExtractor(dim.top(1)[0]);
     },
+    all: function() {
+      const dim = this.grouping;
+      return dim.group().all()
+    },
     xScale: function() {
       let scale;
       if (!this.scale) return null;

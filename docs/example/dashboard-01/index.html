@@ -150,17 +150,12 @@
 
   <div class="container">
     <heat-map
-      date-key='d.session_end_date'
-      dimension="year,month"
+      dimension="[d.name,d.meta]"
       reduce="d.pv"
-      x-axis-format="年"
-      y-axis-format="月"
-      :y-border-radius=3
     ></heat-map>
     <series
-      date-key="d.session_end_date"
-      dimension="[year, month]"
-      reduce="d.session_cnt"
+      dimension="[d.name,d.meta]"
+      reduce="d.pv"
     ></series>
     <bubble
       dimension="d.session_end_date"
