@@ -13,7 +13,7 @@ function _splitkey(k) {
 }
 function _extractName(dimension) {
   // FIXME: Replace if there is a better way
-  return dimension.replace(/(\[)|(\s)|(d.)|(\])/g, '')
+  return dimension.replace(/(\s)|(d\.)/g, '')
 }
 
 export default {
@@ -94,6 +94,7 @@ export default {
       const xInterval = this.getTimeInterval(this.xKey)
       const yInterval = this.getTimeInterval(this.yKey)
       if((xInterval && yInterval) === null) {
+        const grouping = (d) => [getter(d)[0], getter(d)[1]]
         return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
       }
       else {
@@ -110,13 +111,12 @@ export default {
         x: xTimeFormat,
         y: yTimeFormat
       }
-      if(FORMATS[axis] === null) return key
-      return Number(FORMATS[axis](key))
+      return FORMATS[axis] === null ? key : FORMATS[axis](key)
     },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
       const xAxisLabel = this.xAxisLabel || this.xKey
-      const yAxisLabel = this.xAxisLabel || this.yKey
+      const yAxisLabel = this.yAxisLabel || this.yKey
       const data = {
         keys: {
           [xAxisLabel]: this.formatKey('x', d.key[0]),
@@ -130,7 +130,7 @@ export default {
   mounted: function() {
     const chart = this.chart;
     const xAxisLabel = this.xAxisLabel || this.xKey
-    const yAxisLabel = this.xAxisLabel || this.yKey
+    const yAxisLabel = this.yAxisLabel || this.yKey
     const valueLabel = this.valueLabel || _extractName(this.reduce)
 
     chart

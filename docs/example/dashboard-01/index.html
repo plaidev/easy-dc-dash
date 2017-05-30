@@ -65,7 +65,7 @@
 
   <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
     <number-display
-      reduce="d.name"
+      reduce="d.pv"
     ></number-display>
     <number-display
       reduce="d.uu"
@@ -139,6 +139,7 @@
       dimension='d.session_end_date'
       scale="time"
       reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
+      labels='PV,セッション数,直帰率'
     ></stacked-lines>
     <rate-line
       dimension='d.session_end_date'
@@ -150,7 +151,7 @@
   <div class="container">
     <heat-map
       date-key='d.session_end_date'
-      dimension="[year, month]"
+      dimension="year,month"
       reduce="d.pv"
       x-axis-format="年"
       y-axis-format="月"
