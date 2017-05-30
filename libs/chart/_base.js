@@ -121,15 +121,16 @@ export default {
       return `#${this.id}`;
     },
     dimensionName: function() {
+      if(this.dateKey !== undefined) return `${this.dateKey}.${this.dimension}`
       return this.dimension;
     },
     dimensionExtractor: function() {
-      const getter = generateExtractor(this.dimension)
+      const getter = generateExtractor(this.dimension, this.dateKey)
       if (!this.dimensionUnit) return getter
       return (d) => this.dimensionUnit(getter(d))
     },
     reducerExtractor: function() {
-      return generateExtractor(this.reduce)
+      return generateExtractor(this.reduce, this.dateKey)
     },
     grouping: function() {
       const grouping = this.dimensionExtractor;

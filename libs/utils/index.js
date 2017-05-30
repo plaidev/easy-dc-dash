@@ -21,7 +21,27 @@ export function generateDomId() {
 // Array:
 //   Array: <xxx :columns="["key"]"></xxx>
 //   CSV: <xxx dimension="d1,d2"></xxx>
-export function generateExtractor (rule) {
+export function generateExtractor (rule, dateKey) {
+
+  let parseDate = null;
+  if (dateKey) {
+    const dateExtractor = generateExtractor(dateKey)
+    parseDate = function parseDate(d) {
+      if (!dateKey) return {}
+      const t = dateExtractor(d)
+      console.log('parseDate:', d, t, dateKey)
+      if (!t) return {}
+      return {
+        year: t.getFullYear(),
+        month: t.getMonth() + 1,
+        day: t.getDate(),
+        week: Number(d3.time.format('%w')(t)),
+        hour: t.getHours(),
+        weekofyear: Number(d3.time.format('%W')(t))
+      }
+    }
+  }
+
   if (typeof rule === 'function' || rule instanceof Function) {
     return rule
   }
@@ -41,15 +61,25 @@ export function generateExtractor (rule) {
       }
     }
     else {
-      return new Function('d', `const v = ${rule}; return v === null? "": v;`)
+      const code = `const v = ${rule}; return v === null? "": v;`
+      if (dateKey) {
+        // TODO: このへんどうにかしたい。ここで吸収できるのは悪くないと思うが
+        let _f = new Function('d', 'year', 'month', 'day', 'week', 'hour', 'weekofyear', code)
+        return (d) => {
+          const {year, month, day, week, hour, weekofyear} = parseDate(d)
+          return _f(d, year, month, day, week, hour, weekofyear)
+        }
+      }
+      return new Function('d', code);
     }
   }
 
   else if (rule instanceof Array) {
     return (d) => {
+      const t = parseDate(d);
       const row = []
       rule.forEach((k) => {
-        row.push(d[k])
+        row.push(t[k] ? t[k] : d[k])
       })
       return row
     }
@@ -57,15 +87,16 @@ export function generateExtractor (rule) {
 
   else if (rule instanceof Object) {
     return (d) => {
+      const t = parseDate(d);
       const row = {}
       Object.keys(rule).forEach((k) => {
-        row[k] = d[rule[k]]
+        row[k] = t[k] ? t[k] : d[rule[k]]
       })
       return row
     }
   }
 
-  return // else
+  return (d) => null
 }
 
 // https://github.com/dc-js/dc.js/wiki/FAQ#combine-groups
