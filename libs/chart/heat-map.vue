@@ -6,7 +6,6 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
-import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
 function _splitkey(k) {
   return k.split(',')
@@ -24,30 +23,13 @@ export default {
       type: String,
       default: 'heatMap'
     },
-    dimension: {
-      type: String
-    },
-    width: {
-      type: Number,
-      default: 45 * 20 + 80
-    },
-    height: {
-      type: Number,
-      default: 45 * 5 + 40
-    },
     yBorderRadius: {
       type: Number,
       defaulat: 6.75
     },
-    xAxisLabel: {
-      type: String
-    },
     xAxisFormat: {
       type: String,
       default: ''
-    },
-    yAxisLabel: {
-      type: String
     },
     yAxisFormat: {
       type: String,
@@ -62,18 +44,8 @@ export default {
     }
   },
   computed: {
-    dimensionName: function() {
-      if(this.dateKey != undefined) return `${this.xKey}(${this.dateKey})`
-      return this.dimension
-    },
     dimensionKeys: function() {
       return _splitkey(_extractName(this.dimension))
-    },
-    xKey: function() {
-      return this.dimensionKeys[0]
-    },
-    yKey: function() {
-      return this.dimensionKeys[1]
     },
     firstRow: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
@@ -84,43 +56,17 @@ export default {
     },
     dataKeys: function() {
       return Object.keys(this.data)
-    },
-    dimensionExtractor: function() {
-      if (this.dateKey != undefined) return generateExtractor(this.dateKey)
-      return generateExtractor(this.dimensionName)
-    },
-    grouping: function() {
-      const getter = this.dimensionExtractor;
-      const xInterval = this.getTimeInterval(this.xKey)
-      const yInterval = this.getTimeInterval(this.yKey)
-      if((xInterval && yInterval) === null) {
-        return Store.registerDimension(this.dimensionName, getter, {dataset: this.dataset})
-      }
-      else {
-        const grouping = (d) => [xInterval(getter(d)), yInterval(getter(d))]
-        return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
-      }
     }
   },
   methods: {
-    formatKey: function(axis, key) {
-      const xTimeFormat = this.getTimeFormat(this.xKey)
-      const yTimeFormat = this.getTimeFormat(this.yKey)
-      const FORMATS = {
-        x: xTimeFormat,
-        y: yTimeFormat
-      }
-      if(FORMATS[axis] === null) return key
-      return Number(FORMATS[axis](key))
-    },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
-      const xAxisLabel = this.xAxisLabel || this.xKey
-      const yAxisLabel = this.xAxisLabel || this.yKey
+      const xAxisLabel = this.xAxisLabel || this.dimensionKeys[0]
+      const yAxisLabel = this.yAxisLabel || this.dimensionKeys[1]
       const data = {
         keys: {
-          [xAxisLabel]: this.formatKey('x', d.key[0]),
-          [yAxisLabel]: this.formatKey('y', d.key[1])
+          [xAxisLabel]: d.key[0],
+          [yAxisLabel]: d.key[1]
         },
         val: d.value
       }
@@ -134,8 +80,8 @@ export default {
     const valueLabel = this.valueLabel || _extractName(this.reduce)
 
     chart
-      .keyAccessor((d) => this.formatKey('x', d.key[0]))
-      .valueAccessor((d) => this.formatKey('y', d.key[1]))
+      .keyAccessor((d) => d.key[0])
+      .valueAccessor((d) => d.key[1])
       .colorAccessor((d) => +d.value)
       .colors(d3.scale.category20b())
       .yBorderRadius(this.yBorderRadius)
@@ -145,7 +91,7 @@ export default {
       chart.filterPrinter(filters => {
         return filters.map(filter => {
           return filter.map((f,i) => {
-            return `${TIME_FORMATS[this.dimensionKeys[i]](f)}`
+            return f
           }).join(',').replace(/\,/, '-')
         });
       });
