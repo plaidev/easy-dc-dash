@@ -65,7 +65,7 @@
 
   <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
     <number-display
-      reduce="d.name"
+      reduce="d.pv"
     ></number-display>
     <number-display
       reduce="d.uu"
@@ -122,7 +122,8 @@
     -->
     <filter-stacked-bar
       title="filter stacked bar"
-      dimension="[d.name, d.meta]"
+      dimension="d.name"
+      extra-dimension="d.meta"
       reduce='d.pv'
     ></filter-stacked-bar>
     <segment-pie
@@ -137,13 +138,13 @@
   <div class="container">
     <stacked-lines
       dimension='d.session_end_date'
-      scale="time"
+      scale="time.day"
       reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
     ></stacked-lines>
     <rate-line
       dimension='d.session_end_date'
       reduce='{count: d.session_cnt, value: d.bounce_cnt}'
-      scale='time'
+      scale="time.day"
     ></rate-line>
   </div>
 
