@@ -70,7 +70,7 @@ export default {
   },
   computed: {
     dimensionName: function() {
-      if(this.timeScale) return `${this.timeScale}(${this.dateKey})`
+      if(this.dateKey && this.timeScale) return `${this.timeScale}(${this.dateKey})`
       return this.dimension
     },
     data: function() {
@@ -190,7 +190,8 @@ export default {
 
     if(this.timeScale) {
       chart.filterPrinter(filters => {
-        return filters.map(f => this._timeFormat(f));
+        const format = this.getTimeFormat(this.timeScale)
+        return filters.map(f => format(f));
       });
     }
     return chart.render();

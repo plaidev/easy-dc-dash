@@ -158,12 +158,12 @@
       reduce="d.pv"
     ></series>
     <bubble
-      dimension="d.session_end_date"
-      time-scale="month"
-      time-format="%Y-%m"
       reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
       :width=990
       :height=250
+      date-key='d.session_end_date'
+      time-scale='day'
+      time-format='%Y-%m-%d'
       radius-format='%'
       :max-bubble-relative-size=0.1
     ></bubble>
