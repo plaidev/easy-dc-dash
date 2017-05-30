@@ -51,7 +51,8 @@ export default {
       type: String
     },
     scale: {
-      type: String
+      type: String,
+      default: 'ordinal'
     },
     dateKey: {
       type: String
@@ -126,8 +127,8 @@ export default {
     },
     dimensionExtractor: function() {
       const getter = generateExtractor(this.dimension, this.dateKey)
-      if (!this.dimensionUnit) return getter
-      return (d) => this.dimensionUnit(getter(d))
+      if (!this.dimensionInterval) return getter
+      return (d) => this.dimensionInterval(getter(d))
     },
     reducerExtractor: function() {
       return generateExtractor(this.reduce, this.dateKey)
@@ -138,6 +139,7 @@ export default {
     },
     reducer: function() {
       const dim = this.grouping;
+      if (!dim) return;
       const reducer = this.reducerExtractor;
       if (this.isRateReducer) {
         return dim.group().reduce(
@@ -178,11 +180,13 @@ export default {
     min: function() {
       const dim = this.grouping;
       const getter = this.dimensionExtractor;
+      if (!dim) return undefined;
       return getter(dim.bottom(1)[0]);
     },
     max: function() {
       const dim = this.grouping;
       const getter = this.dimensionExtractor;
+      if (!dim) return undefined;
       return getter(dim.top(1)[0]);
     },
     dimensionScale: function () {
@@ -190,17 +194,28 @@ export default {
       let [scale, unit] = this.scale.split('.');
       let _scale;
 
-      if (scale === 'time') _scale = d3.time.scale;
-      else _scale = d3.scale[this.scale];
+      if (scale == 'time') _scale = d3.time.scale;
+      else _scale = d3.scale[scale];
 
       if (!_scale) return null;
-      return _scale().domain([this.min, this.min])
+      return _scale().domain([this.min, this.max])
     },
-    dimensionUnit: function () {
+    dimensionInterval: function () {
       if (!this.scale) return null;
       const [scale, unit] = this.scale.split('.')
       if (scale === 'time' && unit && TIME_INTERVALS[unit]) {
         return TIME_INTERVALS[unit]
+      }
+      return null;
+    },
+    dimensionUnit: function () {
+      if (!this.scale) return null;
+      const [scale, unit] = this.scale.split('.')
+      if (scale == 'time' && unit && TIME_INTERVALS[unit]) {
+        return TIME_INTERVALS[unit].range
+      }
+      if (scale == 'ordinal' && dc.units[unit]) {
+        return dc.units[unit]
       }
       return null;
     },
@@ -373,8 +388,10 @@ export default {
       chart.group(this.reducer, this.getReduceKey(0));
     }
     if (this.accessor) chart.valueAccessor(this.accessor);
-    if (this.dimensionScale) chart.x(this.dimensionScale);
-    if (this.dimensionUnit) chart.xUnits(this.dimensionUnit);
+    if (chart.x) {
+      if (this.dimensionScale) chart.x(this.dimensionScale);
+      if (this.dimensionUnit) chart.xUnits(this.dimensionUnit);
+    }
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();

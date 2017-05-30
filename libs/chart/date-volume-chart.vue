@@ -20,7 +20,7 @@ export default {
       default: 60
     },
     scale: {
-      default: 'time'
+      default: 'time.day'
     }
   },
   computed: {
