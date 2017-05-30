@@ -1,15 +1,12 @@
 <script lang='js'>
 
 import d3 from "d3"
-import dc from 'dc'
-import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
-import {generateExtractor} from '../utils'
-import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
-
+import {extractName} from '../utils'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -17,14 +14,6 @@ export default {
       default: 'bubbleChart'
     },
     // labels, formats
-    xAxis: {
-      type: String,
-      default: 'x'
-    },
-    yAxis: {
-      type: String,
-      default: 'y'
-    },
     radius: {
       type: String,
       default: 'radius'
@@ -32,14 +21,6 @@ export default {
     radiusFormat: {
       type: String,
       default: ''
-    },
-    renderHorizontalGridLines: {
-      type: Boolean,
-      default: true
-    },
-    renderVerticalGridLines: {
-      type: Boolean,
-      default: true
     },
     sortBubbleSize: {
       type: Boolean,
@@ -62,18 +43,34 @@ export default {
       type: Number,
       default: 0.3
     },
-    xAxisPadding: {
+    xAxisLabel:{
+      type: String,
+      default: 'x'
+    },
+    yAxisLabel: {
+      type: String,
+      default: 'y'
+    },
+    radiusLabel: {
+      type: String,
+      default: 'radius'
+    },
+    radiusFormat: {
+      type: String,
+      default: ''
+    },
+    xAxisLabelPadding: {
       type: Number,
       default: 500
     },
-    yAxisPadding: {
+    yAxisLabelPadding: {
       type: Number,
       default: 100
     }
   },
   computed: {
     dimensionName: function() {
-      if(this.timeScale != undefined) return `${this.timeScale}(${this.dimension})`
+      if(this.timeScale) return `${this.timeScale}(${this.dateKey})`
       return this.dimension
     },
     data: function() {
@@ -89,12 +86,12 @@ export default {
     grouping: function() {
       const getter = this.dimensionExtractor;
       const interval = this.getTimeInterval(this.timeScale)
-      const grouping = (interval === null) ? getter : (d) => interval(getter(d))
+      const grouping = !interval ? getter : (d) => interval(getter(d))
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      const dimensionKey = this.extractDimensionName(this.dimension);
+      const dimensionKey = extractName(this.dimensionName);
       return dim.group().reduce(
         (p, v) => {
           const vals = this.reducerExtractor(v);
@@ -137,9 +134,6 @@ export default {
     }
   },
   methods: {
-    extractDimensionName: function(name) {
-      return name.replace(/d\./, '')
-    },
     getSchema: function() {
       const schema = {}
       this.dataKeys.forEach((k) => {
@@ -159,21 +153,17 @@ export default {
         if(val.per != undefined) return val.per
       }
     },
-    formatKey: function(key) {
-      const format = this.getTimeFormat(this.timeScale)
-      if (format === null) return key
-      return format(key)
-    },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
       const v = d.value
+      const k = d.key
       const format = this.getTimeFormat(this.timeScale)
-      const k = format ? format(d.key) : d.key
+      const _k = format ? format(k) : k
       const data = {
-        key: k,
+        key: _k,
         vals: {
-          [this.xAxis]: v[this.xAxis].per ? v[this.xAxis].per : v.x,
-          [this.yAxis]: v[this.yAxis].per ? v[this.yAxis].per : v.y,
+          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v.x,
+          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v.y,
           [this.radius]: v[this.radius].per ? v[this.radius].per : v.radius
         }
       }
@@ -183,31 +173,24 @@ export default {
   mounted: function() {
     const chart = this.chart;
     const all = this.reducer.all()
-
     chart
       .colors(d3.scale.category10())
-      .keyAccessor((p) => this.extractValue(p.value[this.xAxis]))
-      .valueAccessor((p) => this.extractValue(p.value[this.yAxis]))
-      .radiusValueAccessor((p) => this.extractValue(p.value[this.radius]))
-      .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
-      .sortBubbleSize(this.sortBubbleSize)
-      .elasticRadius(this.elasticRadius)
-      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxis]))))
-      .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxis]))))
-      .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radius]))))
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
-      .xAxisPadding(this.xAxisPadding)
-      .yAxisPadding(this.yAxisPadding)
-      .renderHorizontalGridLines(this.renderHorizontalGridLines)
-      .renderVerticalGridLines(this.renderVerticalGridLines)
+      .elasticRadius(this.elasticRadius)
+      .sortBubbleSize(this.sortBubbleSize)
+      .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
       .label((p) => this.formatKey(p.key))
-    chart.xAxis().tickFormat((v) => v + `${this.xAxisFormat}`)
-    chart.yAxis().tickFormat((v) => v + `${this.yAxisFormat}`)
+      .keyAccessor((p) => this.extractValue(p.value[this.xAxisLabel]))
+      .valueAccessor((p) => this.extractValue(p.value[this.yAxisLabel]))
+      .radiusValueAccessor((p) => this.extractValue(p.value[this.radiusLabel]))
+      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxisLabel]))))
+      .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxisLabel]))))
+      .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radiusLabel]))))
+
     if(this.timeScale) {
-      const format = this.getTimeFormat(this.timeScale)
       chart.filterPrinter(filters => {
-        return filters.map(f => format(f));
+        return filters.map(f => this._timeFormat(f));
       });
     }
     return chart.render();

@@ -6,17 +6,8 @@ import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {splitKey, joinKey, multiKey} from '../utils'
 import {ymdFormat} from '../utils/time-format'
-
-function _joinkey(k) {
-  return k.join(',')
-}
-function _splitkey(k) {
-  return k.split(',')
-}
-function _multikey(x, y) {
-  return x + ',' + y;
-}
 
 export default {
   extends: Base,
@@ -51,7 +42,7 @@ export default {
         if (this.scale === 'time') {
           v[0] = d3.time.format('%Y-%m-%d')(v[0])
         }
-        return _joinkey(v)
+        return joinKey(v)
       }
     },
     grouping: function() {
@@ -68,7 +59,7 @@ export default {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const stackKeys = [];
       this.all.forEach((obj) => {
-        const stackKey = _splitkey(obj.key)[1];
+        const stackKey = splitKey(obj.key)[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey)
       })
       return stackKeys
@@ -88,7 +79,7 @@ export default {
             }
             // build matrix from multikey/value pairs
             all.forEach((kv) => {
-                const ks = _splitkey(kv.key);
+                const ks = splitKey(kv.key);
                 m[ks[0]] = m[ks[0]] || {};
                 m[ks[0]][ks[1]] = kv.value;
             });
@@ -161,13 +152,13 @@ export default {
         .classed('stack-deselected', (d) => {
           let x = d.x;
           if (this.scale === 'time') x = ymdFormat(x)
-          const key = _multikey(x, d.layer);
+          const key = multiKey(x, d.layer);
           return chart.filter() && chart.filters().indexOf(key) ===-1;
         })
         .on('click', (d) => {
           let x = d.x;
           if (this.scale === 'time') x = ymdFormat(x)
-          chart.filter(_multikey(x, d.layer));
+          chart.filter(multiKey(x, d.layer));
           dc.redrawAll();
         })
     });

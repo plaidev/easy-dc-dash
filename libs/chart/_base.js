@@ -3,7 +3,6 @@ import dc from 'dc'
 import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder} from '../utils'
-import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
@@ -51,15 +50,6 @@ export default {
       type: String
     },
     scale: {
-      type: String
-    },
-    dateKey: {
-      type: String
-    },
-    timeScale: {
-      type: String
-    },
-    timeFormat: {
       type: String
     },
     cap: {
@@ -244,15 +234,6 @@ export default {
     getReduceKey: function(idx) {
       return this.reduceKeys && this.reduceKeys[idx] || idx
     },
-    getTimeInterval: function(key) {
-      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
-      else return TIME_INTERVALS[key]
-    },
-    getTimeFormat: function(key) {
-      if((this.scale || this.dateKey || this.timeScale) === undefined) return null
-      else if (this.timeFormat) return d3.time.format(this.timeFormat)
-      else return TIME_FORMATS[key]
-    },
     applyLegend: function(options={}) {
       const {
         indexLabel = false,
@@ -382,7 +363,6 @@ export default {
       .filterPrinter((filters) => {
         return filters
           .map((filter) => {
-            console.log(this.getLabel(dc.printers.filter(filter)))
             return this.getLabel(dc.printers.filter(filter))
           })
           .join(', ')

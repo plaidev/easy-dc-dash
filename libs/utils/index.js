@@ -120,3 +120,17 @@ export function reverseLegendOrder(chart) {
       return items.reverse();
   });
 }
+
+export function joinKey(k) {
+  return k.join(',')
+}
+export function splitKey(k) {
+  return k.split(',')
+}
+export function multiKey(x, y) {
+  return x + ',' + y;
+}
+export function extractName(dimension) {
+  // FIXME: Replace if there is a better way
+  return dimension.replace(/(\[)|(\D*\()|(\s)|(d\.)|(\))|(\])/g, '')
+}

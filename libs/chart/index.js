@@ -1,4 +1,5 @@
 import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase'
 import {compose} from './_composite'
 import NumberDisplay from './number-display.vue'
 import DateVolumeChart from './date-volume-chart.vue'
@@ -49,6 +50,7 @@ function install(Vue, options) {
 
 export default {
   Base: Base,
+  coordinateGridBase: coordinateGridBase,
   RateLine: RateLine,
   StackedLines: StackedLines,
   WeekRow: WeekRow,
