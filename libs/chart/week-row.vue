@@ -65,7 +65,7 @@ export default {
         }
       );
     },
-    accessor: function() {
+    valueAccessor: function() {
       const methodNames = [
         'sundays', 'mondays', 'tuesdays', 'wednesdays', 'thursdays', 'fridays', 'saturdays'
       ];
@@ -79,7 +79,12 @@ export default {
       }
     },
     dimensionScale: function() {
-      return d3.scale.linear().domain([0, 6])
+      return {
+        domain: d3.scale.linear().domain
+      }
+    },
+    dimensionRange: function() {
+      return [0, 6]
     }
   },
 

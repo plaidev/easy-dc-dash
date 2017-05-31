@@ -1,5 +1,6 @@
 import Vue from 'vue/dist/vue.js'
-import Base from './_base'
+import Base from './_base.js'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 import {TIME_FORMATS} from '../utils/time-format'
@@ -15,47 +16,15 @@ function _getReduceKeySuper(Component) {
 export function compose(Left, Right) {
 
   const ComponentObject = {
-    extends: Base,
+    extends: coordinateGridBase,
 
     props: {
       chartType: {
         type: String,
         default: 'compositeChart'
-      },
-      width: {
-        type: Number,
-        default: 240*4
-      },
-      height: {
-        type: Number,
-        default: 240
-      },
-      elasticY: {
-        type: Boolean,
-        default: true
       }
     },
     methods: {
-      showTooltip: function(d, i) {
-        const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
-        const fill = d3.event.target.getAttribute('fill');
-        const stroke = d3.event.target.getAttribute('stroke');
-        const color = fill || stroke;
-        let key = null;
-        let val = null;
-        if ((d.x && d.y) != undefined) {
-          key = (this.scale === 'time') ? format(d.x) : d.x;
-          val = d.y;
-        }
-        else {
-          key = this.getLabel(i);
-        }
-        const data = {
-          key: key,
-          val: val
-        }
-        this.$refs.tooltip.show(data, color)
-      }
     },
     mounted: function() {
 
@@ -77,13 +46,14 @@ export function compose(Left, Right) {
         methods: {
           getReduceKey: function(idx) {
             const s = _getReduceKeySuper(Right);
-            if (!s) return 'l'
-            return 'l:' + s.apply(this, [idx])
+            if (!s) return 'left'
+            return 'left:' + s.apply(this, [idx])
           }
         },
         propsData: {
           dimension: this.dimension,
           scale: this.scale,
+          dateKey: this.dateKey,
           legend: false
         }
       })
@@ -104,19 +74,23 @@ export function compose(Left, Right) {
         methods: {
           getReduceKey: function(idx) {
             const s = _getReduceKeySuper(Right);
-            if (!s) return 'r'
-            return 'r:' + s.apply(this, [idx])
+            if (!s) return 'right'
+            return 'right:' + s.apply(this, [idx])
           }
         },
         propsData: {
           dimension: this.dimension,
           scale: this.scale,
+          dateKey: this.dateKey,
           legend: false
         }
       })
 
+      // umm.
       Base.mounted.apply(leftInstance)
+      coordinateGridBase.mounted.apply(leftInstance)
       Base.mounted.apply(rightInstance)
+      coordinateGridBase.mounted.apply(rightInstance)
 
       const dim = this.grouping;
       const composite = this.chart;
@@ -127,10 +101,7 @@ export function compose(Left, Right) {
           Left.mounted.apply(leftInstance),
           Right.mounted.apply(rightInstance).useRightYAxis(true),
         ])
-        .renderHorizontalGridLines(true)
-        .brushOn(false)
         //.rightY(scale.linear().domain([0, 1]))
-        .elasticY(this.elasticY)
         .shareColors(true)
 
       // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要

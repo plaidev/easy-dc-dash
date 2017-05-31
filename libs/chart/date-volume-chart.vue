@@ -1,12 +1,13 @@
 
 <script lang="js">
 import dc from 'dc'
-import Base from './_base'
+import Base from './_base.js'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
 import {ymdFormat} from '../utils/time-format'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
   props: {
     chartType: {
       type: String,
@@ -47,6 +48,7 @@ export default {
       .elasticY(true)
       .round(d3.time.day.round)
       .alwaysUseRounding(true)
+      .brushOn(true)
 
     chart
       .yAxis().ticks(0)
