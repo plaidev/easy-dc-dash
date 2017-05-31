@@ -132,7 +132,7 @@ export default {
     return {
       ofs: this.offset,
       pag: this.rowsPerPage,
-      cfSize: Store.getCfSize({dataset: this.dataset}),
+      cfSize: Store.getCf({dataset: this.dataset}).size(),
       columnSettings: [],
       filteredDataSize: 0,
       filteredSize: 0,
