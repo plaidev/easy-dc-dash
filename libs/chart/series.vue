@@ -37,9 +37,8 @@ export default {
       return this.dimensionKeys[1]
     },
     dimensionScale: function() {
-      const all = this.reducer.all()
       const scale = d3.scale.linear()
-      const range = d3.extent(all, (d) => d.key[1])
+      const range = d3.extent(this.reducerAll, (d) => d.key[1])
       return scale.domain(range)
     }
   },

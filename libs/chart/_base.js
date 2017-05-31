@@ -197,9 +197,16 @@ export default {
       if (!dim) return undefined;
       return getter(dim.top(1)[0]);
     },
-    all: function() {
+    dimAll: function() {
       const dim = this.grouping;
       return dim.group().all()
+    },
+    reducerAll: function() {
+      return this.reducer.all();
+    },
+    reducerTotal: function() {
+      const vals = this.reducerAll.map(d => d.value)
+      return vals.reduce((a,b) => a+b)
     },
     dimensionScale: function () {
       if (!this.scale) return null;

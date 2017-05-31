@@ -20,6 +20,11 @@
           <span>{{k}}: {{v}}</span>
         </div>
       </div>
+      <div class="rate">
+        <div v-if="data.rate !== undefined && data.rate !== null">
+          <span>{{data.rate}}%</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
