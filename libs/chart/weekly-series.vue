@@ -2,7 +2,7 @@
 
 import d3 from "d3"
 import dc from 'dc'
-import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
@@ -16,36 +16,18 @@ function _extractName(dimension) {
 }
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
       type: String,
       default: 'seriesChart'
     },
-    brushOn: {
-      type: Boolean,
-      default: false
-    },
-    elasticY: {
-      type: Boolean,
-      default: true
-    },
-    // label
-    seriesLabel: {
-      type: String,
-      default: ''
-    },
-    seriesFormat: {
-      type: String,
-      default: ''
-    },
-    useLegend: {
-      type: Boolean,
-      default: true
-    },
     labels: {
       default: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat'
+    },
+    scale: {
+      default: 'ordinal.ordinal'
     }
   },
   computed: {
@@ -53,54 +35,18 @@ export default {
       return `weekofyear(${this.dimension})`
     },
     extraDimensionExtractor: function() {
-      const getter = this.dimensionExtractor;
+      const getter = generateExtractor(this.dimension, this.dateKey)
       return (d) => TIME_INTERVALS.week(getter(d))
     },
-    grouping: function() {
-      const getter = this.dimensionExtractor;
-      const exGetter = this.extraDimensionExtractor;
-      const grouping = (d) => [
-        exGetter(d),
-        Number(TIME_FORMATS.week(getter(d)))
-      ]
-      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
-    },
     dimensionScale: function() {
-      return d3.scale.linear()
-        .domain([0, 6])
+      return {
+        domain: d3.scale.ordinal().domain,
+        unit: dc.units.ordinal,
+        interval: (t) => Number(TIME_FORMATS.week(t))
+      }
     },
-    dimensionUnit: function() {
-      return null // dc.units.integers
-    }
-  },
-  methods: {
-    showTooltip: function(d) {
-      const format = this.timeFormat ? this.timeFormat : TIME_FORMATS.ymd;
-      const fill = d3.event.target.getAttribute('fill');
-      const stroke = d3.event.target.getAttribute('stroke');
-      const color = fill || stroke;
-
-      if (d.x && d.y) {
-        const key = d.layer
-        const vals = {
-          x: d.x,
-          y: d.y
-        }
-        const data = {
-          key: key,
-          vals: vals
-        }
-        this.$refs.tooltip.show(data, color)
-      }
-      else {
-        const key = d.name
-        const vals = d.values.reduce((a,b) => a.y+b.y);
-        const data = {
-          key: key,
-          val: vals
-        }
-        this.$refs.tooltip.show(data, color)
-      }
+    dimensionRange: function() {
+      return [0, 1, 2, 3, 4, 5, 6]
     }
   },
   mounted: function() {
@@ -108,16 +54,12 @@ export default {
 
     chart
       .chart((c) => {
-        return dc.lineChart(c).interpolate('basis')
+        // return dc.lineChart(c).interpolate('basis')
+        return dc.lineChart(c).interpolate('linear')
       })
-      .brushOn(this.brushOn)
-      .renderVerticalGridLines(true)
-      .renderHorizontalGridLines(true)
-      .clipPadding(10)
-      .elasticY(this.elasticY)
-      .mouseZoomable(false)
-      .seriesAccessor((d) => this.getTimeFormat('weekOfYear')(d.key[0]))
-      .keyAccessor((d) => d.key[1])
+      // .clipPadding(10)
+      .keyAccessor((d) => d.key[0])
+      .seriesAccessor((d) => TIME_FORMATS['weekOfYear'](d.key[1]))
 
     chart
       .xAxis().tickFormat((d) => this.getLabel(d))

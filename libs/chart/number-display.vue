@@ -85,7 +85,7 @@ export default {
       }
       return cf.groupAll().reduceSum(reducer);
     },
-    accessor: function() {
+    valueAccessor: function() {
       if (this.isRateReducer) {
         return (d) => {
           const r = (d.count === 0 ? 0 : d.value / d.count);

@@ -1,17 +1,20 @@
 
 <script lang='js'>
 
-import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
 import {combineGroups} from '../utils'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
       type: String,
       default: 'lineChart'
+    },
+    scale: {
+      default: 'linear'
     }
   },
 
@@ -30,43 +33,19 @@ export default {
       return null; // disable default reducer
     }
   },
-  methods: {
-    showTooltip: function(d, i) {
-      const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
-      const fill = d3.event.target.getAttribute('fill');
-      const stroke = d3.event.target.getAttribute('stroke');
-      const color = fill || stroke;
-      let key = null;
-      let val = null;
-      if ((d.x && d.y) != undefined) {
-        key = (this.scale === 'time') ? format(d.x) : d.x;
-        val = d.y;
-      }
-      else {
-        key = d.name
-      }
-      const data = {
-        key: key,
-        val: val
-      }
-      this.$refs.tooltip.show(data, color)
-    }
-  },
-
   mounted: function() {
     const chart = this.chart;
-    const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
+    const dim = this.grouping
     const _reducer = this.reducerExtractor;
 
     if (!dim.top(1).length) return chart;
 
-    const lineNum = _reducer(dim.top(1)[0]).length;
+    const lineNum = _reducer(dim.top(1)[0] || {}).length;
 
     chart
-      .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), (d) => d.value[0])
       .brushOn(false)
+      .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), (d) => d.value[0])
       .renderArea(true)
-      .renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 6})
     for (let i=1; i<lineNum; i++) {
       chart
         .stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), (d) => d.value[i])

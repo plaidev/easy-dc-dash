@@ -59,19 +59,22 @@ export default {
       type: String,
       default: ''
     },
-    xAxisLabelPadding: {
-      type: Number,
-      default: 500
+    xAxisPadding: {
+      type: [String, Number],
+      default: '20%'
     },
-    yAxisLabelPadding: {
-      type: Number,
-      default: 100
+    yAxisPadding: {
+      type: [String, Number],
+      default: '20%'
+    },
+    layout: {
+      default: 'overlay-legend'
     }
   },
   computed: {
-    dimensionName: function() {
-      if(this.dateKey && this.timeScale) return `${this.timeScale}(${this.dateKey})`
-      return this.dimension
+    firstRow: function() {
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
+      return dim.top(1)[0]
     },
     data: function() {
       return (this.reducerExtractor)(this.firstRow)
@@ -79,32 +82,31 @@ export default {
     dataKeys: function() {
       return Object.keys(this.data)
     },
-    firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      return dim.top(1)[0]
-    },
-    grouping: function() {
-      const getter = this.dimensionExtractor;
-      const interval = this.getTimeInterval(this.timeScale)
-      const grouping = !interval ? getter : (d) => interval(getter(d))
-      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
+    dimensionScale: function() {
+      // dimensionのscaleはxのscaleでない。bubbleの特有の現象
+      return {
+        domain: null
+      }
     },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      const dimensionKey = extractName(this.dimensionName);
+      // TODO: このあたりはdata-tableのdimensionの処理とほぼ同じ
       return dim.group().reduce(
         (p, v) => {
           const vals = this.reducerExtractor(v);
           this.dataKeys.forEach((k) => {
-            if (typeof(p[k]) === 'string' && typeof(vals[k]) === 'string') {
-              p[k] = vals[k]
-            }
-            else if (vals[k].count) {
+            if (vals[k].count) {
               p[k].count += vals[k].count;
               p[k].value += vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
-            else p[k] += vals[k]
+            else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
+              const words = p[k].split(', ').filter((w) => w != vals[k])
+              words.push(vals[k])
+              p[k] = words.join(', ')
+            }
+            else
+              p[k] += vals[k]
           })
           p._count++;
           return p;
@@ -112,15 +114,17 @@ export default {
         (p, v) => {
           const vals = this.reducerExtractor(v);
           this.dataKeys.forEach((k) => {
-            if (k === dimensionKey) {
-              p[k] = vals[k]
-            }
-            else if (vals[k].count) {
+            if (vals[k].count) {
               p[k].count -= vals[k].count;
               p[k].value -= vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
-            else p[k] -= vals[k]
+            else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
+              const words = p[k].split(', ').filter((w) => w != vals[k])
+              p[k] = words.join(', ')
+            }
+            else
+              p[k] -= vals[k]
           })
           p._count--;
           return p;
@@ -155,16 +159,16 @@ export default {
     },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
+      const _format = this.dimensionScale.format
       const v = d.value
       const k = d.key
-      const format = this.getTimeFormat(this.timeScale)
-      const _k = format ? format(k) : k
+      const _k = _format ? _format(k) : k
       const data = {
         key: _k,
         vals: {
-          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v.x,
-          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v.y,
-          [this.radius]: v[this.radius].per ? v[this.radius].per : v.radius
+          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v[this.xAxisLabel],
+          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v[this.yAxisLabel],
+          [this.radiusLabel]: v[this.radiusLabel].per ? v[this.radiusLabel].per : v[this.radiusLabel]
         }
       }
       this.$refs.tooltip.show(data, fill)
@@ -179,13 +183,15 @@ export default {
       .elasticRadius(this.elasticRadius)
       .sortBubbleSize(this.sortBubbleSize)
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
-      .label((p) => this.formatKey(p.key))
+      // .label((p) => this.formatKey(p.key))
       .keyAccessor((p) => this.extractValue(p.value[this.xAxisLabel]))
       .valueAccessor((p) => this.extractValue(p.value[this.yAxisLabel]))
       .radiusValueAccessor((p) => this.extractValue(p.value[this.radiusLabel]))
       .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.xAxisLabel]))))
       .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.yAxisLabel]))))
       .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radiusLabel]))))
+      .xAxisPadding(this.xAxisPadding)
+      .yAxisPadding(this.yAxisPadding)
 
     if(this.timeScale) {
       chart.filterPrinter(filters => {
