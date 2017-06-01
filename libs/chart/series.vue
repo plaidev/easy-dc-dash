@@ -24,13 +24,15 @@ export default {
     },
     scale: {
       default: 'linear'
+    },
+    extraDimension: {
+      require: true
     }
   },
   computed: {
     dimensionName: function() {
       // extraDimension, dimensionの順番なので、baseの処理と異なる
-      let dimName = 'series:' + this.dimension
-      if (this.extraDimension) dimName += this.extraDimension
+      let dimName = this.extraDimension + '+' + this.dimension
       if (this.dateKey !== undefined) return `${this.dateKey}.${dimName}`
       return dimName;
     },
@@ -94,7 +96,7 @@ export default {
     const chart = this.chart;
 
     chart
-      .chart((c) => dc.lineChart(c).interpolate('basis'))
+      .chart((c) => dc.lineChart(c).interpolate('linear'))
       .seriesAccessor((d) => d.key[0])
       .keyAccessor((d) => d.key[1])
 

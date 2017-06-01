@@ -82,7 +82,9 @@ export default {
     },
 
     // dimension, extra-dimension
-    dimension: {},
+    dimension: {
+      require: true
+    },
     extraDimension: {},
     scale: {
       type: String,
@@ -163,7 +165,7 @@ export default {
     },
     dimensionName: function() {
       let dimName = this.dimension
-      if (this.extraDimension) dimName += this.extraDimension
+      if (this.extraDimension) dimName += '+' + this.extraDimension
       if (this.dateKey !== undefined) return `${this.dateKey}.${dimName}`
       return dimName;
     },
@@ -262,6 +264,9 @@ export default {
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
       return Store.getTheme().layout(this.chartType, this.layout, {width, height});
+    },
+    colorSettings: function() {
+      return Store.getTheme().colors(this.chartType)
     },
     tooltipSelector: function() {
       if(this.chartType === 'barChart') return `#${this.id} .bar`
@@ -394,6 +399,10 @@ export default {
 
       if (margins && chart.margins) {
         chart.margins(margins)
+      }
+
+      if (chart.renderDataPoints) {
+        chart.renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5})
       }
 
     },

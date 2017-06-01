@@ -67,6 +67,9 @@ export default {
       type: Number,
       default: 100
     },
+    layout: {
+      default: 'overlay-legend'
+    }
   },
   computed: {
     firstRow: function() {
