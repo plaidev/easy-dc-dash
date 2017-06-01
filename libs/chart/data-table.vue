@@ -132,7 +132,7 @@ export default {
     return {
       ofs: this.offset,
       pag: this.rowsPerPage,
-      cfSize: Store.getCfSize({dataset: this.dataset}),
+      cfSize: Store.getCf({dataset: this.dataset}).size(),
       columnSettings: [],
       filteredDataSize: 0,
       filteredSize: 0,
@@ -191,14 +191,18 @@ export default {
     grouping: function() {
       const extractor = this.dimensionExtractor
       const dim = Store.registerDimension(this.dimensionName, extractor, {dataset: this.dataset});
+      const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
       const grouping = dim.group().reduce(
         (p, v) => {
           const vals = this.getColsExtractor(v);
           this.colsKeys.forEach((k) => {
-            if (vals[k].count) {
+            if (vals[k].count && typeof vals[k].count === 'number') {
               p[k].count += vals[k].count;
               p[k].value += vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+            }
+            else if (this.dateKey && k === this.dateKey && typeof vals[k] === 'object') {
+              p[k] = format(vals[k])
             }
             else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
               const words = p[k].split(', ').filter((w) => w && w != vals[k])
@@ -214,10 +218,13 @@ export default {
         (p, v) => {
           const vals = this.getColsExtractor(v);
           this.colsKeys.forEach((k) => {
-            if (vals[k].count) {
+            if (vals[k].count && typeof vals[k].count === 'number') {
               p[k].count -= vals[k].count;
               p[k].value -= vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
+            }
+            else if (this.dateKey && k === this.dateKey && typeof vals[k] === 'object') {
+              p[k] = format(vals[k])
             }
             else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
               const words = p[k].split(', ').filter((w) => w && w != vals[k])
