@@ -485,6 +485,27 @@ export default {
           .join(', ')
       })
 
+    if(this.renderTooltip) {
+      chart.on('renderlet', () => {
+        d3.selectAll(this.tooltipSelector)
+          .on("mouseover", this.showTooltip)
+          .on("mousemove", this.moveTooltip)
+          .on("mouseout", this.removeTooltip)
+      })
+    }
+
+    // deisgn hack
+    if (this.chartType === 'barChart') {
+      let [scale, unit] = this.scale.split('.');
+      if (scale === 'time') {
+        if (!unit) unit = 'day'
+        chart
+          .centerBar(true)
+          .xAxisPadding(1)
+          .xAxisPaddingUnit(unit)
+      }
+    }
+
     chart.on('pretransition', () => {
       if(!this.scale && !this.dateKey && !this.timeScale) {
         chart.selectAll('g.x text')
@@ -495,14 +516,7 @@ export default {
           .attr('transform', 'translate(-10,5) rotate(330)')
       }
     })
-    if(this.renderTooltip) {
-      chart.on('renderlet', () => {
-        d3.selectAll(this.tooltipSelector)
-          .on("mouseover", this.showTooltip)
-          .on("mousemove", this.moveTooltip)
-          .on("mouseout", this.removeTooltip)
-      })
-    }
+
     this.chart = chart;
 
     return chart;
