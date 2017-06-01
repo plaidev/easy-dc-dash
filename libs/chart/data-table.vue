@@ -23,6 +23,7 @@ import d3 from 'd3'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
+import {TIME_FORMATS} from '../utils/time-format'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import '../styles/font-awesome-variables.scss'
@@ -205,6 +206,11 @@ export default {
               words.push(vals[k])
               p[k] = words.join(', ')
             }
+            else if (vals[k] instanceof Date) {
+              if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = []
+              p[k] = p[k].filter((d) => d && d.getTime() != vals[k].getTime())
+              p[k].push(vals[k])
+            }
             else
               p[k] += vals[k]
           })
@@ -222,6 +228,11 @@ export default {
             else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
               const words = p[k].split(', ').filter((w) => w && w != vals[k])
               p[k] = words.join(', ')
+            }
+            else if (vals[k] instanceof Date) {
+              if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = []
+              p[k] = p[k].filter((d) => d && d != vals[k])
+              p[k].push(vals[k])
             }
             else
               p[k] -= vals[k]
@@ -268,6 +279,7 @@ export default {
         val = this.cols[k]
         if(val instanceof String || typeof val === 'string') val = '';
         else if(val instanceof Number || typeof val === 'number') val = 0;
+        else if(val instanceof Date) val = []
         else if(val instanceof Object || typeof val === 'object') {
           val = {count: 0, value:0, per:0}
         }
@@ -275,21 +287,29 @@ export default {
       })
       return schema
     },
-    setFormat: function(d, key) {
+    buildFormatter: function(key) {
       if(this.linkCol && this.linkCol.includes(key)) {
-        return this.insertLink(d.value[key])
+        return (d) => this.insertLink(d.value[key])
       }
-      else if(d.value[key].per) return d.value[key].per
-      else return d.value[key]
+      return (d) => {
+        if (d.value[key] instanceof Array || typeof d.value[key] == 'array') {
+          return d.value[key].map((item) => {
+            if (item instanceof Date) return TIME_FORMATS.ymd(item)
+            return item
+          }).join(', ')
+        }
+        if (d.value[key].per) return d.value[key].per
+        return d.value[key]
+      }
     },
     insertLink: function(v) {
       return `<a href=${v}>${v}</a>`
     },
-    setColumnSettings: function() {
+    applyColumnSettings: function() {
       this.colsKeys.forEach((k) => {
         this.columnSettings.push({
           label: this.getLabel(k),
-          format: (d) => this.setFormat(d, k)
+          format: this.buildFormatter(k)
         })
       })
     },
@@ -310,7 +330,7 @@ export default {
     }
   },
   mounted: function() {
-    this.setColumnSettings()
+    this.applyColumnSettings()
 
     const chart = this.chart;
     const sortKey = this.sortKey || this.colsKeys[0]

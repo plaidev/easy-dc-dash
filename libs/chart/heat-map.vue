@@ -37,8 +37,6 @@ export default {
         .filter((x,i,self) => self.indexOf(x) === i)
     },
     valueColors: function () {
-      console.log(this.reducer.all(), d3.extent(this.reducer.all().map((d) => d.value)))
-
       return d3.scale.linear()
         .domain(d3.extent(this.reducer.all().map((d) => d.value)))
         .range(this.colorSettings.valueGradation);
