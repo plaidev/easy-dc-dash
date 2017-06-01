@@ -59,13 +59,13 @@ export default {
       type: String,
       default: ''
     },
-    xAxisLabelPadding: {
-      type: Number,
-      default: 500
+    xAxisPadding: {
+      type: [String, Number],
+      default: '20%'
     },
-    yAxisLabelPadding: {
-      type: Number,
-      default: 100
+    yAxisPadding: {
+      type: [String, Number],
+      default: '20%'
     },
     layout: {
       default: 'overlay-legend'
@@ -166,9 +166,9 @@ export default {
       const data = {
         key: _k,
         vals: {
-          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v.x,
-          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v.y,
-          [this.radius]: v[this.radius].per ? v[this.radius].per : v.radius
+          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v[this.xAxisLabel],
+          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v[this.yAxisLabel],
+          [this.radiusLabel]: v[this.radiusLabel].per ? v[this.radiusLabel].per : v[this.radiusLabel]
         }
       }
       this.$refs.tooltip.show(data, fill)
@@ -191,6 +191,8 @@ export default {
       .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxisLabel]))))
       .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxisLabel]))))
       .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radiusLabel]))))
+      .xAxisPadding(this.xAxisPadding)
+      .yAxisPadding(this.yAxisPadding)
 
     if(this.timeScale) {
       chart.filterPrinter(filters => {
