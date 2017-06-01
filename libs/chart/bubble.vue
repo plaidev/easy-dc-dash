@@ -61,11 +61,11 @@ export default {
     },
     xAxisPadding: {
       type: [String, Number],
-      default: '10%'
+      default: '20%'
     },
     yAxisPadding: {
       type: [String, Number],
-      default: '10%'
+      default: '20%'
     }
   },
   computed: {
@@ -163,9 +163,9 @@ export default {
       const data = {
         key: _k,
         vals: {
-          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v.x,
-          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v.y,
-          [this.radius]: v[this.radius].per ? v[this.radius].per : v.radius
+          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v[this.xAxisLabel],
+          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v[this.yAxisLabel],
+          [this.radiusLabel]: v[this.radiusLabel].per ? v[this.radiusLabel].per : v[this.radiusLabel]
         }
       }
       this.$refs.tooltip.show(data, fill)
