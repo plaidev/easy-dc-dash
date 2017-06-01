@@ -39,6 +39,9 @@ function generateScales(scaleCode) {
   if (scale == 'time') {
     if (unit == 'month') _format = TIME_FORMATS.ym
     else if (unit == 'day') _format = TIME_FORMATS.ymd
+    else if (unit == 'hour') _format = TIME_FORMATS.ymdh
+    else if (unit == 'minute') _format = TIME_FORMATS.ymdhm
+    else if (unit == 'second') _format = TIME_FORMATS.ymdhms
     else _format = TIME_FORMATS[unit]
   }
 
