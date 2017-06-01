@@ -1,6 +1,6 @@
 <template>
   <card :width="width" :height="height" :title="title">
-    <div class="container">
+    <div class="data-table-container">
       <div v-text="title" style="font-size:24px; text-align:center;"></div>
       <div class="table-paging" v-if="this.useTablePaging">
         <!--
@@ -158,6 +158,10 @@ export default {
     isRateReducer: function() {
       return null
     },
+    firstRow: function() {
+      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
+      return dim.top(1)[0]
+    },
     cols: function() {
       return (this.getColsExtractor)(this.firstRow)
     },
@@ -170,10 +174,6 @@ export default {
     endRow: function() {
       let end = this.ofs + this.pag - 1
       return Math.min(end, this.filteredSize)
-    },
-    firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      return dim.top(1)[0]
     },
     isFirstPage: function() {
       return ((this.ofs - this.pag) < 0) ? 'true' : null
@@ -189,21 +189,24 @@ export default {
       return null
     },
     grouping: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      const dimensionKey = this.extractDimensionName(this.dimension);
+      const extractor = this.dimensionExtractor
+      const dim = Store.registerDimension(this.dimensionName, extractor, {dataset: this.dataset});
       const grouping = dim.group().reduce(
         (p, v) => {
           const vals = this.getColsExtractor(v);
           this.colsKeys.forEach((k) => {
-            if (k === dimensionKey) {
-              p[k] = vals[k]
-            }
-            else if (vals[k].count && typeof vals[k].count === 'number') {
+            if (vals[k].count && typeof vals[k].count === 'number') {
               p[k].count += vals[k].count;
               p[k].value += vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
-            else p[k] += vals[k]
+            else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
+              const words = p[k].split(', ').filter((w) => w && w != vals[k])
+              words.push(vals[k])
+              p[k] = words.join(', ')
+            }
+            else
+              p[k] += vals[k]
           })
           p._count++;
           return p;
@@ -211,15 +214,17 @@ export default {
         (p, v) => {
           const vals = this.getColsExtractor(v);
           this.colsKeys.forEach((k) => {
-            if (k === dimensionKey) {
-              p[k] = vals[k]
-            }
-            else if (vals[k].count && typeof vals[k].count === 'number') {
+            if (vals[k].count && typeof vals[k].count === 'number') {
               p[k].count -= vals[k].count;
               p[k].value -= vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
-            else p[k] -= vals[k]
+            else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
+              const words = p[k].split(', ').filter((w) => w && w != vals[k])
+              p[k] = words.join(', ')
+            }
+            else
+              p[k] -= vals[k]
           })
           p._count--;
           return p;
@@ -256,9 +261,6 @@ export default {
         .sortBy((d) => _valueAccessor(d, this.sortKey))
         .order(d3[this.sortOrder])
         .render()
-    },
-    extractDimensionName: function(name) {
-      return name.replace(/d\./, '')
     },
     getSchema: function() {
       const schema = {}
@@ -337,11 +339,12 @@ export default {
 </script>
 
 <style scoped>
-.container {
+.data-table-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   height: 100%;
+  width: 94%;
   padding-top: 10px;
   font-size: 14px;
 }

@@ -3,14 +3,14 @@
 
 import d3 from "d3"
 import dc from 'dc'
-import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 import {splitKey, joinKey, multiKey} from '../utils'
 import {ymdFormat} from '../utils/time-format'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -25,10 +25,6 @@ export default {
       type: Boolean,
       default: true
     },
-    elasticY: {
-      type: Boolean,
-      default: true
-    },
     scale: {
       default: "ordinal.ordinal"
     }
@@ -39,7 +35,7 @@ export default {
     },
     grouping: function() {
       const grouping = (d) => {
-        return _joinkey([this.dimensionExtractor(d), this.extraDimensionExtractor(d)])
+        return joinKey([this.dimensionExtractor(d), this.extraDimensionExtractor(d)])
       }
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
     },
@@ -112,11 +108,8 @@ export default {
 
     chart
       .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
-      .brushOn(false)
       .clipPadding(10)
       .elasticX(this.elasticX)
-      .elasticY(this.elasticY)
-      .mouseZoomable(false)
     // stack
     for (let i=1; i<barNum; i++) {
       chart

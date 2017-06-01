@@ -2,13 +2,13 @@
 <script lang='js'>
 
 import d3 from "d3"
-import coordinateGridBase from './_coordinateGridBase.js'
+import Base from './_base.js'
 import Store from '../store'
 import {generateExtractor, splitKey, extractName} from '../utils'
 
 
 export default {
-  extends: coordinateGridBase,
+  extends: Base,
 
   props: {
     chartType: {
@@ -22,28 +22,26 @@ export default {
   },
   computed: {
     dimensionKeys: function() {
-      return _splitkey(_extractName(this.dimension))
-    },
-    firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
-      return dim.top(1)[0]
-    },
-    data: function() {
-      return (this.dimensionExtractor)(this.firstRow)
+      return splitKey(extractName(this.dimension))
     },
     dataKeys: function() {
-      return Object.keys(this.data)
+      return Object.keys(this.dimensionExtractor({}))
+    },
+    dimensionRange: function() {
+      return this.all
+        .map(a => a.key[1])
+        .filter((x,i,self) => self.indexOf(x) === i)
     }
   },
   methods: {
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
-      const xAxisLabel = this.xAxisLabel || this.firstKey
-      const yAxisLabel = this.yAxisLabel || this.secondKey
+      const xAxisLabel = this.getLabel(this.xAxisLabel || this.dimensionKeys[0] || 'x')
+      const yAxisLabel = this.getLabel(this.yAxisLabel || this.dimensionKeys[1] || 'y')
       const data = {
         keys: {
-          [xAxisLabel]: d.key[0],
-          [yAxisLabel]: d.key[1]
+          [xAxisLabel]: this.getLabel(d.key[0]),
+          [yAxisLabel]: this.getLabel(d.key[1]),
         },
         val: d.value
       }
@@ -58,8 +56,8 @@ export default {
       .valueAccessor((d) => d.key[1])
       .colorAccessor((d) => +d.value)
       .yBorderRadius(this.yBorderRadius)
-      .colsLabel((d) => d + `${this.xAxisFormat}`)
-      .rowsLabel((d) => d + `${this.yAxisFormat}`)
+      .colsLabel((d) => this.getLabel(d))
+      .rowsLabel((d) => this.getLabel(d))
       .on('postRender', () => {
           if(!this.dateKey) {
             chart.selectAll('g.cols.axis text')

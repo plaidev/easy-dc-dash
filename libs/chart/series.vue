@@ -4,6 +4,7 @@ import d3 from "d3"
 import dc from 'dc'
 import coordinateGridBase from './_coordinateGridBase.js'
 import {splitKey, extractName} from '../utils'
+import Store from '../store'
 
 export default {
   extends: coordinateGridBase,
@@ -20,15 +21,18 @@ export default {
     seriesFormat: {
       type: String,
       default: ''
+    },
+    scale: {
+      default: 'linear'
     }
   },
   computed: {
     dimensionName: function() {
-      if(this.dateKey != undefined) return `${this.seriesKey}(${this.dateKey})`
-      return this.dimension
-    },
-    dimensionKeys: function() {
-      return _splitkey(_extractName(this.dimension))
+      // extraDimension, dimensionの順番なので、baseの処理と異なる
+      let dimName = 'series:' + this.dimension
+      if (this.extraDimension) dimName += this.extraDimension
+      if (this.dateKey !== undefined) return `${this.dateKey}.${dimName}`
+      return dimName;
     },
     seriesKey: function() {
       return this.dimensionKeys[0]
@@ -36,11 +40,25 @@ export default {
     xKey: function() {
       return this.dimensionKeys[1]
     },
-    dimensionScale: function() {
+    grouping: function() {
+      const getter = this.dimensionExtractor
+      const extraGetter = this.extraDimensionExtractor
+      let grouping = getter
+      if (extraGetter) {
+        // FIXME: _baseのものとここだけ逆...
+        grouping = (d) => [extraGetter(d), getter(d)]
+      }
+      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
+    },
+    dimensionRange: function() {
       const all = this.reducer.all()
-      const scale = d3.scale.linear()
-      const range = d3.extent(all, (d) => d.key[1])
-      return scale.domain(range)
+      // FIXME: d.key[1]などとする必要がある
+      if (this.dimensionScale.unit === dc.units.ordinal) {
+        return all.map((d) => d.key[1]).filter(function (x, i, self) {
+          return self.indexOf(x) === i;
+        })
+      }
+      return d3.extent(all, (d) => d.key[1])
     }
   },
   methods: {
@@ -77,11 +95,7 @@ export default {
 
     chart
       .chart((c) => dc.lineChart(c).interpolate('basis'))
-      .clipPadding(10)
-      .brushOn(false)
-      .elasticY(this.elasticY)
-      .mouseZoomable(false)
-      .seriesAccessor((d) => Number(d.key[0]))
+      .seriesAccessor((d) => d.key[0])
       .keyAccessor((d) => d.key[1])
 
     return chart.render();

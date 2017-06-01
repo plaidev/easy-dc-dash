@@ -29,7 +29,6 @@ export function generateExtractor (rule, dateKey) {
     parseDate = function parseDate(d) {
       if (!dateKey) return {}
       const t = dateExtractor(d)
-      console.log('parseDate:', d, t, dateKey)
       if (!t) return {}
       return {
         year: t.getFullYear(),
@@ -37,7 +36,9 @@ export function generateExtractor (rule, dateKey) {
         day: t.getDate(),
         week: Number(d3.time.format('%w')(t)),
         hour: t.getHours(),
-        weekofyear: Number(d3.time.format('%W')(t))
+        weekofyear: Number(d3.time.format('%W')(t)),
+        ymd: d3.time.format('%Y-%m-%d')(t),
+        ym: d3.time.format('%Y-%m')(t)
       }
     }
   }
@@ -48,7 +49,10 @@ export function generateExtractor (rule, dateKey) {
 
   else if (typeof rule === "string" || rule instanceof String) {
     if (/^[a-zA-Z0-9\$_]+$/g.test(rule)) {
-      return (d) => d[rule]
+      return (d) => {
+        const t = parseDate && parseDate(d);
+        return (t && t[rule]) ? t[rule] : d[rule]
+      }
     }
     else if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
       const keys = rule.split(',')
@@ -64,10 +68,10 @@ export function generateExtractor (rule, dateKey) {
       const code = `const v = ${rule}; return v === null? "": v;`
       if (dateKey) {
         // TODO: このへんどうにかしたい。ここで吸収できるのは悪くないと思うが
-        let _f = new Function('d', 'year', 'month', 'day', 'week', 'hour', 'weekofyear', code)
+        let _f = new Function('d', 'year', 'month', 'ym', 'day', 'ymd', 'week', 'weekofyear', 'hour', code)
         return (d) => {
-          const {year, month, day, week, hour, weekofyear} = parseDate(d)
-          return _f(d, year, month, day, week, hour, weekofyear)
+          const {year, month, day, week, hour, ymd, ym, weekofyear} = parseDate(d)
+          return _f(d, year, month, ym, day, ymd, week, weekofyear, hour)
         }
       }
       return new Function('d', code);
@@ -76,10 +80,10 @@ export function generateExtractor (rule, dateKey) {
 
   else if (rule instanceof Array) {
     return (d) => {
-      const t = parseDate(d);
+      const t = parseDate && parseDate(d);
       const row = []
       rule.forEach((k) => {
-        row.push(t[k] ? t[k] : d[k])
+        row.push((t && t[k]) ? t[k] : d[k])
       })
       return row
     }
@@ -87,10 +91,10 @@ export function generateExtractor (rule, dateKey) {
 
   else if (rule instanceof Object) {
     return (d) => {
-      const t = parseDate(d);
+      const t = parseDate && parseDate(d);
       const row = {}
       Object.keys(rule).forEach((k) => {
-        row[k] = t[k] ? t[k] : d[rule[k]]
+        row[k] = (t && t[k]) ? t[k] : d[rule[k]]
       })
       return row
     }
