@@ -176,7 +176,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-    const all = this.reducer.all()
     chart
       .colors(d3.scale.category10())
       .elasticX(this.elasticX)
@@ -188,9 +187,9 @@ export default {
       .keyAccessor((p) => this.extractValue(p.value[this.xAxisLabel]))
       .valueAccessor((p) => this.extractValue(p.value[this.yAxisLabel]))
       .radiusValueAccessor((p) => this.extractValue(p.value[this.radiusLabel]))
-      .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxisLabel]))))
-      .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxisLabel]))))
-      .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radiusLabel]))))
+      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.xAxisLabel]))))
+      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.yAxisLabel]))))
+      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radiusLabel]))))
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
 

@@ -3,7 +3,7 @@
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins} from '../utils'
+import {removeEmptyBins, roundDecimalFormat} from '../utils'
 
 export default {
   extends: Base,
@@ -34,9 +34,12 @@ export default {
     },
     tooltipAccessor: function() {
       return (d, i) => {
+        const num = (d.value / this.reducerTotal) * 100;
+        const rate = roundDecimalFormat(num, 2)
         return {
           key: d.data.key,
-          val: d.value
+          val: d.value,
+          rate: rate
         }
       }
     }

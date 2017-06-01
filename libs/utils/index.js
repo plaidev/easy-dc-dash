@@ -169,3 +169,7 @@ export function extractName(dimension) {
   // FIXME: Replace if there is a better way
   return dimension.replace(/(\[)|(\D*\()|(\s)|(d\.)|(\))|(\])/g, '')
 }
+export function roundDecimalFormat(number, n) {
+  const _pow = Math.pow(10,n) ;
+  return Math.round(number * _pow) / _pow;
+}

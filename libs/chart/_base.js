@@ -251,9 +251,20 @@ export default {
     dimensionRange: function() {
       return [this.min, this.max]
     },
-    all: function() {
+    dimAll: function() {
       const dim = this.grouping;
       return dim.group().all()
+    },
+    all: function() { // TODO: remove
+      const dim = this.grouping;
+      return dim.group().all()
+    },
+    reducerAll: function() {
+      return this.reducer.all();
+    },
+    reducerTotal: function() {
+      const vals = this.reducerAll.map(d => d.value)
+      return vals.reduce((a,b) => a+b)
     },
     dimensionScale: function () {
       return generateScales(this.scale)
