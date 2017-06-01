@@ -198,7 +198,7 @@ export default {
             if (k === dimensionKey) {
               p[k] = vals[k]
             }
-            else if (vals[k].count) {
+            else if (vals[k].count && typeof vals[k].count === 'number') {
               p[k].count += vals[k].count;
               p[k].value += vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
@@ -214,7 +214,7 @@ export default {
             if (k === dimensionKey) {
               p[k] = vals[k]
             }
-            else if (vals[k].count) {
+            else if (vals[k].count && typeof vals[k].count === 'number') {
               p[k].count -= vals[k].count;
               p[k].value -= vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
