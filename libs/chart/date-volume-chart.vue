@@ -31,8 +31,9 @@ export default {
   computed: {
     dimensionRange: function() {
       // TODO: elasticX(false)の時、xAxisPadding*が効かない問題への対処
+      const min = this.min // dc.utils.subtract(this.min, 0, 'day')
       const max = dc.utils.add(this.max, 1, 'day')
-      return [this.min, max]
+      return [min, max]
     },
     layoutSettings: function() {
       const settings = Base.computed.layoutSettings.apply(this)
@@ -57,6 +58,7 @@ export default {
       .round(d3.time.day.round)
       .alwaysUseRounding(true)
       .brushOn(true)
+      .centerBar(false)
 
     chart
       .yAxis().ticks(0)
