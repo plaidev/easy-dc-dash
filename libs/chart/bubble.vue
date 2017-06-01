@@ -59,14 +59,14 @@ export default {
       type: String,
       default: ''
     },
-    xAxisLabelPadding: {
-      type: Number,
-      default: 500
+    xAxisPadding: {
+      type: [String, Number],
+      default: '10%'
     },
-    yAxisLabelPadding: {
-      type: Number,
-      default: 100
-    },
+    yAxisPadding: {
+      type: [String, Number],
+      default: '10%'
+    }
   },
   computed: {
     firstRow: function() {
@@ -188,6 +188,8 @@ export default {
       .x(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.xAxisLabel]))))
       .y(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.yAxisLabel]))))
       .r(d3.scale.linear().domain(d3.extent(all, (d) => this.extractValue(d.value[this.radiusLabel]))))
+      .xAxisPadding(this.xAxisPadding)
+      .yAxisPadding(this.yAxisPadding)
 
     if(this.timeScale) {
       chart.filterPrinter(filters => {
