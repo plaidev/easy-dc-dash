@@ -10,11 +10,19 @@
   <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
 
     <series
-      width="600"
       title="series"
       date-key="date"
       dimension="ymd"
       scale="ordinal"
+      extra-dimension="weekofyear"
+      reduce="d.v">
+    </series>
+
+    <series
+      title="series"
+      dimension="d.date"
+      scale="time.day"
+      date-key="date"
       extra-dimension="weekofyear"
       reduce="d.v">
     </series>

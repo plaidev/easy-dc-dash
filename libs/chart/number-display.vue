@@ -13,6 +13,9 @@ import Store from '../store'
 export default {
   extends: Base,
   props: {
+    dimension: {
+      require: false
+    },
     chartType: {
       type: String,
       default: 'numberDisplay'

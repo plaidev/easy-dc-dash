@@ -83,9 +83,9 @@ class DashboardStore {
 
   getCfSize(options={}) {
     const {
-      name = 'default'
+      dataset = 'default'
     } = options;
-    return this._cf[name].size();
+    return this._cf[dataset].size();
   }
 
   registerChart(parent, name, chartType, binds={}) {
