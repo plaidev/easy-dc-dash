@@ -51,7 +51,7 @@ export function generateExtractor (rule, dateKey) {
     if (/^[a-zA-Z0-9\$_]+$/g.test(rule)) {
       return (d) => {
         const t = parseDate && parseDate(d);
-        return (t && t[rule]) ? t[rule] : d[rule]
+        return (t && t[rule] !== undefined) ? t[rule] : d[rule]
       }
     }
     else if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
@@ -83,7 +83,7 @@ export function generateExtractor (rule, dateKey) {
       const t = parseDate && parseDate(d);
       const row = []
       rule.forEach((k) => {
-        row.push((t && t[k]) ? t[k] : d[k])
+        row.push((t && t[k] !== undefined) ? t[k] : d[k])
       })
       return row
     }
@@ -94,7 +94,7 @@ export function generateExtractor (rule, dateKey) {
       const t = parseDate && parseDate(d);
       const row = {}
       Object.keys(rule).forEach((k) => {
-        row[k] = (t && t[k]) ? t[k] : d[rule[k]]
+        row[k] = (t && t[k] !== undefined) ? t[k] : d[rule[k]]
       })
       return row
     }
