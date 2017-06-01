@@ -24521,7 +24521,9 @@ var DefaultTheme = {
     var _options$width = options.width,
         width = _options$width === undefined ? 377 : _options$width,
         _options$height = options.height,
-        height = _options$height === undefined ? 233 : _options$height;
+        height = _options$height === undefined ? 233 : _options$height,
+        _options$legendable = options.legendable,
+        legendable = _options$legendable === undefined ? true : _options$legendable;
 
 
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
@@ -24532,7 +24534,7 @@ var DefaultTheme = {
         name = 'wide';
       } else if (Math.abs(width - height) < 10) {
         name = 'square';
-      } else if (Math.abs(1.618 - width / height) < 0.2) {
+      } else if (legendable && Math.abs(1.618 - width / height) < 0.2) {
         name = 'square-and-legend';
       } else {
         name = 'overlay-legend';
@@ -24760,10 +24762,10 @@ var DashboardStore = function () {
     key: 'getCfSize',
     value: function getCfSize() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var _options$name = options.name,
-          name = _options$name === undefined ? 'default' : _options$name;
+      var _options$dataset5 = options.dataset,
+          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5;
 
-      return this._cf[name].size();
+      return this._cf[dataset].size();
     }
   }, {
     key: 'registerChart',
@@ -24805,8 +24807,8 @@ var DashboardStore = function () {
     key: 'setLabels',
     value: function setLabels(labels) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset5 = options.dataset,
-          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5,
+      var _options$dataset6 = options.dataset,
+          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
           _options$chartName = options.chartName,
           chartName = _options$chartName === undefined ? '' : _options$chartName;
 
@@ -24818,8 +24820,8 @@ var DashboardStore = function () {
     key: 'getLabel',
     value: function getLabel(k) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset6 = options.dataset,
-          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
+      var _options$dataset7 = options.dataset,
+          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7,
           _options$chartName2 = options.chartName,
           chartName = _options$chartName2 === undefined ? '' : _options$chartName2;
 
@@ -24835,8 +24837,8 @@ var DashboardStore = function () {
     key: 'getKeyByLabel',
     value: function getKeyByLabel(label) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset7 = options.dataset,
-          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7,
+      var _options$dataset8 = options.dataset,
+          dataset = _options$dataset8 === undefined ? 'default' : _options$dataset8,
           _options$chartName3 = options.chartName,
           chartName = _options$chartName3 === undefined ? '' : _options$chartName3;
       // chart固有辞書からの探索
@@ -24864,8 +24866,8 @@ var DashboardStore = function () {
     value: function downloadCSV$$1(filename) {
       var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var _options$dataset8 = options.dataset,
-          dataset = _options$dataset8 === undefined ? 'default' : _options$dataset8,
+      var _options$dataset9 = options.dataset,
+          dataset = _options$dataset9 === undefined ? 'default' : _options$dataset9,
           _options$labels2 = options.labels,
           labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
 
@@ -25480,7 +25482,8 @@ var Base = {
           width = _getContainerInnerSiz.width,
           height = _getContainerInnerSiz.height;
 
-      return Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height });
+      var legendable = this.useLegend;
+      return Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height, legendable: legendable });
     },
     colorSettings: function colorSettings() {
       return Store.getTheme().colors(this.chartType);
@@ -34495,6 +34498,9 @@ var NumberDisplay = { render: function render() {
   }, staticRenderFns: [],
   extends: Base,
   props: {
+    dimension: {
+      require: false
+    },
     chartType: {
       type: String,
       default: 'numberDisplay'
@@ -34654,6 +34660,9 @@ var DateVolumeChart = {
     },
     scale: {
       default: 'time.day'
+    },
+    useLegend: {
+      default: false
     }
   },
   computed: {
@@ -34932,11 +34941,11 @@ var WeekRow = {
     },
     dimensionScale: function dimensionScale() {
       return {
-        domain: d3$1.scale.linear().domain
+        domain: d3$1.scale.ordinal().domain
       };
     },
     dimensionRange: function dimensionRange() {
-      return [0, 6];
+      return [0, 1, 2, 3, 4, 5, 6];
     }
   },
 
@@ -35133,6 +35142,9 @@ var RateLine = {
     chartType: {
       type: String,
       default: 'lineChart'
+    },
+    useLegend: {
+      default: false
     }
   },
   mounted: function mounted() {
@@ -35258,6 +35270,9 @@ var OrdinalBar = {
     removeEmptyRows: {
       type: Boolean,
       default: true
+    },
+    useLegend: {
+      default: false
     }
   },
   computed: {
@@ -36665,8 +36680,8 @@ var Bubble = {
   }), defineProperty(_props, 'yAxisPadding', {
     type: [String, Number],
     default: '20%'
-  }), defineProperty(_props, 'layout', {
-    default: 'overlay-legend'
+  }), defineProperty(_props, 'useLegend', {
+    default: false
   }), _props),
   computed: {
     firstRow: function firstRow() {
