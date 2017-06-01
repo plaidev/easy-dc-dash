@@ -24501,6 +24501,22 @@ function downloadCSV(name_or_data, filename, labels) {
 
 var DefaultTheme = {
 
+  colors: function colors(name) {
+    var ordinal = void 0,
+        weekOrdinal = void 0,
+        valueGradation = void 0;
+
+    if (name == 'heatMap') {
+      valueGradation = ["#e5e5e5", "green"];
+    }
+
+    return {
+      valueGradation: valueGradation,
+      ordinal: ordinal,
+      weekOrdinal: weekOrdinal
+    };
+  },
+
   layout: function layout(chartType, name) {
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var _options$width = options.width,
@@ -25261,7 +25277,9 @@ var Base = {
     },
 
     // dimension, extra-dimension
-    dimension: {},
+    dimension: {
+      require: true
+    },
     extraDimension: {},
     scale: {
       type: String,
@@ -25341,7 +25359,7 @@ var Base = {
     },
     dimensionName: function dimensionName() {
       var dimName = this.dimension;
-      if (this.extraDimension) dimName += this.extraDimension;
+      if (this.extraDimension) dimName += '+' + this.extraDimension;
       if (this.dateKey !== undefined) return this.dateKey + '.' + dimName;
       return dimName;
     },
@@ -25449,6 +25467,9 @@ var Base = {
           height = _getContainerInnerSiz.height;
 
       return Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height });
+    },
+    colorSettings: function colorSettings() {
+      return Store.getTheme().colors(this.chartType);
     },
     tooltipSelector: function tooltipSelector() {
       if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
@@ -25603,6 +25624,10 @@ var Base = {
 
       if (margins && chart.margins) {
         chart.margins(margins);
+      }
+
+      if (chart.renderDataPoints) {
+        chart.renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5 });
       }
     },
     showTooltip: function showTooltip(d, i) {
@@ -34345,29 +34370,7 @@ function compose(Left, Right) {
         default: 'compositeChart'
       }
     },
-    methods: {
-      // showTooltip: function(d, i) {
-      //   // const format = this.timeFormat ? this.timeFormat : d3.time.format('%Y-%m-%d');
-      //   const fill = d3.event.target.getAttribute('fill');
-      //   const stroke = d3.event.target.getAttribute('stroke');
-      //   const color = fill || stroke;
-      //   let key = null;
-      //   let val = null;
-      //   console.log(d, i)
-      //   if ((d.x && d.y) != undefined) {
-      //     key = d.x;
-      //     val = d.y;
-      //   }
-      //   else {
-      //     key = this.getLabel(i);
-      //   }
-      //   const data = {
-      //     key: key,
-      //     val: val
-      //   }
-      //   this.$refs.tooltip.show(data, color)
-      // }
-    },
+    methods: {},
     mounted: function mounted() {
       var _this = this;
 
@@ -34991,7 +34994,7 @@ var WeeklySeries = {
 
     chart.chart(function (c) {
       // return dc.lineChart(c).interpolate('basis')
-      return index$2.lineChart(c); //.interpolate()
+      return index$2.lineChart(c).interpolate('linear');
     })
     // .clipPadding(10)
     .keyAccessor(function (d) {
@@ -35111,7 +35114,7 @@ var RateLine = {
     }
   },
   mounted: function mounted() {
-    return this.chart.renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 6 }).hidableStacks(true).render();
+    return this.chart.y(d3$1.scale.linear().domain([0, 1])).elasticY(false).hidableStacks(true).render();
   }
 };
 
@@ -35128,7 +35131,7 @@ var RateLine = {
 })();
 
 var StackedLines = {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -35166,16 +35169,16 @@ var StackedLines = {
     var _this = this;
 
     var chart = this.chart;
-    var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
+    var dim = this.grouping;
     var _reducer = this.reducerExtractor;
 
     if (!dim.top(1).length) return chart;
 
-    var lineNum = _reducer(dim.top(1)[0]).length;
+    var lineNum = _reducer(dim.top(1)[0] || {}).length;
 
-    chart.group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), function (d) {
+    chart.brushOn(false).group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), function (d) {
       return d.value[0];
-    }).renderArea(true).renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 6 });
+    }).renderArea(true);
 
     var _loop2 = function _loop2(i) {
       chart.stack(_this.combinedGroup, _this.getLabel(_this.getReduceKey(i)), function (d) {
@@ -36348,6 +36351,10 @@ var HeatMap = {
     yBorderRadius: {
       type: Number,
       defaulat: 6.75
+    },
+    layout: {
+      // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
+      default: 'overlay-legend'
     }
   },
   computed: {
@@ -36363,6 +36370,15 @@ var HeatMap = {
       }).filter(function (x, i, self) {
         return self.indexOf(x) === i;
       });
+    },
+    valueColors: function valueColors() {
+      console.log(this.reducer.all(), d3$1.extent(this.reducer.all().map(function (d) {
+        return d.value;
+      })));
+
+      return d3$1.scale.linear().domain(d3$1.extent(this.reducer.all().map(function (d) {
+        return d.value;
+      }))).range(this.colorSettings.valueGradation);
     }
   },
   methods: {
@@ -36400,7 +36416,7 @@ var HeatMap = {
           return d.length > 10 ? d.substr(0, 10) + '...' : d;
         });
       }
-    });
+    }).colors(this.valueColors);
     if (this.dateKey) {
       chart.filterPrinter(function (filters) {
         return filters.map(function (filter) {
@@ -36445,13 +36461,15 @@ var Series = {
     },
     scale: {
       default: 'linear'
+    },
+    extraDimension: {
+      require: true
     }
   },
   computed: {
     dimensionName: function dimensionName() {
       // extraDimension, dimensionの順番なので、baseの処理と異なる
-      var dimName = 'series:' + this.dimension;
-      if (this.extraDimension) dimName += this.extraDimension;
+      var dimName = this.extraDimension + '+' + this.dimension;
       if (this.dateKey !== undefined) return this.dateKey + '.' + dimName;
       return dimName;
     },
@@ -36522,7 +36540,7 @@ var Series = {
     var chart = this.chart;
 
     chart.chart(function (c) {
-      return index$2.lineChart(c).interpolate('basis');
+      return index$2.lineChart(c).interpolate('linear');
     }).seriesAccessor(function (d) {
       return d.key[0];
     }).keyAccessor(function (d) {
@@ -36606,6 +36624,8 @@ var Bubble = {
   }), defineProperty(_props, 'yAxisLabelPadding', {
     type: Number,
     default: 100
+  }), defineProperty(_props, 'layout', {
+    default: 'overlay-legend'
   }), _props),
   computed: {
     firstRow: function firstRow() {
