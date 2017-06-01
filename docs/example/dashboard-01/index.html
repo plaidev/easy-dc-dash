@@ -10,7 +10,7 @@
 
   <style>
     .buttons {
-      width: 100%;
+      min-width: 400px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -35,9 +35,23 @@
   ></easy-dc-dataset>
 
 <div id="krt-dc-dashboard">
-  <div class="buttons">
-    <csv-download-button></csv-download-button>
-    <reset-all-button></reset-all-button>
+  <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
+
+    <div class="buttons">
+      <csv-download-button></csv-download-button>
+      <reset-all-button></reset-all-button>
+    </div>
+
+    <number-display
+      reduce="d.pv"
+    ></number-display>
+    <number-display
+      reduce="d.uu"
+      :fill-box-color=false
+    ></number-display>
+    <number-display
+      reduce="d.session_cnt"
+    ></number-display>
   </div>
 
   <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
@@ -56,138 +70,114 @@
     reduce='d.pv'
   ></segment-pie>
 
-    <!-- segment CSV and Store.setLabels({...}) -->
-    <segment-pie
-      dimension='d.segments'
-      segments='5890222d3601a6183b69f15a,5890222d3601a6183b69f15c,5890222d3601a6183b69f15e,5890222d3601a6183b69f160'
-      reduce='d.pv'
-    ></segment-pie>
+  <!-- segment CSV and Store.setLabels({...}) -->
+  <segment-pie
+    dimension='d.segments'
+    segments='5890222d3601a6183b69f15a,5890222d3601a6183b69f15c,5890222d3601a6183b69f15e,5890222d3601a6183b69f160'
+    reduce='d.pv'
+  ></segment-pie>
 
-  <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
-    <number-display
-      reduce="d.pv"
-    ></number-display>
-    <number-display
-      reduce="d.uu"
-      :fill-box-color=false
-    ></number-display>
-    <number-display
-      reduce="d.session_cnt"
-    ></number-display>
-  </div>
-
-  <div class="container" style="display: flex; flex-direction: column;">
-    <stack-and-rate
-      scale='time.day'
-      dimension='d.session_end_date'
-      volume='volume-chart'
-      reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
-      labels='直帰,非直帰,直帰率'></stack-and-rate>
-    <date-volume-chart
-      id="volume-chart"
-      dimension='d.session_end_date'
-      reduce='d.pv'></date-volume-chart>
-  </div>
+  <stack-and-rate
+    scale='time.day'
+    dimension='d.session_end_date'
+    volume='volume-chart'
+    reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
+    labels='直帰,非直帰,直帰率'
+  ></stack-and-rate>
+  <date-volume-chart
+    id="volume-chart"
+    dimension='d.session_end_date'
+    reduce='d.pv'
+  ></date-volume-chart>
 
   <list-row
     title='list-row'
     dimension='d.name'
     reduce='d.pv'
     :descending=true
-    height=400
-    width=200
-    :gap=10
-    :cap=10>
+    :cap=5>
   </list-row>
 
-    <ordinal-bar
-      title='ordinal-bar'
-      dimension='d.name'
-      reduce='d.pv'
-      x-axis-label='name'
-      y-axis-label='pv'
-    ></ordinal-bar>
-    <stacked-bar
-      layout="square-and-legend"
-      dimension='d.name'
-      reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
-      labels='PV,セッション数,離脱数'
-      x-axis-label='name'
-      y-axis-label='pv + session_cnt + bounce_cnt'
-    ></stacked-bar>
+  <ordinal-bar
+    title='ordinal-bar'
+    dimension='d.name'
+    reduce='d.pv'
+    x-axis-label='name'
+    y-axis-label='pv'
+  ></ordinal-bar>
 
-  <div class="container" style="display: flex; flex-direction: row;">
-    <!-- dimensions="[d.name, d.meta]"
-            -> x-axis(name), y-axis(meta)
-    -->
+  <stacked-bar
+    layout="square-and-legend"
+    dimension='d.name'
+    reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
+    labels='PV,セッション数,離脱数'
+    x-axis-label='name'
+    y-axis-label='pv + session_cnt + bounce_cnt'
+  ></stacked-bar>
 
-    <filter-stacked-bar
-      title="filter stacked bar"
-      dimension="d.name"
-      extra-dimension="d.meta"
-      reduce='d.pv'
-    ></filter-stacked-bar>
-    <segment-pie
-      dimension='d.name'
-      segments="a,b,c,d,e,f"
-      reduce='d.pv'
-      :cap=3
-      others-label='その他'
-      ></segment-pie>
-  </div>
+  <filter-stacked-bar
+    title="filter stacked bar"
+    dimension="d.name"
+    extra-dimension="d.meta"
+    reduce='d.pv'
+  ></filter-stacked-bar>
 
-  <div class="container">
-    <stacked-lines
-      dimension='d.session_end_date'
-      scale="time.day"
-      reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
-      labels='PV,セッション数,直帰率'
-    ></stacked-lines>
-    <rate-line
-      dimension='d.session_end_date'
-      reduce='{count: d.session_cnt, value: d.bounce_cnt}'
-      scale="time.day"
-    ></rate-line>
-  </div>
+  <segment-pie
+    dimension='d.name'
+    segments="a,b,c,d,e,f"
+    reduce='d.pv'
+    :cap=3
+    others-label='その他'
+  ></segment-pie>
 
-  <div class="container">
-    <heat-map
-      dimension="[d.name,d.meta]"
-      reduce="d.pv"
-      :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
-    ></heat-map>
-    <series
-      dimension="d.name"
-      extra-dimension="d.meta"
-      scale="ordinal"
-      reduce="d.pv"
-    ></series>
-    <bubble
-      date-key='d.session_end_date'
-      dimension='ymd'
-      reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
-      :width=990
-      :height=250
-      radius-format='%'
-      :max-bubble-relative-size=0.1
-    ></bubble>
-  </div>
+  <stacked-lines
+    dimension='d.session_end_date'
+    scale="time.day"
+    reduce='[d.pv, d.session_cnt, d.bounce_cnt]'
+    labels='PV,セッション数,直帰率'
+  ></stacked-lines>
 
-  <div class="container">
-    <data-table
-      dimension="d.name"
-      columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
-      sort-by="name"
-      order="descending"
-      link-column='link'
-      :width=1000
-      :height=300
-      :use-table-paging=true
-      :offset=0
-      :rows-per-page=5
-      >
-    </data-table>
-  </div>
+  <rate-line
+    dimension='d.session_end_date'
+    reduce='{count: d.session_cnt, value: d.bounce_cnt}'
+    scale="time.day"
+  ></rate-line>
+
+  <heat-map
+    dimension="[d.name,d.meta]"
+    reduce="d.pv"
+    :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
+  ></heat-map>
+
+  <series
+    dimension="d.name"
+    extra-dimension="d.meta"
+    scale="ordinal"
+    reduce="d.pv"
+  ></series>
+
+  <bubble
+    date-key='d.session_end_date'
+    dimension='ymd'
+    reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+    :width=990
+    :height=250
+    radius-format='%'
+    :max-bubble-relative-size=0.1
+  ></bubble>
+
+  <data-table
+    dimension="d.name"
+    columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+    sort-by="name"
+    order="descending"
+    link-column='link'
+    :width=1000
+    :height=600
+    :use-table-paging=true
+    :offset=0
+    :rows-per-page=5
+  ></data-table>
 </div>
 
 <script type="text/javascript">
