@@ -25064,6 +25064,10 @@ function extractName(dimension) {
   // FIXME: Replace if there is a better way
   return dimension.replace(/(\[)|(\D*\()|(\s)|(d\.)|(\))|(\])/g, '');
 }
+function roundDecimalFormat(number, n) {
+  var _pow = Math.pow(10, n);
+  return Math.round(number * _pow) / _pow;
+}
 
 var ymdFormat = d3$1.time.format('%Y-%m-%d');
 var ymFormat = d3$1.time.format('%Y-%m');
@@ -25178,7 +25182,7 @@ var KrtDcTooltip = { render: function render() {
       return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
     })], 2), _c('div', { staticClass: "val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
       return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
-    })], 2)])]) : _vm._e();
+    })], 2), _c('div', { staticClass: "rate" }, [_vm.data.rate !== undefined && _vm.data.rate !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.rate) + "%")])]) : _vm._e()])])]) : _vm._e();
   }, staticRenderFns: [],
   name: 'KrtDcTooltip',
   data: function data() {
@@ -25450,9 +25454,20 @@ var Base = {
     dimensionRange: function dimensionRange() {
       return [this.min, this.max];
     },
-    all: function all() {
+    dimAll: function dimAll() {
       var dim = this.grouping;
       return dim.group().all();
+    },
+    reducerAll: function reducerAll() {
+      return this.reducer.all();
+    },
+    reducerTotal: function reducerTotal() {
+      var vals = this.reducerAll.map(function (d) {
+        return d.value;
+      });
+      return vals.reduce(function (a, b) {
+        return a + b;
+      });
     },
     dimensionScale: function dimensionScale() {
       return generateScales(this.scale);
@@ -34730,9 +34745,12 @@ var SegmentPie = {
       var _this = this;
 
       return function (d, i) {
+        var num = d.value / _this.reducerTotal * 100;
+        var rate = roundDecimalFormat(num, 2);
         return {
           key: _this.segmentLabel(d.data.key),
-          val: d.value
+          val: d.value,
+          rate: rate
         };
       };
     }
@@ -34808,10 +34826,15 @@ var MultiDimensionPie = {
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     tooltipAccessor: function tooltipAccessor() {
+      var _this = this;
+
       return function (d, i) {
+        var num = d.value / _this.reducerTotal * 100;
+        var rate = roundDecimalFormat(num, 2);
         return {
           key: d.data.key,
-          val: d.value
+          val: d.value,
+          rate: rate
         };
       };
     }
@@ -35414,9 +35437,8 @@ var FilterStackedBar = {
       return this.stackSecond(group);
     },
     stackKeys: function stackKeys() {
-      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var stackKeys = [];
-      this.all.forEach(function (obj) {
+      this.dimAll.forEach(function (obj) {
         var stackKey = splitKey(obj.key)[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey);
       });
@@ -36203,6 +36225,12 @@ var DataTable = { render: function render() {
           });
           words.push(vals[k]);
           p[k] = words.join(', ');
+        } else if (vals[k] instanceof Date) {
+          if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = [];
+          p[k] = p[k].filter(function (d) {
+            return d && d.getTime() != vals[k].getTime();
+          });
+          p[k].push(vals[k]);
         } else p[k] += vals[k];
       });
       p._count++;
@@ -36219,6 +36247,12 @@ var DataTable = { render: function render() {
             return w && w != vals[k];
           });
           p[k] = words.join(', ');
+        } else if (vals[k] instanceof Date) {
+          if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = [];
+          p[k] = p[k].filter(function (d) {
+            return d && d != vals[k];
+          });
+          p[k].push(vals[k]);
         } else p[k] -= vals[k];
       });
       p._count--;
@@ -36260,30 +36294,42 @@ var DataTable = { render: function render() {
       var schema = {};
       this.colsKeys.forEach(function (k) {
         val = _this3.cols[k];
-        if (val instanceof String || typeof val === 'string') val = '';else if (val instanceof Number || typeof val === 'number') val = 0;else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+        if (val instanceof String || typeof val === 'string') val = '';else if (val instanceof Number || typeof val === 'number') val = 0;else if (val instanceof Date) val = [];else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
           val = { count: 0, value: 0, per: 0 };
         }
         Object.assign(schema, defineProperty({}, k, val));
       });
       return schema;
     },
-    setFormat: function setFormat(d, key) {
+    buildFormatter: function buildFormatter(key) {
+      var _this4 = this;
+
       if (this.linkCol && this.linkCol.includes(key)) {
-        return this.insertLink(d.value[key]);
-      } else if (d.value[key].per) return d.value[key].per;else return d.value[key];
+        return function (d) {
+          return _this4.insertLink(d.value[key]);
+        };
+      }
+      return function (d) {
+        if (d.value[key] instanceof Array || typeof d.value[key] == 'array') {
+          return d.value[key].map(function (item) {
+            if (item instanceof Date) return TIME_FORMATS.ymd(item);
+            return item;
+          }).join(', ');
+        }
+        if (d.value[key].per) return d.value[key].per;
+        return d.value[key];
+      };
     },
     insertLink: function insertLink(v) {
       return '<a href=' + v + '>' + v + '</a>';
     },
-    setColumnSettings: function setColumnSettings() {
-      var _this4 = this;
+    applyColumnSettings: function applyColumnSettings() {
+      var _this5 = this;
 
       this.colsKeys.forEach(function (k) {
-        _this4.columnSettings.push({
-          label: _this4.getLabel(k),
-          format: function format(d) {
-            return _this4.setFormat(d, k);
-          }
+        _this5.columnSettings.push({
+          label: _this5.getLabel(k),
+          format: _this5.buildFormatter(k)
         });
       });
     },
@@ -36304,9 +36350,9 @@ var DataTable = { render: function render() {
     }
   },
   mounted: function mounted() {
-    var _this5 = this;
+    var _this6 = this;
 
-    this.setColumnSettings();
+    this.applyColumnSettings();
 
     var chart = this.chart;
     var sortKey = this.sortKey || this.colsKeys[0];
@@ -36316,9 +36362,9 @@ var DataTable = { render: function render() {
     }).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
       return _valueAccessor(d, sortKey);
     }).order(d3$1[this.order]).on('renderlet', function () {
-      var dim = Store.getDimension(_this5.dimensionName, { dataset: _this5.dataset });
-      _this5.filteredDataSize = dim.groupAll().value();
-      _this5.filteredSize = _this5.grouping.size();
+      var dim = Store.getDimension(_this6.dimensionName, { dataset: _this6.dataset });
+      _this6.filteredDataSize = dim.groupAll().value();
+      _this6.filteredSize = _this6.grouping.size();
       var ths = d3$1.selectAll('th.dc-table-head');
       ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
     });
@@ -36371,10 +36417,6 @@ var HeatMap = {
       });
     },
     valueColors: function valueColors() {
-      console.log(this.reducer.all(), d3$1.extent(this.reducer.all().map(function (d) {
-        return d.value;
-      })));
-
       return d3$1.scale.linear().domain(d3$1.extent(this.reducer.all().map(function (d) {
         return d.value;
       }))).range(this.colorSettings.valueGradation);
@@ -36491,7 +36533,7 @@ var Series = {
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     dimensionRange: function dimensionRange() {
-      var all = this.reducer.all();
+      var all = this.reducerAll;
       // FIXME: d.key[1]などとする必要がある
       if (this.dimensionScale.unit === index$2.units.ordinal) {
         return all.map(function (d) {
@@ -36617,12 +36659,12 @@ var Bubble = {
   }, defineProperty(_props, 'radiusFormat', {
     type: String,
     default: ''
-  }), defineProperty(_props, 'xAxisLabelPadding', {
-    type: Number,
-    default: 500
-  }), defineProperty(_props, 'yAxisLabelPadding', {
-    type: Number,
-    default: 100
+  }), defineProperty(_props, 'xAxisPadding', {
+    type: [String, Number],
+    default: '20%'
+  }), defineProperty(_props, 'yAxisPadding', {
+    type: [String, Number],
+    default: '20%'
   }), defineProperty(_props, 'layout', {
     default: 'overlay-legend'
   }), _props),
@@ -36717,7 +36759,7 @@ var Bubble = {
       var _k = _format ? _format(k) : k;
       var data = {
         key: _k,
-        vals: (_vals = {}, defineProperty(_vals, this.xAxisLabel, v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v.x), defineProperty(_vals, this.yAxisLabel, v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v.y), defineProperty(_vals, this.radius, v[this.radius].per ? v[this.radius].per : v.radius), _vals)
+        vals: (_vals = {}, defineProperty(_vals, this.xAxisLabel, v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v[this.xAxisLabel]), defineProperty(_vals, this.yAxisLabel, v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v[this.yAxisLabel]), defineProperty(_vals, this.radiusLabel, v[this.radiusLabel].per ? v[this.radiusLabel].per : v[this.radiusLabel]), _vals)
       };
       this.$refs.tooltip.show(data, fill);
     }
@@ -36726,7 +36768,6 @@ var Bubble = {
     var _this3 = this;
 
     var chart = this.chart;
-    var all = this.reducer.all();
     chart.colors(d3$1.scale.category10()).elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
     // .label((p) => this.formatKey(p.key))
     .keyAccessor(function (p) {
@@ -36735,13 +36776,13 @@ var Bubble = {
       return _this3.extractValue(p.value[_this3.yAxisLabel]);
     }).radiusValueAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.radiusLabel]);
-    }).x(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+    }).x(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
       return _this3.extractValue(d.value[_this3.xAxisLabel]);
-    }))).y(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+    }))).y(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
       return _this3.extractValue(d.value[_this3.yAxisLabel]);
-    }))).r(d3$1.scale.linear().domain(d3$1.extent(all, function (d) {
+    }))).r(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
       return _this3.extractValue(d.value[_this3.radiusLabel]);
-    })));
+    }))).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding);
 
     if (this.timeScale) {
       chart.filterPrinter(function (filters) {
