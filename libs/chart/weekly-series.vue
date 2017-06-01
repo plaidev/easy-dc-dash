@@ -55,7 +55,7 @@ export default {
     chart
       .chart((c) => {
         // return dc.lineChart(c).interpolate('basis')
-        return dc.lineChart(c) //.interpolate()
+        return dc.lineChart(c).interpolate('linear')
       })
       // .clipPadding(10)
       .keyAccessor((d) => d.key[0])

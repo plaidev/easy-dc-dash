@@ -18,6 +18,10 @@ export default {
     yBorderRadius: {
       type: Number,
       defaulat: 6.75
+    },
+    layout: {
+      // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
+      default: 'overlay-legend'
     }
   },
   computed: {
@@ -31,6 +35,13 @@ export default {
       return this.all
         .map(a => a.key[1])
         .filter((x,i,self) => self.indexOf(x) === i)
+    },
+    valueColors: function () {
+      console.log(this.reducer.all(), d3.extent(this.reducer.all().map((d) => d.value)))
+
+      return d3.scale.linear()
+        .domain(d3.extent(this.reducer.all().map((d) => d.value)))
+        .range(this.colorSettings.valueGradation);
     }
   },
   methods: {
@@ -64,6 +75,7 @@ export default {
               .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
           }
       })
+      .colors(this.valueColors)
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {

@@ -1,6 +1,20 @@
 
 export default {
 
+  colors: function(name) {
+    let ordinal, weekOrdinal, valueGradation;
+
+    if (name == 'heatMap') {
+      valueGradation = ["#e5e5e5", "green"]
+    }
+
+    return {
+      valueGradation,
+      ordinal,
+      weekOrdinal,
+    }
+  },
+
   layout: function(chartType, name, options={}) {
     const {
       width = 377,

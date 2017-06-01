@@ -66,6 +66,9 @@ export default {
     yAxisPadding: {
       type: [String, Number],
       default: '20%'
+    },
+    layout: {
+      default: 'overlay-legend'
     }
   },
   computed: {
