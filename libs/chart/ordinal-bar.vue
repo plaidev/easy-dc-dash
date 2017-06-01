@@ -35,6 +35,9 @@ export default {
       type: Boolean,
       default: true
     },
+    useLegend: {
+      default: false
+    }
   },
   computed: {
     reducer: function() {

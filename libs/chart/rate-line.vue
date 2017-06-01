@@ -13,6 +13,9 @@ export default {
     chartType: {
       type: String,
       default: 'lineChart'
+    },
+    useLegend: {
+      default: false
     }
   },
   mounted: function() {

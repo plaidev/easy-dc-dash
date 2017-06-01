@@ -67,8 +67,8 @@ export default {
       type: [String, Number],
       default: '20%'
     },
-    layout: {
-      default: 'overlay-legend'
+    useLegend: {
+      default: false
     }
   },
   computed: {

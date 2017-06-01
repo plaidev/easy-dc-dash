@@ -24,6 +24,9 @@ export default {
     scale: {
       default: 'time.day'
     }
+    useLegend: {
+      default: false
+    }
   },
   computed: {
     layoutSettings: function() {

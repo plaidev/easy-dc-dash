@@ -18,7 +18,8 @@ export default {
   layout: function(chartType, name, options={}) {
     const {
       width = 377,
-      height = 233
+      height = 233,
+      legendable = true
     } = options;
 
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
@@ -31,7 +32,7 @@ export default {
       else if (Math.abs(width - height) < 10) {
         name = 'square'
       }
-      else if (Math.abs(1.618 - width / height) < 0.2) {
+      else if (legendable && Math.abs(1.618 - width / height) < 0.2) {
         name = 'square-and-legend'
       }
       else {

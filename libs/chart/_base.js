@@ -270,7 +270,8 @@ export default {
     },
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
-      return Store.getTheme().layout(this.chartType, this.layout, {width, height});
+      const legendable = this.useLegend
+      return Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable});
     },
     colorSettings: function() {
       return Store.getTheme().colors(this.chartType)
