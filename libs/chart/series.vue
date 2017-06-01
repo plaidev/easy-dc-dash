@@ -53,7 +53,7 @@ export default {
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset})
     },
     dimensionRange: function() {
-      const all = this.reducerAll()
+      const all = this.reducerAll
       // FIXME: d.key[1]などとする必要がある
       if (this.dimensionScale.unit === dc.units.ordinal) {
         return all.map((d) => d.key[1]).filter(function (x, i, self) {

@@ -255,10 +255,6 @@ export default {
       const dim = this.grouping;
       return dim.group().all()
     },
-    all: function() { // TODO: remove
-      const dim = this.grouping;
-      return dim.group().all()
-    },
     reducerAll: function() {
       return this.reducer.all();
     },

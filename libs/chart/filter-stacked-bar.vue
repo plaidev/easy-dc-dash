@@ -46,9 +46,8 @@ export default {
       return this.stackSecond(group);
     },
     stackKeys: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const stackKeys = [];
-      this.all.forEach((obj) => {
+      this.dimAll.forEach((obj) => {
         const stackKey = splitKey(obj.key)[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey)
       })
