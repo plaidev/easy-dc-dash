@@ -461,6 +461,11 @@ export default {
       if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange));
       if (this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit);
     }
+    if (this.extraDimensionExtractor) {
+      chart.keyAccessor((d) => {
+        return d.key[0]
+      })
+    }
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();

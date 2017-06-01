@@ -30,15 +30,6 @@ export default {
     }
   },
   computed: {
-    dimensionName: function() {
-      return [this.dimension, this.extraDimension].join(',')
-    },
-    grouping: function() {
-      const grouping = (d) => {
-        return joinKey([this.dimensionExtractor(d), this.extraDimensionExtractor(d)])
-      }
-      return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
-    },
     reducer: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const reducer = this.reducerExtractor;
@@ -48,7 +39,7 @@ export default {
     stackKeys: function() {
       const stackKeys = [];
       this.dimAll.forEach((obj) => {
-        const stackKey = splitKey(obj.key)[1];
+        const stackKey = obj.key[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey)
       })
       return stackKeys
@@ -57,38 +48,39 @@ export default {
   methods: {
     stackSecond: function (group) {
       // See: https://github.com/dc-js/dc.js/blob/master/web/examples/filter-stacks.html#L59-L76
+      const _format = this.dimensionScale.format
       return {
-          all: () => {
-            let all = group.all();
-            const m = {};
-            if(this.removeEmptyRows) {
-              all = all.filter((kv) => {
-                return kv.value != 0
-              })
-            }
-            // build matrix from multikey/value pairs
-            all.forEach((kv) => {
-                const ks = splitKey(kv.key);
-                m[ks[0]] = m[ks[0]] || {};
-                m[ks[0]][ks[1]] = kv.value;
-            });
-            // then produce multivalue key/value pairs
-            return Object.keys(m).map((k) => {
-                let key = k
-                if (this.scale === 'time')
-                  key = ymdFormat.parse(k)
-                return {key, value: m[k]};
-            });
+        all: () => {
+          let all = group.all();
+          const m = {};
+          if(this.removeEmptyRows) {
+            all = all.filter((kv) => {
+              return kv.value != 0
+            })
           }
+          // build matrix from multikey/value pairs
+          all.forEach((kv) => {
+              const ks = kv.key;
+              let k = ks[0]
+              if (_format) k = _format(k)
+              m[k] = m[k] || {};
+              m[k][ks[1]] = kv.value;
+          });
+          // then produce multivalue key/value pairs
+          return Object.keys(m).map((k) => {
+            let key = k
+            if (_format) key = _format.parse(k)
+              // if (this.scale === 'time')
+                // key = ymdFormat.parse(k)
+            return {key: [key], value: m[k]};
+          });
+        }
       };
     },
     selStacks: function(k) {
       return (d) => {
         return d.value[k] || 0
       }
-    },
-    extractKey: function(k) {
-      return k.replace(/\'/g, '')
     },
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
@@ -106,16 +98,18 @@ export default {
     const barNum = stackKeys.length;
 
     chart
-      .group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0]))
+      .group(this.reducer, String(stackKeys[0]), this.selStacks(stackKeys[0]))
       .clipPadding(10)
       .elasticX(this.elasticX)
+
     // stack
     for (let i=1; i<barNum; i++) {
       chart
-        .stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i]))
+        .stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i]))
         .hidableStacks(true)
     }
-    chart.on('pretransition', (chart) => {
+    chart
+      .on('pretransition', (chart) => {
         if(!this.scale) {
           chart.selectAll('g.x text')
             .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
@@ -123,22 +117,21 @@ export default {
         if(this.rotateXAxisLabel) {
           chart.selectAll('g.x text')
             .attr('transform', 'translate(-10,5) rotate(330)')
-        }
-      // select <-> deselect && redraw
-      chart.selectAll('rect.bar')
-        .classed('deselected', false)
-        .classed('stack-deselected', (d) => {
-          let x = d.x;
-          if (this.scale === 'time') x = ymdFormat(x)
-          const key = multiKey(x, d.layer);
-          return chart.filter() && chart.filters().indexOf(key) ===-1;
-        })
-        .on('click', (d) => {
-          let x = d.x;
-          if (this.scale === 'time') x = ymdFormat(x)
-          chart.filter(multiKey(x, d.layer));
-          dc.redrawAll();
-        })
+      }
+
+    // select <-> deselect && redraw
+    chart.selectAll('rect.bar')
+      .classed('deselected', false)
+      .classed('stack-deselected', (d) => {
+        return chart.filter() && chart.filters().findIndex((f) =>
+          f[0] === d.x && f[1] === d.layer
+        ) === -1;
+      })
+      .on('click', (d) => {
+        let f = [d.x, d.layer]
+        chart.filter(dc.filters.TwoDimensionalFilter(f))
+        dc.redrawAll();
+      })
     });
     this.applyLegend({reverseOrder:true})
     return chart.render();
