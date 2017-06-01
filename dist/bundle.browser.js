@@ -24939,7 +24939,7 @@ function generateExtractor(rule, dateKey) {
     if (/^[a-zA-Z0-9\$_]+$/g.test(rule)) {
       return function (d) {
         var t = parseDate && parseDate(d);
-        return t && t[rule] ? t[rule] : d[rule];
+        return t && t[rule] !== undefined ? t[rule] : d[rule];
       };
     } else if (/^([a-zA-Z0-9\$_]*\s?,?\s?)+$/g.test(rule)) {
       var keys = rule.split(',');
@@ -24976,7 +24976,7 @@ function generateExtractor(rule, dateKey) {
       var t = parseDate && parseDate(d);
       var row = [];
       rule.forEach(function (k) {
-        row.push(t && t[k] ? t[k] : d[k]);
+        row.push(t && t[k] !== undefined ? t[k] : d[k]);
       });
       return row;
     };
@@ -24985,7 +24985,7 @@ function generateExtractor(rule, dateKey) {
       var t = parseDate && parseDate(d);
       var row = {};
       Object.keys(rule).forEach(function (k) {
-        row[k] = t && t[k] ? t[k] : d[rule[k]];
+        row[k] = t && t[k] !== undefined ? t[k] : d[rule[k]];
       });
       return row;
     };
@@ -25054,15 +25054,11 @@ function reverseLegendOrder(chart) {
   });
 }
 
-function joinKey(k) {
-  return k.join(',');
-}
+
 function splitKey(k) {
   return k.split(',');
 }
-function multiKey(x, y) {
-  return x + ',' + y;
-}
+
 function extractName(dimension) {
   // FIXME: Replace if there is a better way
   return dimension.replace(/(\[)|(\D*\()|(\s)|(d\.)|(\))|(\])/g, '');
@@ -25072,6 +25068,9 @@ function roundDecimalFormat(number, n) {
   return Math.round(number * _pow) / _pow;
 }
 
+var ymdhmsFormat = d3$1.time.format('%Y-%m-%d %H:%M:%S');
+var ymdhmFormat = d3$1.time.format('%Y-%m-%d %H:%M');
+var ymdhFormat = d3$1.time.format('%Y-%m-%d %H');
 var ymdFormat = d3$1.time.format('%Y-%m-%d');
 var ymFormat = d3$1.time.format('%Y-%m');
 var weekOfYearFormat = d3$1.time.format("%Y-w%W");
@@ -25079,28 +25078,41 @@ var yearFormat = d3$1.time.format('%Y');
 var monthFormat = d3$1.time.format('%m');
 var weekFormat = d3$1.time.format('%w');
 var dayFormat = d3$1.time.format('%d');
+var hourFormat = d3$1.time.format('%H');
+var minuteFormat = d3$1.time.format('%M');
+var secondFormat = d3$1.time.format('%S');
 
 var yearInterval = d3$1.time.year;
 var monthInterval = d3$1.time.month;
 var weekInterval = d3$1.time.week;
 var dayInterval = d3$1.time.day;
 var hourInterval = d3$1.time.hour;
+var minuteInterval = d3$1.time.minute;
+var secondInterval = d3$1.time.second;
 
 var TIME_FORMATS = {
+  ymdhms: ymdhmsFormat,
+  ymdhm: ymdhmFormat,
+  ymdh: ymdhFormat,
   ymd: ymdFormat,
   ym: ymFormat,
   weekOfYear: weekOfYearFormat,
   year: yearFormat,
   month: monthFormat,
   week: weekFormat,
-  day: dayFormat
+  day: dayFormat,
+  hour: hourFormat,
+  minute: minuteFormat,
+  second: secondFormat
 };
 var TIME_INTERVALS = {
   year: yearInterval,
   month: monthInterval,
   week: weekInterval,
   day: dayInterval,
-  hour: hourInterval
+  hour: hourInterval,
+  minute: minuteInterval,
+  second: secondInterval
 };
 
 (function () {
@@ -25247,7 +25259,7 @@ function generateScales(scaleCode) {
 
   // format
   if (scale == 'time') {
-    if (unit == 'month') _format = TIME_FORMATS.ym;else if (unit == 'day') _format = TIME_FORMATS.ymd;else _format = TIME_FORMATS[unit];
+    if (unit == 'month') _format = TIME_FORMATS.ym;else if (unit == 'day') _format = TIME_FORMATS.ymd;else if (unit == 'hour') _format = TIME_FORMATS.ymdh;else if (unit == 'minute') _format = TIME_FORMATS.ymdhm;else if (unit == 'second') _format = TIME_FORMATS.ymdhms;else _format = TIME_FORMATS[unit];
   }
 
   return {
@@ -25688,6 +25700,11 @@ var Base = {
       if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange));
       if (this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit);
     }
+    if (this.extraDimensionExtractor) {
+      chart.keyAccessor(function (d) {
+        return d.key[0];
+      });
+    }
 
     if (this.useLegend) this.applyLegend();
     this.applyStyles();
@@ -25705,6 +25722,28 @@ var Base = {
       }).join(', ');
     });
 
+    if (this.renderTooltip) {
+      chart.on('renderlet', function () {
+        d3$1.selectAll(_this5.tooltipSelector).on("mouseover", _this5.showTooltip).on("mousemove", _this5.moveTooltip).on("mouseout", _this5.removeTooltip);
+      });
+    }
+
+    // deisgn hack
+    if (this.chartType === 'barChart') {
+      var _scale$split3 = this.scale.split('.'),
+          _scale$split4 = slicedToArray(_scale$split3, 2),
+          scale = _scale$split4[0],
+          unit = _scale$split4[1];
+
+      if (scale === 'time') {
+        // if (!unit) unit = 'day'
+        // chart
+        //   .centerBar(true)
+        //   .xAxisPadding(1)
+        //   .xAxisPaddingUnit(unit)
+      }
+    }
+
     chart.on('pretransition', function () {
       if (!_this5.scale && !_this5.dateKey && !_this5.timeScale) {
         chart.selectAll('g.x text').text(function (d) {
@@ -25715,11 +25754,7 @@ var Base = {
         chart.selectAll('g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
     });
-    if (this.renderTooltip) {
-      chart.on('renderlet', function () {
-        d3$1.selectAll(_this5.tooltipSelector).on("mouseover", _this5.showTooltip).on("mousemove", _this5.moveTooltip).on("mouseout", _this5.removeTooltip);
-      });
-    }
+
     this.chart = chart;
 
     return chart;
@@ -34667,6 +34702,11 @@ var DateVolumeChart = {
     }
   },
   computed: {
+    dimensionRange: function dimensionRange() {
+      // TODO: elasticX(false)の時、xAxisPadding*が効かない問題への対処
+      var max = index$2.utils.add(this.max, 1, 'day');
+      return [this.min, max];
+    },
     layoutSettings: function layoutSettings() {
       var settings = Base.computed.layoutSettings.apply(this);
       settings.legend = null;
@@ -34683,9 +34723,7 @@ var DateVolumeChart = {
   },
   mounted: function mounted() {
     var chart = this.chart;
-    chart
-    // .centerBar(true)
-    .gap(1).elasticY(true).round(d3.time.day.round).alwaysUseRounding(true).brushOn(true);
+    chart.gap(1).elasticX(false).elasticY(true).round(d3.time.day.round).alwaysUseRounding(true).brushOn(true);
 
     chart.yAxis().ticks(0);
 
@@ -35435,17 +35473,6 @@ var FilterStackedBar = {
     }
   },
   computed: {
-    dimensionName: function dimensionName() {
-      return [this.dimension, this.extraDimension].join(',');
-    },
-    grouping: function grouping() {
-      var _this = this;
-
-      var grouping = function grouping(d) {
-        return joinKey([_this.dimensionExtractor(d), _this.extraDimensionExtractor(d)]);
-      };
-      return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
-    },
     reducer: function reducer() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var reducer = this.reducerExtractor;
@@ -35455,7 +35482,7 @@ var FilterStackedBar = {
     stackKeys: function stackKeys() {
       var stackKeys = [];
       this.dimAll.forEach(function (obj) {
-        var stackKey = splitKey(obj.key)[1];
+        var stackKey = obj.key[1];
         if (stackKeys.indexOf(stackKey) === -1) stackKeys.push(stackKey);
       });
       return stackKeys;
@@ -35463,29 +35490,34 @@ var FilterStackedBar = {
   },
   methods: {
     stackSecond: function stackSecond(group) {
-      var _this2 = this;
+      var _this = this;
 
       // See: https://github.com/dc-js/dc.js/blob/master/web/examples/filter-stacks.html#L59-L76
+      var _format = this.dimensionScale.format;
       return {
         all: function all() {
           var all = group.all();
           var m = {};
-          if (_this2.removeEmptyRows) {
+          if (_this.removeEmptyRows) {
             all = all.filter(function (kv) {
               return kv.value != 0;
             });
           }
           // build matrix from multikey/value pairs
           all.forEach(function (kv) {
-            var ks = splitKey(kv.key);
-            m[ks[0]] = m[ks[0]] || {};
-            m[ks[0]][ks[1]] = kv.value;
+            var ks = kv.key;
+            var k = ks[0];
+            if (_format) k = _format(k);
+            m[k] = m[k] || {};
+            m[k][ks[1]] = kv.value;
           });
           // then produce multivalue key/value pairs
           return Object.keys(m).map(function (k) {
             var key = k;
-            if (_this2.scale === 'time') key = ymdFormat.parse(k);
-            return { key: key, value: m[k] };
+            if (_format) key = _format.parse(k);
+            // if (this.scale === 'time')
+            // key = ymdFormat.parse(k)
+            return { key: [key], value: m[k] };
           });
         }
       };
@@ -35494,9 +35526,6 @@ var FilterStackedBar = {
       return function (d) {
         return d.value[k] || 0;
       };
-    },
-    extractKey: function extractKey(k) {
-      return k.replace(/\'/g, '');
     },
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -35509,36 +35538,36 @@ var FilterStackedBar = {
     }
   },
   mounted: function mounted() {
-    var _this3 = this;
+    var _this2 = this;
 
     var chart = this.chart;
     var stackKeys = this.stackKeys;
     var barNum = stackKeys.length;
 
-    chart.group(this.reducer, this.extractKey(stackKeys[0]), this.selStacks(stackKeys[0])).clipPadding(10).elasticX(this.elasticX);
+    chart.group(this.reducer, String(stackKeys[0]), this.selStacks(stackKeys[0])).clipPadding(10).elasticX(this.elasticX);
+
     // stack
     for (var i = 1; i < barNum; i++) {
-      chart.stack(this.reducer, this.extractKey(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
+      chart.stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
     }
     chart.on('pretransition', function (chart) {
-      if (!_this3.scale) {
+      if (!_this2.scale) {
         chart.selectAll('g.x text').text(function (d) {
           return d.length > 10 ? d.substr(0, 10) + '...' : d;
         });
       }
-      if (_this3.rotateXAxisLabel) {
+      if (_this2.rotateXAxisLabel) {
         chart.selectAll('g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
+
       // select <-> deselect && redraw
       chart.selectAll('rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
-        var x = d.x;
-        if (_this3.scale === 'time') x = ymdFormat(x);
-        var key = multiKey(x, d.layer);
-        return chart.filter() && chart.filters().indexOf(key) === -1;
+        return chart.filter() && chart.filters().findIndex(function (f) {
+          return f[0] === d.x && f[1] === d.layer;
+        }) === -1;
       }).on('click', function (d) {
-        var x = d.x;
-        if (_this3.scale === 'time') x = ymdFormat(x);
-        chart.filter(multiKey(x, d.layer));
+        var f = [d.x, d.layer];
+        chart.filter(index$2.filters.TwoDimensionalFilter(f));
         index$2.redrawAll();
       });
     });
