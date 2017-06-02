@@ -3,6 +3,7 @@
 
 import d3 from "d3"
 import dc from 'dc'
+import Base from './_base.js'
 import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
 import {generateExtractor} from '../utils'
@@ -31,10 +32,7 @@ export default {
   },
   computed: {
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.reducerExtractor;
-      const group = dim.group().reduceSum(reducer)
-      return this.stackSecond(group);
+      return this.stackSecond(Base.computed.reducer.apply(this))
     },
     stackKeys: function() {
       const stackKeys = [];
@@ -79,6 +77,10 @@ export default {
     },
     selStacks: function(k) {
       return (d) => {
+        if (d.value[k] === undefined) return 0
+        if (this.isRateReducer) {
+          return (d.value[k].count === 0 ? 0 : d.value[k].value / d.value[k].count)
+        }
         return d.value[k] || 0
       }
     },
