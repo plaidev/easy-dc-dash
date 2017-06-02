@@ -24531,7 +24531,7 @@ var DefaultTheme = {
     var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
 
     if (name === 'auto') {
-      if (width / height > 2) {
+      if (legendable && width / height > 2) {
         name = 'wide';
       } else if (Math.abs(width - height) < 10) {
         name = 'square';
@@ -24571,9 +24571,7 @@ var DefaultTheme = {
           yLabel: { padding: 20 }
         }
       };
-    }
-
-    if (name === 'square') {
+    } else if (name === 'square') {
       var length = Math.min(width, height * heightCoef);
 
       return {
@@ -24610,7 +24608,7 @@ var DefaultTheme = {
           y: height * heightCoef / 2
         },
         legend: {
-          x: height,
+          x: width - height,
           y: height * legendYCoef,
           width: width - height,
           horizontal: false
@@ -25736,11 +25734,8 @@ var Base = {
           unit = _scale$split4[1];
 
       if (scale === 'time') {
-        // if (!unit) unit = 'day'
-        // chart
-        //   .centerBar(true)
-        //   .xAxisPadding(1)
-        //   .xAxisPaddingUnit(unit)
+        if (!unit) unit = 'day';
+        chart.centerBar(true).xAxisPadding(1).xAxisPaddingUnit(unit);
       }
     }
 
@@ -34704,8 +34699,9 @@ var DateVolumeChart = {
   computed: {
     dimensionRange: function dimensionRange() {
       // TODO: elasticX(false)の時、xAxisPadding*が効かない問題への対処
+      var min = this.min; // dc.utils.subtract(this.min, 0, 'day')
       var max = index$2.utils.add(this.max, 1, 'day');
-      return [this.min, max];
+      return [min, max];
     },
     layoutSettings: function layoutSettings() {
       var settings = Base.computed.layoutSettings.apply(this);
@@ -34723,7 +34719,7 @@ var DateVolumeChart = {
   },
   mounted: function mounted() {
     var chart = this.chart;
-    chart.gap(1).elasticX(false).elasticY(true).round(d3.time.day.round).alwaysUseRounding(true).brushOn(true);
+    chart.gap(1).elasticX(false).elasticY(true).round(d3.time.day.round).alwaysUseRounding(true).brushOn(true).centerBar(false);
 
     chart.yAxis().ticks(0);
 
@@ -34980,11 +34976,11 @@ var WeekRow = {
     },
     dimensionScale: function dimensionScale() {
       return {
-        domain: d3$1.scale.ordinal().domain
+        domain: d3$1.scale.linear().domain
       };
     },
     dimensionRange: function dimensionRange() {
-      return [0, 1, 2, 3, 4, 5, 6];
+      return [0, 6];
     }
   },
 
@@ -36224,7 +36220,7 @@ var DataTable = { render: function render() {
       return null;
     },
     firstRow: function firstRow() {
-      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       return dim.top(1)[0];
     },
     cols: function cols() {
