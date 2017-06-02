@@ -160,7 +160,7 @@ export default {
       return null
     },
     firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     cols: function() {

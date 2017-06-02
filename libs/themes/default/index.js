@@ -26,7 +26,7 @@ export default {
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
 
     if (name === 'auto') {
-      if (width / height > 2) {
+      if (legendable && width / height > 2) {
         name = 'wide'
       }
       else if (Math.abs(width - height) < 10) {
@@ -71,7 +71,7 @@ export default {
       }
     }
 
-    if (name === 'square') {
+    else if (name === 'square') {
       const length = Math.min(width, height * heightCoef)
 
       return {
@@ -110,7 +110,7 @@ export default {
           y: height * heightCoef / 2
         },
         legend: {
-          x: height,
+          x: width - height,
           y: height * legendYCoef,
           width: width - height,
           horizontal: false
