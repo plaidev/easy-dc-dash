@@ -35470,10 +35470,7 @@ var FilterStackedBar = {
   },
   computed: {
     reducer: function reducer() {
-      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var reducer = this.reducerExtractor;
-      var group = dim.group().reduceSum(reducer);
-      return this.stackSecond(group);
+      return this.stackSecond(Base.computed.reducer.apply(this));
     },
     stackKeys: function stackKeys() {
       var stackKeys = [];
@@ -35507,6 +35504,7 @@ var FilterStackedBar = {
             m[k] = m[k] || {};
             m[k][ks[1]] = kv.value;
           });
+          console.log('all:', m);
           // then produce multivalue key/value pairs
           return Object.keys(m).map(function (k) {
             var key = k;
@@ -35519,7 +35517,13 @@ var FilterStackedBar = {
       };
     },
     selStacks: function selStacks(k) {
+      var _this2 = this;
+
       return function (d) {
+        if (d.value[k] === undefined) return 0;
+        if (_this2.isRateReducer) {
+          return d.value[k].count === 0 ? 0 : d.value[k].value / d.value[k].count;
+        }
         return d.value[k] || 0;
       };
     },
@@ -35534,7 +35538,7 @@ var FilterStackedBar = {
     }
   },
   mounted: function mounted() {
-    var _this2 = this;
+    var _this3 = this;
 
     var chart = this.chart;
     var stackKeys = this.stackKeys;
@@ -35547,12 +35551,12 @@ var FilterStackedBar = {
       chart.stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
     }
     chart.on('pretransition', function (chart) {
-      if (!_this2.scale) {
+      if (!_this3.scale) {
         chart.selectAll('g.x text').text(function (d) {
           return d.length > 10 ? d.substr(0, 10) + '...' : d;
         });
       }
-      if (_this2.rotateXAxisLabel) {
+      if (_this3.rotateXAxisLabel) {
         chart.selectAll('g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
 
@@ -36711,7 +36715,7 @@ var Bubble = {
   }), _props),
   computed: {
     firstRow: function firstRow() {
-      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       return dim.top(1)[0];
     },
     data: function data() {
@@ -36729,7 +36733,7 @@ var Bubble = {
     reducer: function reducer() {
       var _this = this;
 
-      var dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, { dataset: this.dataset });
+      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       // TODO: このあたりはdata-tableのdimensionの処理とほぼ同じ
       return dim.group().reduce(function (p, v) {
         var vals = _this.reducerExtractor(v);
