@@ -73,7 +73,7 @@ export default {
   },
   computed: {
     firstRow: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       return dim.top(1)[0]
     },
     data: function() {
@@ -89,7 +89,7 @@ export default {
       }
     },
     reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, this.dimensionExtractor, {dataset: this.dataset});
+      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       // TODO: このあたりはdata-tableのdimensionの処理とほぼ同じ
       return dim.group().reduce(
         (p, v) => {
