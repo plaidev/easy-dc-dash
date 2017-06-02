@@ -27,7 +27,7 @@ export default {
       type: Number,
       default: 1000
     },
-    scale: {
+    geoScale: {
       type: Number,
       default: 2000
     }
@@ -44,22 +44,19 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
+    const max = this.reducer.top(1)[0].value;
 
     d3.json('../../../libs/json/japan.topojson', (error, japan) => {
       const geo_features = feature(japan, japan.objects.japan).features;
       chart
         .overlayGeoJson(geo_features, "pref", (d) => ('0'+d.properties.id).slice(-2))
-        .height(this.height)
-        .width(this.width)
         .render()
     })
 
-    const max = this.reducer.top(1)[0].value;
-
-    this.chart
+    chart
       .projection(d3.geo.mercator()
         .center([136, 35.5])
-        .scale(this.scale)
+        .scale(this.geoScale)
         .translate([this.width / 2, this.height / 2])
       )
       .colorAccessor(d3.scale.log()
@@ -72,7 +69,7 @@ export default {
         .interpolate(d3.interpolateHcl)
         .range(['#f7fcfd', '#00441b'])
       )
-    return this.chart;
+    return chart
   }
 }
 
