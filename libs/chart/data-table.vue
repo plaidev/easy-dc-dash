@@ -29,7 +29,7 @@ import '../styles/font-awesome-variables.scss'
 import 'font-awesome/scss/font-awesome.scss'
 
 function _valueAccessor(d, k) {
-  if(!d.value[k]) return
+  if(d.value[k] === undefined || d.value[k] === null) return
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
 }
 
