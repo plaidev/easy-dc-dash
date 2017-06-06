@@ -25062,6 +25062,7 @@ function extractName(dimension) {
   return dimension.replace(/(\[)|(\D*\()|(\s)|(d\.)|(\))|(\])/g, '');
 }
 function roundDecimalFormat(number, n) {
+  if (!n) return number;
   var _pow = Math.pow(10, n);
   return Math.round(number * _pow) / _pow;
 }
@@ -25474,14 +25475,6 @@ var Base = {
     reducerAll: function reducerAll() {
       return this.reducer.all();
     },
-    reducerTotal: function reducerTotal() {
-      var vals = this.reducerAll.map(function (d) {
-        return d.value;
-      });
-      return vals.reduce(function (a, b) {
-        return a + b;
-      });
-    },
     dimensionScale: function dimensionScale() {
       return generateScales(this.scale);
     },
@@ -25508,7 +25501,7 @@ var Base = {
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .bubble';
       if (this.chartType === 'seriesChart') return '#' + this.id + ' .line, #' + this.id + ' circle.dot';
       if (this.chartType === 'compositeChart') return '#' + this.id + ' .stack .area, #' + this.id + ' circle.dot';
-      if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' .pref';
+      if (this.chartType === 'geoChoroplethChart') return '#' + this.id + ' g path';
     },
     tooltipAccessor: function tooltipAccessor() {
       var _this3 = this;
@@ -25518,9 +25511,9 @@ var Base = {
       return function (d, i) {
         var key = null;
         var val = null;
-        if (d.x && d.y) {
+        if (d.x != undefined && d.y != undefined) {
           key = _format ? _format(d.x) : d.x;
-          val = d.y;
+          val = roundDecimalFormat(d.y, 2);
         } else {
           key = d.name.replace(/^(left|right):/, '');
         }
@@ -34789,8 +34782,8 @@ var SegmentPie = {
       var _this = this;
 
       return function (d, i) {
-        var num = d.value / _this.reducerTotal * 100;
-        var rate = roundDecimalFormat(num, 2);
+        var _rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
+        var rate = roundDecimalFormat(_rate, 2);
         return {
           key: _this.segmentLabel(d.data.key),
           val: d.value,
@@ -34870,11 +34863,9 @@ var MultiDimensionPie = {
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     tooltipAccessor: function tooltipAccessor() {
-      var _this = this;
-
       return function (d, i) {
-        var num = d.value / _this.reducerTotal * 100;
-        var rate = roundDecimalFormat(num, 2);
+        var _rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
+        var rate = roundDecimalFormat(_rate, 2);
         return {
           key: d.data.key,
           val: d.value,
@@ -35321,8 +35312,9 @@ var OrdinalBar = {
   methods: {
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
+      var _format = this.dimensionScale.format;
       var data = {
-        key: d.data.key,
+        key: _format ? _format(d.data.key) : d.data.key,
         val: d.data.value
       };
       this.$refs.tooltip.show(data, fill);
@@ -35402,9 +35394,10 @@ var StackedBar = {
   },
   methods: {
     showTooltip: function showTooltip(d) {
+      var _format = this.dimensionScale.format;
       var fill = d3$1.event.target.getAttribute('fill');
       var data = {
-        key: d.data.key,
+        key: _format ? _format(d.data.key) : d.data.key,
         val: d.data.value.reduce(function (a, b) {
           return a + b;
         })
@@ -35504,7 +35497,6 @@ var FilterStackedBar = {
             m[k] = m[k] || {};
             m[k][ks[1]] = kv.value;
           });
-          console.log('all:', m);
           // then produce multivalue key/value pairs
           return Object.keys(m).map(function (k) {
             var key = k;
@@ -36036,37 +36028,46 @@ var GeoJP = { render: function render() {
       type: Number,
       default: 1000
     },
-    scale: {
+    geoScale: {
       type: Number,
       default: 2000
+    },
+    removePrefSuffix: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
+      var _key = ('0' + d.properties.id).slice(-2);
       var data = {
-        key: d.properties.nam_ja
-        // val: null
+        key: d.properties.nam_ja,
+        val: this.extractValue(_key)
       };
       this.$refs.tooltip.show(data, fill);
+    },
+    extractValue: function extractValue(_key) {
+      return this.reducerAll.filter(function (x) {
+        return x.key === _key;
+      })[0].value;
     }
   },
   mounted: function mounted() {
-    var _this = this;
-
     var chart = this.chart;
-
-    d3$1.json('../../../libs/json/japan.topojson', function (error, japan) {
+    var max = this.reducer.top(1)[0].value;
+    var path = '../../../libs/json/';
+    var json = this.removePrefSuffix ? 'japan_without_suffix.topojson' : 'japan.topojson';
+    var json_path = path.concat(json);
+    d3$1.json(json_path, function (error, japan) {
       var geo_features = feature(japan, japan.objects.japan).features;
       chart.overlayGeoJson(geo_features, "pref", function (d) {
         return ('0' + d.properties.id).slice(-2);
-      }).height(_this.height).width(_this.width).render();
+      }).render();
     });
 
-    var max = this.reducer.top(1)[0].value;
-
-    this.chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.scale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b']));
-    return this.chart;
+    chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.geoScale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b']));
+    return chart;
   }
 };
 
@@ -36076,7 +36077,7 @@ var _computed;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .data-table-container { display: flex; flex-direction: column; align-items: flex-start; height: 100%; width: 94%; padding-top: 10px; font-size: 14px; } .table-container { overflow-y: auto; width: 100%; } table { } th.dc-table-head { cursor: pointer } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .data-table-container { display: flex; flex-direction: column; align-items: flex-start; height: calc(100% - 25px); width: 94%; padding-top: 25px; font-size: 14px; } .table-container { overflow-y: auto; width: 100%; } table { } th.dc-table-head { cursor: pointer } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36085,6 +36086,7 @@ var _computed;
 })();
 
 function _valueAccessor(d, k) {
+  if (d.value[k] === undefined || d.value[k] === null) return;
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k];
 }
 
@@ -36134,7 +36136,7 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title } }, [_c('div', { staticClass: "data-table-container" }, [_c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } }), this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
@@ -36247,7 +36249,7 @@ var DataTable = { render: function render() {
       return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
     },
     linkCol: function linkCol() {
-      if (!this.linkColmn) return null;
+      if (!this.linkColumn) return null;
       return this.linkColumn.replace(/\s/g, '').split(',');
     }
   }, defineProperty(_computed, 'reducer', function reducer() {
@@ -36259,8 +36261,9 @@ var DataTable = { render: function render() {
     var dim = Store.registerDimension(this.dimensionName, extractor, { dataset: this.dataset });
     var grouping = dim.group().reduce(function (p, v) {
       var vals = _this.getColsExtractor(v);
+      if (vals[_this.dimensionName] === '') return p;
       _this.colsKeys.forEach(function (k) {
-        if (vals[k].count) {
+        if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
           p[k].count += vals[k].count;
           p[k].value += vals[k].value;
           p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
@@ -36282,8 +36285,9 @@ var DataTable = { render: function render() {
       return p;
     }, function (p, v) {
       var vals = _this.getColsExtractor(v);
+      if (vals[_this.dimension] === '') return p;
       _this.colsKeys.forEach(function (k) {
-        if (vals[k].count) {
+        if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
           p[k].count -= vals[k].count;
           p[k].value -= vals[k].value;
           p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
@@ -36338,7 +36342,7 @@ var DataTable = { render: function render() {
 
       var schema = {};
       this.colsKeys.forEach(function (k) {
-        val = _this3.cols[k];
+        var val = _this3.cols[k];
         if (val instanceof String || typeof val === 'string') val = '';else if (val instanceof Number || typeof val === 'number') val = 0;else if (val instanceof Date) val = [];else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
           val = { count: 0, value: 0, per: 0 };
         }
@@ -36361,7 +36365,7 @@ var DataTable = { render: function render() {
             return item;
           }).join(', ');
         }
-        if (d.value[key].per) return d.value[key].per;
+        if (d.value[key].per != undefined) return d.value[key].per;
         return d.value[key];
       };
     },
@@ -36410,7 +36414,7 @@ var DataTable = { render: function render() {
       var dim = Store.getDimension(_this6.dimensionName, { dataset: _this6.dataset });
       _this6.filteredDataSize = dim.groupAll().value();
       _this6.filteredSize = _this6.grouping.size();
-      var ths = d3$1.selectAll('th.dc-table-head');
+      var ths = d3$1.selectAll('#' + _this6.id + ' th.dc-table-head');
       ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
     });
     this.updateTable();
@@ -36594,14 +36598,15 @@ var Series = {
   },
   methods: {
     showTooltip: function showTooltip(d) {
+      var _format = this.dimensionScale.format;
       var fill = d3$1.event.target.getAttribute('fill');
       var stroke = d3$1.event.target.getAttribute('stroke');
       var color = fill || stroke;
 
-      if (d.x && d.y) {
+      if (d.x != undefined && d.y != undefined) {
         var key = d.layer;
         var vals = {
-          x: d.x,
+          x: _format ? _format(d.x) : d.x,
           y: d.y
         };
         var data = {
@@ -36611,8 +36616,10 @@ var Series = {
         this.$refs.tooltip.show(data, color);
       } else {
         var _key = d.name;
-        var _vals = d.values.reduce(function (a, b) {
-          return a.y + b.y;
+        var _vals = d.values.map(function (_d) {
+          return _d.y;
+        }).reduce(function (a, b) {
+          return a + b;
         });
         var _data = {
           key: _key,
