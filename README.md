@@ -10,15 +10,15 @@ scripts
 -----------
 
 ```
-npm run build
+yarn run build
 ```
 
 ```
-npm run watch
+yarn run watch
 ```
 
 ```
-npm run http-server
+yarn run http-server
 ```
 
 demo
