@@ -1,7 +1,6 @@
 <template>
   <card :width="width" :height="height" :title="title">
     <div class="data-table-container">
-      <div v-text="title" style="font-size:24px; text-align:center;"></div>
       <div class="table-paging" v-if="this.useTablePaging">
         <!--
           {{this.filteredDataSize}} selected out of {{this.cfSize}} records
@@ -30,6 +29,7 @@ import '../styles/font-awesome-variables.scss'
 import 'font-awesome/scss/font-awesome.scss'
 
 function _valueAccessor(d, k) {
+  if(!d.value[k]) return
   return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
 }
 
@@ -183,7 +183,7 @@ export default {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
     },
     linkCol: function() {
-      if(!this.linkColmn) return null
+      if(!this.linkColumn) return null
       return this.linkColumn.replace(/\s/g, '').split(',')
     },
     reducer: function() {
@@ -195,8 +195,9 @@ export default {
       const grouping = dim.group().reduce(
         (p, v) => {
           const vals = this.getColsExtractor(v);
+          if(vals[this.dimensionName] === '') return p;
           this.colsKeys.forEach((k) => {
-            if (vals[k].count) {
+            if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
               p[k].count += vals[k].count;
               p[k].value += vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
@@ -219,8 +220,9 @@ export default {
         },
         (p, v) => {
           const vals = this.getColsExtractor(v);
+          if(vals[this.dimension] === '') return p;
           this.colsKeys.forEach((k) => {
-            if (vals[k].count) {
+            if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
               p[k].count -= vals[k].count;
               p[k].value -= vals[k].value;
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
@@ -276,7 +278,7 @@ export default {
     getSchema: function() {
       const schema = {}
       this.colsKeys.forEach((k) => {
-        val = this.cols[k]
+        let val = this.cols[k]
         if(val instanceof String || typeof val === 'string') val = '';
         else if(val instanceof Number || typeof val === 'number') val = 0;
         else if(val instanceof Date) val = []
@@ -298,7 +300,7 @@ export default {
             return item
           }).join(', ')
         }
-        if (d.value[key].per) return d.value[key].per
+        if (d.value[key].per != undefined) return d.value[key].per
         return d.value[key]
       }
     },
@@ -346,7 +348,7 @@ export default {
         const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
         this.filteredDataSize = dim.groupAll().value()
         this.filteredSize = this.grouping.size()
-        const ths = d3.selectAll('th.dc-table-head')
+        const ths = d3.selectAll(`#${this.id} th.dc-table-head`)
         ths
           .append('i')
             .attr('class', 'fa fa-sort')
@@ -363,9 +365,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  height: 100%;
+  height: calc(100% - 25px);
   width: 94%;
-  padding-top: 10px;
+  padding-top: 25px;
   font-size: 14px;
 }
 .table-container {
