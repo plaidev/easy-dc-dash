@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+  <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
+
+    <data-table
+      title='date'
+      dimension="date"
+      columns="{date: d.date, name: d.name, meta: d.meta, v: d.v, cnt: d.cnt, rate: {count: d.cnt, value: d.v}}"
+      sort-by="date"
+      order="ascending"
+      :use-table-paging=true
+      :offset=0
+      :rows-per-page=5
+      :height=300
+    ></data-table>
+    <data-table
+      title='name'
+      dimension="name"
+      columns="{name: d.name, meta: d.meta, v: d.v, cnt: d.cnt, rate: {count: d.cnt, value: d.v}}"
+      sort-by="name"
+      order="descending"
+      :use-table-paging=false
+      :height=300
+    ></data-table>
+    <data-table
+      title='link'
+      dimension="d.date"
+      columns="{date: d.date, link: d.link}"
+      link-column='link'
+      :height=300
+    ></data-table>
+
+    <script type="text/javascript">
+      EasyDC.Store.registerData([
+        {date: new Date('2017-05-16 10:00'), name: 'a', meta: 'hoge', cnt: 0, v: 1+23, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-16 10:00'), name: 'c', meta: 'fuga', cnt: 0, v: 1+23, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-17 10:00'), name: '', meta: 'piyo', cnt: 0, v: 1+23, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-18 10:00'), name: 'b', meta: 'hoge', cnt: 0, v: 1+23, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-18 10:00'), name: 'a', meta: 'fuga', cnt: 0, v: 1+23, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-19 10:00'), name: 'b', meta: '', cnt: 1, v: 0, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-21 10:00'), name: 'd', meta: 'fuga', cnt: 3, v: 1+17, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-22 10:00'), name: 'c', meta: 'hoge', cnt: 4, v: 1+15, link: 'htttps://www.google.co.jp'},
+        {date: new Date('2017-05-20 10:00'), name: '', meta: '', cnt: 0, v: 0, link: ''},
+        {date: new Date('2017-05-20 10:00'), name: 'null', meta: 'null', cnt: 0, v: 0, link: 'null'},
+      ])
+      console.log(EasyDC);
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>
