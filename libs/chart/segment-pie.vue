@@ -52,9 +52,7 @@ export default {
     },
     tooltipAccessor: function() {
       return (d, i) => {
-        const maxAngle = 6.283185307179586;
-        const angle = d.endAngle - d.startAngle;
-        const _rate = (angle / maxAngle) * 100
+        const _rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
         const rate = roundDecimalFormat(_rate, 2)
         return {
           key: this.segmentLabel(d.data.key),
