@@ -34680,7 +34680,7 @@ var DateVolumeChart = {
     },
     height: {
       type: Number,
-      default: 60
+      default: 90
     },
     scale: {
       default: 'time.day'
