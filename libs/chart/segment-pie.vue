@@ -52,8 +52,8 @@ export default {
     },
     tooltipAccessor: function() {
       return (d, i) => {
-        const num = (d.value / this.reducerTotal) * 100;
-        const rate = roundDecimalFormat(num, 2)
+        const _rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
+        const rate = roundDecimalFormat(_rate, 2)
         return {
           key: this.segmentLabel(d.data.key),
           val: d.value,

@@ -2,7 +2,7 @@ import d3 from 'd3'
 import dc from 'dc'
 import 'dc/dc.css'
 import Store from '../store'
-import {generateDomId, generateExtractor, reverseLegendOrder, splitKey, extractName} from '../utils'
+import {generateDomId, generateExtractor, reverseLegendOrder, splitKey, extractName, roundDecimalFormat} from '../utils'
 import {TIME_INTERVALS, TIME_FORMATS} from '../utils/time-format'
 
 import ResetButton from '../components/reset-button.vue'
@@ -261,10 +261,6 @@ export default {
     reducerAll: function() {
       return this.reducer.all();
     },
-    reducerTotal: function() {
-      const vals = this.reducerAll.map(d => d.value)
-      return vals.reduce((a,b) => a+b)
-    },
     dimensionScale: function () {
       return generateScales(this.scale)
     },
@@ -296,9 +292,9 @@ export default {
       return (d, i) => {
         let key = null;
         let val = null;
-        if (d.x && d.y) {
+        if (d.x != undefined && d.y != undefined) {
           key = _format ? _format(d.x) : d.x;
-          val = d.y;
+          val = roundDecimalFormat(d.y, 2);
         }
         else {
           key = d.name.replace(/^(left|right):/, '')

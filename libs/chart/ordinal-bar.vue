@@ -50,8 +50,9 @@ export default {
   methods: {
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
+      const _format = this.dimensionScale.format
       const data = {
-        key: d.data.key,
+        key: _format ? _format(d.data.key) : d.data.key,
         val: d.data.value
       }
       this.$refs.tooltip.show(data, fill)
