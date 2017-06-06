@@ -15,9 +15,9 @@ export default {
       type: String,
       default: 'heatMap'
     },
-    yBorderRadius: {
+    borderRadius: {
       type: Number,
-      defaulat: 6.75
+      default: 6.75
     },
     layout: {
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
@@ -64,16 +64,18 @@ export default {
       .keyAccessor((d) => d.key[0])
       .valueAccessor((d) => d.key[1])
       .colorAccessor((d) => +d.value)
-      .yBorderRadius(this.yBorderRadius)
-      .colsLabel((d) => this.getLabel(d))
-      .rowsLabel((d) => this.getLabel(d))
-      .on('postRender', () => {
-          if(!this.dateKey) {
-            chart.selectAll('g.cols.axis text')
-              .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
-          }
-      })
+      .xBorderRadius(this.borderRadius)
+      .yBorderRadius(this.borderRadius)
+      .colsLabel((d) => this.hideXAxisLabel ? null : this.getLabel(d))
+      .rowsLabel((d) => this.hideYAxisLabel ? null : this.getLabel(d))
       .colors(this.valueColors)
+
+    chart.on('pretransition', () => {
+      if(!this.hideXAxisLabel && !this.dateKey) {
+        chart.selectAll('g.cols.axis text')
+          .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
+      }
+    })
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {

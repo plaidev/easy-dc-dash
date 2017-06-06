@@ -72,7 +72,7 @@ export default {
       .ordering((d) => this.descending ? -d.value : d.value)
       .on('pretransition', () => {
           chart.selectAll('g.row text')
-            .text(d => d.key.length > 10 ? d.key.substring(0,10)+'...' : d.key)
+            .text(d => d.key.length > 20 ? d.key.substring(0,20)+'...' : d.key)
       })
     if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart.render();

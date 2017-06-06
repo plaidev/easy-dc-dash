@@ -110,6 +110,14 @@ export default {
       type: Boolean,
       default: false
     },
+    hideXAxisLabel: {
+      type: Boolean,
+      default: false
+    },
+    hideYAxisLabel: {
+      type: Boolean,
+      default: false
+    },
 
     // animation
     transitionDuration: {
@@ -489,6 +497,12 @@ export default {
           })
           .join(', ')
       })
+    if(this.hideXAxisLabel && chart.xAxis instanceof Function) {
+      chart.xAxis().tickValues([])
+    }
+    if(this.hideYAxisLabel && chart.xAxis instanceof Function) {
+      chart.yAxis().tickValues([])
+    }
 
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
@@ -512,11 +526,13 @@ export default {
     }
 
     chart.on('pretransition', () => {
-      if(!this.scale && !this.dateKey && !this.timeScale) {
-        chart.selectAll('g.x text')
-          .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
-      }
-      if(this.rotateXAxisLabel) {
+      chart.selectAll('g.x text, .node text')
+        .text(_d => {
+          const d = _d.key || _d
+          d.length > 15 ? d.substr(0,15)+'...' : d
+        })
+
+      if(!this.hideXAxisLabel && this.rotateXAxisLabel) {
         chart.selectAll('g.x text')
           .attr('transform', 'translate(-10,5) rotate(330)')
       }
