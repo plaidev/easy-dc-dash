@@ -110,17 +110,6 @@ export default {
         .stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i]))
         .hidableStacks(true)
     }
-    chart
-      .on('pretransition', (chart) => {
-        if(!this.scale) {
-          chart.selectAll('g.x text')
-            .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
-        }
-        if(this.rotateXAxisLabel) {
-          chart.selectAll('g.x text')
-            .attr('transform', 'translate(-10,5) rotate(330)')
-      }
-
     // select <-> deselect && redraw
     chart.selectAll('rect.bar')
       .classed('deselected', false)
@@ -134,7 +123,6 @@ export default {
         chart.filter(dc.filters.TwoDimensionalFilter(f))
         dc.redrawAll();
       })
-    });
     this.applyLegend({reverseOrder:true})
     return chart.render();
   }

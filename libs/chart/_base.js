@@ -118,6 +118,10 @@ export default {
       type: Boolean,
       default: false
     },
+    rotateXAxisLabel: {
+      type: Boolean,
+      default: true
+    },
 
     // animation
     transitionDuration: {
@@ -526,12 +530,14 @@ export default {
     }
 
     chart.on('pretransition', () => {
-      chart.selectAll('g.x text, .node text')
-        .text(_d => {
-          const d = _d.key || _d
-          d.length > 15 ? d.substr(0,15)+'...' : d
+      if(!this.scale && !this.dateKey && !this.timeScale) {
+        chart.selectAll('g.x text, .node text, g.cols.axis text')
+          .text(_d => {
+            let d = _d.key || _d;
+            d.length > 15 ? d.substr(0,15)+'...' : d
         })
 
+      }
       if(!this.hideXAxisLabel && this.rotateXAxisLabel) {
         chart.selectAll('g.x text')
           .attr('transform', 'translate(-10,5) rotate(330)')

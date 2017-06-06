@@ -70,12 +70,6 @@ export default {
       .rowsLabel((d) => this.hideYAxisLabel ? null : this.getLabel(d))
       .colors(this.valueColors)
 
-    chart.on('pretransition', () => {
-      if(!this.hideXAxisLabel && !this.dateKey) {
-        chart.selectAll('g.cols.axis text')
-          .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
-      }
-    })
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {

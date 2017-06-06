@@ -8,10 +8,6 @@ import {TIME_FORMATS, TIME_INTERVALS} from '../utils/time-format'
 export default {
   extends: Base,
   props: {
-    rotateXAxisLabel: {
-      type: Boolean,
-      default: true
-    },
     xAxisLabel: {
       type: String,
       default: ''
