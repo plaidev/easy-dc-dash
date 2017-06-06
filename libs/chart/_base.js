@@ -288,7 +288,7 @@ export default {
       if(this.chartType === 'bubbleChart') return `#${this.id} .bubble`
       if(this.chartType === 'seriesChart') return `#${this.id} .line, #${this.id} circle.dot`
       if(this.chartType === 'compositeChart') return `#${this.id} .stack .area, #${this.id} circle.dot`
-      if(this.chartType === 'geoChoroplethChart') return `#${this.id} .pref`
+      if(this.chartType === 'geoChoroplethChart') return `#${this.id} g path`
     },
     tooltipAccessor: function() {
       const _format = this.dimensionScale.format

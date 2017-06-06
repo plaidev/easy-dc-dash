@@ -27,39 +27,46 @@ export default {
       type: Number,
       default: 1000
     },
-    scale: {
+    geoScale: {
       type: Number,
       default: 2000
+    },
+    removePrefSuffix: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
     showTooltip(d) {
       const fill = d3.event.target.getAttribute('fill')
+      const _key = ('0'+d.properties.id).slice(-2)
       const data = {
-        key: d.properties.nam_ja
-        // val: null
+        key: d.properties.nam_ja,
+        val: this.extractValue(_key)
       }
       this.$refs.tooltip.show(data, fill)
+    },
+    extractValue(_key) {
+      return this.reducerAll.filter(x => x.key === _key)[0].value
     }
   },
   mounted: function() {
     const chart = this.chart;
-
-    d3.json('../../../libs/json/japan.topojson', (error, japan) => {
+    const max = this.reducer.top(1)[0].value;
+    const path = '../../../libs/json/'
+    const json = this.removePrefSuffix ? 'japan_without_suffix.topojson' : 'japan.topojson'
+    const json_path = path.concat(json)
+    d3.json(json_path, (error, japan) => {
       const geo_features = feature(japan, japan.objects.japan).features;
       chart
         .overlayGeoJson(geo_features, "pref", (d) => ('0'+d.properties.id).slice(-2))
-        .height(this.height)
-        .width(this.width)
         .render()
     })
 
-    const max = this.reducer.top(1)[0].value;
-
-    this.chart
+    chart
       .projection(d3.geo.mercator()
         .center([136, 35.5])
-        .scale(this.scale)
+        .scale(this.geoScale)
         .translate([this.width / 2, this.height / 2])
       )
       .colorAccessor(d3.scale.log()
@@ -72,7 +79,7 @@ export default {
         .interpolate(d3.interpolateHcl)
         .range(['#f7fcfd', '#00441b'])
       )
-    return this.chart;
+    return chart
   }
 }
 
