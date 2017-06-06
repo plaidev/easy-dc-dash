@@ -170,6 +170,7 @@ export function extractName(dimension) {
   return dimension.replace(/(\[)|(\D*\()|(\s)|(d\.)|(\))|(\])/g, '')
 }
 export function roundDecimalFormat(number, n) {
+  if(!n) return number;
   const _pow = Math.pow(10,n) ;
   return Math.round(number * _pow) / _pow;
 }
