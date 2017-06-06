@@ -261,10 +261,6 @@ export default {
     reducerAll: function() {
       return this.reducer.all();
     },
-    reducerTotal: function() {
-      const vals = this.reducerAll.map(d => d.value)
-      return vals.reduce((a,b) => a+b)
-    },
     dimensionScale: function () {
       return generateScales(this.scale)
     },
