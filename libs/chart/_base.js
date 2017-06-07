@@ -291,6 +291,11 @@ export default {
     colorSettings: function() {
       return Store.getTheme().colors(this.chartType)
     },
+    textSelector: function() {
+      if(this.chartType === 'bubbleChart') return `#${this.id} .node text`
+      else if(this.chartType === 'heatMap') return `#${this.id} g.cols.axis text`
+      else return `#${this.id} g.x text`
+    },
     tooltipSelector: function() {
       if(this.chartType === 'barChart') return `#${this.id} .bar`
       if(this.chartType === 'lineChart') return `#${this.id} .stack .area, #${this.id} circle.dot`
@@ -504,7 +509,7 @@ export default {
     if(this.hideXAxisLabel && chart.xAxis instanceof Function) {
       chart.xAxis().tickValues([])
     }
-    if(this.hideYAxisLabel && chart.xAxis instanceof Function) {
+    if(this.hideYAxisLabel && chart.yAxis instanceof Function) {
       chart.yAxis().tickValues([])
     }
 
@@ -530,16 +535,16 @@ export default {
     }
 
     chart.on('pretransition', () => {
-      if(!this.scale && !this.dateKey && !this.timeScale) {
-        chart.selectAll('g.x text, .node text, g.cols.axis text')
+      if(!this.dateKey && !this.timeScale) {
+        chart.selectAll(this.textSelector)
           .text(_d => {
             let d = _d.key || _d;
-            d.length > 15 ? d.substr(0,15)+'...' : d
+            return d.length > 15 ? d.substr(0,15)+'...' : d
         })
 
       }
       if(!this.hideXAxisLabel && this.rotateXAxisLabel) {
-        chart.selectAll('g.x text')
+        chart.selectAll(`#${this.id} g.x text`)
           .attr('transform', 'translate(-10,5) rotate(330)')
       }
     })
