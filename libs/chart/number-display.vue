@@ -1,6 +1,6 @@
 <template>
   <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
-    <span class="nd-box-label" v-text="this._boxLabel" :style="{fontSize: (fontSize/4)+'px'}"></span>
+    <span class="title" v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
   </div>
 </template>
 
@@ -40,7 +40,7 @@ export default {
       type: Number,
       default: 48
     },
-    boxLabel: {
+    title: {
       type: String
     },
     numberFormat: {
@@ -55,7 +55,11 @@ export default {
       type: Boolean,
       default: false
     },
-    unitLabel: {
+    unitPrefix: {
+      type: String,
+      default: ''
+    },
+    unitPostfix: {
       type: String,
       default: ''
     }
@@ -92,17 +96,14 @@ export default {
       if (this.isRateReducer) {
         return (d) => {
           const r = (d.count === 0 ? 0 : d.value / d.count);
-          return this._unitLabel == '%' ? r * 100 : r;
+          return this._unitPostFix == '%' ? r * 100 : r;
         }
       }
       // 明示的なaccessorが必要なことは若干奇妙ではある
       return (d) => d
     },
-    _boxLabel: function() {
-      return this.boxLabel || this.reduce.replace(/d\./, '')
-    },
-    _unitLabel: function() {
-      if (this.unitLabel) return this.unitLabel
+    _unitPostFix: function() {
+      if (this.unitPostfix) return this.unitPostfix
       if (this.isRateReducer) return '%'
       return ''
     },
@@ -119,34 +120,38 @@ export default {
         styles.background = undefined
       }
       return styles
+    },
+    templates: function() {
+      const templates = {none: '', one: '', some: ''};
+      if (this.unitPrefix) {
+        templates.one += `<span class="number-unit">${this.unitPrefix}</span>`
+        templates.some += `<span class="number-unit">${this.unitPrefix}</span>`
+      }
+      templates.none += `<span class="number-display">0</span>`,
+      templates.one += `<span class="number-display">%number</span>`,
+      templates.some += `<span class="number-display">%number</span>`
+
+      const unitPostfixes = this._unitPostFix.split(',');
+      if (unitPostfixes.length === 1) {
+        if (unitPostfixes[0]) {
+          templates.one += `<span class="number-unit">${unitPostfixes[0]}</span>`
+          templates.some += `<span class="number-unit">${unitPostfixes[0]}</span>`
+        }
+      }
+      else if (unitPostfixes.length >= 2) {
+        if (unitPostfixes[0])
+          templates.one += `<span class="number-unit">${unitPostfixes[0]}</span>`
+        if (unitPostfixes[1])
+          templates.some += `<span class="number-unit">${unitPostfixes[1]}</span>`
+      }
+      return templates
     }
   },
   mounted: function() {
     const chart = this.chart;
-
-    const templates = {
-      none: `<span class="number-display">0</span>`,
-      one: `<span class="number-display">%number</span>`,
-      some: `<span class="number-display">%number</span>`
-    }
-
-    const units = this._unitLabel.split(',');
-    if (units.length === 1) {
-      if (units[0]) {
-        templates.one += `<span class="number-unit">${units[0]}</span>`
-        templates.some += `<span class="number-unit">${units[0]}</span>`
-      }
-    }
-    else if (units.length >= 2) {
-      if (units[0])
-        templates.one += `<span class="number-unit">${units[0]}</span>`
-      if (units[1])
-        templates.some += `<span class="number-unit">${units[1]}</span>`
-    }
-
     chart
       .formatNumber(d3.format(this.numberFormat))
-      .html(templates)
+      .html(this.templates)
     return chart.render();
   }
 }
