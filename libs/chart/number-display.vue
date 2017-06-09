@@ -1,6 +1,6 @@
 <template>
   <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
-    <span class="title" v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
+    <span v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
   </div>
 </template>
 
