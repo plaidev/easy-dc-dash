@@ -25318,6 +25318,18 @@ var Base = {
       type: Boolean,
       default: false
     },
+    hideXAxisLabel: {
+      type: Boolean,
+      default: false
+    },
+    hideYAxisLabel: {
+      type: Boolean,
+      default: false
+    },
+    rotateXAxisLabel: {
+      type: Boolean,
+      default: true
+    },
 
     // animation
     transitionDuration: {
@@ -25490,6 +25502,9 @@ var Base = {
     },
     colorSettings: function colorSettings() {
       return Store.getTheme().colors(this.chartType);
+    },
+    textSelector: function textSelector() {
+      if (this.chartType === 'bubbleChart') return '#' + this.id + ' .node text';else if (this.chartType === 'heatMap') return '#' + this.id + ' g.cols.axis text';else return '#' + this.id + ' g.x text';
     },
     tooltipSelector: function tooltipSelector() {
       if (this.chartType === 'barChart') return '#' + this.id + ' .bar';
@@ -25711,6 +25726,12 @@ var Base = {
         return _this5.getLabel(index$2.printers.filter(filter));
       }).join(', ');
     });
+    if (this.hideXAxisLabel && chart.xAxis instanceof Function) {
+      chart.xAxis().tickValues([]);
+    }
+    if (this.hideYAxisLabel && chart.yAxis instanceof Function) {
+      chart.yAxis().tickValues([]);
+    }
 
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
@@ -25732,13 +25753,14 @@ var Base = {
     }
 
     chart.on('pretransition', function () {
-      if (!_this5.scale && !_this5.dateKey && !_this5.timeScale) {
-        chart.selectAll('g.x text').text(function (d) {
-          return d.length > 10 ? d.substr(0, 10) + '...' : d;
+      if (!_this5.dateKey && !_this5.timeScale) {
+        chart.selectAll(_this5.textSelector).text(function (_d) {
+          var d = _d.key || _d;
+          return d.length > 15 ? d.substr(0, 15) + '...' : d;
         });
       }
-      if (_this5.rotateXAxisLabel) {
-        chart.selectAll('g.x text').attr('transform', 'translate(-10,5) rotate(330)');
+      if (!_this5.hideXAxisLabel && _this5.rotateXAxisLabel) {
+        chart.selectAll('#' + _this5.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
     });
 
@@ -25756,10 +25778,6 @@ var Base = {
 var coordinateGridBase = {
   extends: Base,
   props: {
-    rotateXAxisLabel: {
-      type: Boolean,
-      default: true
-    },
     xAxisLabel: {
       type: String,
       default: ''
@@ -34517,7 +34535,7 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "nd-box-label", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this._boxLabel) } })]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "title", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.title || this.reduce) } })]);
   }, staticRenderFns: [],
   extends: Base,
   props: {
@@ -34548,7 +34566,7 @@ var NumberDisplay = { render: function render() {
       type: Number,
       default: 48
     },
-    boxLabel: {
+    title: {
       type: String
     },
     numberFormat: {
@@ -34563,7 +34581,11 @@ var NumberDisplay = { render: function render() {
       type: Boolean,
       default: false
     },
-    unitLabel: {
+    unitPrefix: {
+      type: String,
+      default: ''
+    },
+    unitPostfix: {
       type: String,
       default: ''
     }
@@ -34598,7 +34620,7 @@ var NumberDisplay = { render: function render() {
       if (this.isRateReducer) {
         return function (d) {
           var r = d.count === 0 ? 0 : d.value / d.count;
-          return _this._unitLabel == '%' ? r * 100 : r;
+          return _this._unitPostFix == '%' ? r * 100 : r;
         };
       }
       // 明示的なaccessorが必要なことは若干奇妙ではある
@@ -34606,11 +34628,8 @@ var NumberDisplay = { render: function render() {
         return d;
       };
     },
-    _boxLabel: function _boxLabel() {
-      return this.boxLabel || this.reduce.replace(/d\./, '');
-    },
-    _unitLabel: function _unitLabel() {
-      if (this.unitLabel) return this.unitLabel;
+    _unitPostFix: function _unitPostFix() {
+      if (this.unitPostfix) return this.unitPostfix;
       if (this.isRateReducer) return '%';
       return '';
     },
@@ -34627,29 +34646,31 @@ var NumberDisplay = { render: function render() {
         styles.background = undefined;
       }
       return styles;
+    },
+    templates: function templates() {
+      var templates = { none: '', one: '', some: '' };
+      if (this.unitPrefix) {
+        templates.one += '<span class="number-unit">' + this.unitPrefix + '</span>';
+        templates.some += '<span class="number-unit">' + this.unitPrefix + '</span>';
+      }
+      templates.none += '<span class="number-display">0</span>', templates.one += '<span class="number-display">%number</span>', templates.some += '<span class="number-display">%number</span>';
+
+      var unitPostfixes = this._unitPostFix.split(',');
+      if (unitPostfixes.length === 1) {
+        if (unitPostfixes[0]) {
+          templates.one += '<span class="number-unit">' + unitPostfixes[0] + '</span>';
+          templates.some += '<span class="number-unit">' + unitPostfixes[0] + '</span>';
+        }
+      } else if (unitPostfixes.length >= 2) {
+        if (unitPostfixes[0]) templates.one += '<span class="number-unit">' + unitPostfixes[0] + '</span>';
+        if (unitPostfixes[1]) templates.some += '<span class="number-unit">' + unitPostfixes[1] + '</span>';
+      }
+      return templates;
     }
   },
   mounted: function mounted() {
     var chart = this.chart;
-
-    var templates = {
-      none: '<span class="number-display">0</span>',
-      one: '<span class="number-display">%number</span>',
-      some: '<span class="number-display">%number</span>'
-    };
-
-    var units = this._unitLabel.split(',');
-    if (units.length === 1) {
-      if (units[0]) {
-        templates.one += '<span class="number-unit">' + units[0] + '</span>';
-        templates.some += '<span class="number-unit">' + units[0] + '</span>';
-      }
-    } else if (units.length >= 2) {
-      if (units[0]) templates.one += '<span class="number-unit">' + units[0] + '</span>';
-      if (units[1]) templates.some += '<span class="number-unit">' + units[1] + '</span>';
-    }
-
-    chart.formatNumber(d3$1.format(this.numberFormat)).html(templates);
+    chart.formatNumber(d3$1.format(this.numberFormat)).html(this.templates);
     return chart.render();
   }
 };
@@ -35140,7 +35161,7 @@ var ListRow = {
       return _this.descending ? -d.value : d.value;
     }).on('pretransition', function () {
       chart.selectAll('g.row text').text(function (d) {
-        return d.key.length > 10 ? d.key.substring(0, 10) + '...' : d.key;
+        return d.key.length > 20 ? d.key.substring(0, 20) + '...' : d.key;
       });
     });
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
@@ -35529,8 +35550,6 @@ var FilterStackedBar = {
     }
   },
   mounted: function mounted() {
-    var _this3 = this;
-
     var chart = this.chart;
     var stackKeys = this.stackKeys;
     var barNum = stackKeys.length;
@@ -35541,26 +35560,15 @@ var FilterStackedBar = {
     for (var i = 1; i < barNum; i++) {
       chart.stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
     }
-    chart.on('pretransition', function (chart) {
-      if (!_this3.scale) {
-        chart.selectAll('g.x text').text(function (d) {
-          return d.length > 10 ? d.substr(0, 10) + '...' : d;
-        });
-      }
-      if (_this3.rotateXAxisLabel) {
-        chart.selectAll('g.x text').attr('transform', 'translate(-10,5) rotate(330)');
-      }
-
-      // select <-> deselect && redraw
-      chart.selectAll('rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
-        return chart.filter() && chart.filters().findIndex(function (f) {
-          return f[0] === d.x && f[1] === d.layer;
-        }) === -1;
-      }).on('click', function (d) {
-        var f = [d.x, d.layer];
-        chart.filter(index$2.filters.TwoDimensionalFilter(f));
-        index$2.redrawAll();
-      });
+    // select <-> deselect && redraw
+    chart.selectAll('rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
+      return chart.filter() && chart.filters().findIndex(function (f) {
+        return f[0] === d.x && f[1] === d.layer;
+      }) === -1;
+    }).on('click', function (d) {
+      var f = [d.x, d.layer];
+      chart.filter(index$2.filters.TwoDimensionalFilter(f));
+      index$2.redrawAll();
     });
     this.applyLegend({ reverseOrder: true });
     return chart.render();
@@ -36441,13 +36449,17 @@ var HeatMap = {
       type: String,
       default: 'heatMap'
     },
-    yBorderRadius: {
+    borderRadius: {
       type: Number,
-      defaulat: 6.75
+      default: 6.75
     },
     layout: {
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
       default: 'overlay-legend'
+    },
+    renderText: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -36495,17 +36507,12 @@ var HeatMap = {
       return d.key[1];
     }).colorAccessor(function (d) {
       return +d.value;
-    }).yBorderRadius(this.yBorderRadius).colsLabel(function (d) {
-      return _this.getLabel(d);
+    }).xBorderRadius(this.borderRadius).yBorderRadius(this.borderRadius).colsLabel(function (d) {
+      return _this.hideXAxisLabel ? null : _this.getLabel(d);
     }).rowsLabel(function (d) {
-      return _this.getLabel(d);
-    }).on('postRender', function () {
-      if (!_this.dateKey) {
-        chart.selectAll('g.cols.axis text').text(function (d) {
-          return d.length > 10 ? d.substr(0, 10) + '...' : d;
-        });
-      }
+      return _this.hideYAxisLabel ? null : _this.getLabel(d);
     }).colors(this.valueColors);
+
     if (this.dateKey) {
       chart.filterPrinter(function (filters) {
         return filters.map(function (filter) {
@@ -36516,6 +36523,39 @@ var HeatMap = {
       });
     }
 
+    if (this.renderText) {
+      chart.on('postRender', function () {
+        var positions = [];
+        d3$1.selectAll('rect.heat-box').each(function (d) {
+          var rect = d3$1.select(this);
+          positions.push({
+            x: rect.attr("x"),
+            y: rect.attr("y"),
+            width: rect.attr("width"),
+            height: rect.attr("height")
+          });
+        });
+        chart.selectAll('g .box-group').append('foreignObject').attr('x', function (d, i) {
+          return parseInt(positions[i].x);
+        }).attr('y', function (d, i) {
+          return parseInt(positions[i].y);
+        }).attr('width', function (d, i) {
+          return parseInt(positions[i].width);
+        }).attr('height', function (d, i) {
+          return parseInt(positions[i].height);
+        }).style({
+          'line-height': function lineHeight(d, i) {
+            return parseInt(positions[i].height) + 'px';
+          },
+          'text-align': 'center',
+          'pointer-events': 'none',
+          'overflow': 'hidden',
+          'white-space': 'nowrap'
+        }).text(function (d) {
+          return _this.getLabel(d.key[0]) + ', ' + _this.getLabel(d.key[1]);
+        });
+      });
+    }
     return chart.render();
   }
 };
@@ -36810,7 +36850,7 @@ var Bubble = {
       var _k = _format ? _format(k) : k;
       var data = {
         key: _k,
-        vals: (_vals = {}, defineProperty(_vals, this.xAxisLabel, v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v[this.xAxisLabel]), defineProperty(_vals, this.yAxisLabel, v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v[this.yAxisLabel]), defineProperty(_vals, this.radiusLabel, v[this.radiusLabel].per ? v[this.radiusLabel].per : v[this.radiusLabel]), _vals)
+        vals: (_vals = {}, defineProperty(_vals, this.xAxisLabel, v[this.xAxisLabel].per ? roundDecimalFormat(v[this.xAxisLabel].per, 2) : v[this.xAxisLabel]), defineProperty(_vals, this.yAxisLabel, v[this.yAxisLabel].per ? roundDecimalFormat(v[this.yAxisLabel].per, 2) : v[this.yAxisLabel]), defineProperty(_vals, this.radiusLabel, v[this.radiusLabel].per ? roundDecimalFormat(v[this.radiusLabel].per, 2) : v[this.radiusLabel]), _vals)
       };
       this.$refs.tooltip.show(data, fill);
     }
