@@ -3,7 +3,7 @@
 import d3 from "d3"
 import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
-import {extractName} from '../utils'
+import {extractName, roundDecimalFormat} from '../utils'
 
 export default {
   extends: coordinateGridBase,
@@ -166,9 +166,9 @@ export default {
       const data = {
         key: _k,
         vals: {
-          [this.xAxisLabel]: v[this.xAxisLabel].per ? v[this.xAxisLabel].per : v[this.xAxisLabel],
-          [this.yAxisLabel]: v[this.yAxisLabel].per ? v[this.yAxisLabel].per : v[this.yAxisLabel],
-          [this.radiusLabel]: v[this.radiusLabel].per ? v[this.radiusLabel].per : v[this.radiusLabel]
+          [this.xAxisLabel]: v[this.xAxisLabel].per ? roundDecimalFormat(v[this.xAxisLabel].per, 2) : v[this.xAxisLabel],
+          [this.yAxisLabel]: v[this.yAxisLabel].per ? roundDecimalFormat(v[this.yAxisLabel].per, 2) : v[this.yAxisLabel],
+          [this.radiusLabel]: v[this.radiusLabel].per ? roundDecimalFormat(v[this.radiusLabel].per, 2) : v[this.radiusLabel]
         }
       }
       this.$refs.tooltip.show(data, fill)

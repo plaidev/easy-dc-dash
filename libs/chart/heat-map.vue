@@ -15,13 +15,17 @@ export default {
       type: String,
       default: 'heatMap'
     },
-    yBorderRadius: {
+    borderRadius: {
       type: Number,
-      defaulat: 6.75
+      default: 6.75
     },
     layout: {
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
       default: 'overlay-legend'
+    },
+    renderText: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -64,16 +68,12 @@ export default {
       .keyAccessor((d) => d.key[0])
       .valueAccessor((d) => d.key[1])
       .colorAccessor((d) => +d.value)
-      .yBorderRadius(this.yBorderRadius)
-      .colsLabel((d) => this.getLabel(d))
-      .rowsLabel((d) => this.getLabel(d))
-      .on('postRender', () => {
-          if(!this.dateKey) {
-            chart.selectAll('g.cols.axis text')
-              .text(d => d.length > 10 ? d.substr(0,10)+'...' : d)
-          }
-      })
+      .xBorderRadius(this.borderRadius)
+      .yBorderRadius(this.borderRadius)
+      .colsLabel((d) => this.hideXAxisLabel ? null : this.getLabel(d))
+      .rowsLabel((d) => this.hideYAxisLabel ? null : this.getLabel(d))
       .colors(this.valueColors)
+
     if(this.dateKey) {
       chart.filterPrinter(filters => {
         return filters.map(filter => {
@@ -84,6 +84,34 @@ export default {
       });
     }
 
+    if(this.renderText) {
+      chart.on('postRender', () => {
+        const positions = [];
+        d3.selectAll(`rect.heat-box`).each(function(d) {
+          const rect = d3.select(this);
+          positions.push({
+            x:  rect.attr("x"),
+            y: rect.attr("y"),
+            width:  rect.attr("width"),
+            height:  rect.attr("height")
+          });
+        });
+        chart.selectAll('g .box-group')
+          .append('foreignObject')
+            .attr('x', (d, i) => parseInt(positions[i].x))
+            .attr('y', (d, i) => parseInt(positions[i].y))
+            .attr('width', (d, i) => parseInt(positions[i].width))
+            .attr('height', (d, i) => parseInt(positions[i].height))
+            .style({
+              'line-height': (d, i) => parseInt(positions[i].height)+'px',
+              'text-align': 'center',
+              'pointer-events': 'none',
+              'overflow': 'hidden',
+              'white-space': 'nowrap'
+            })
+            .text(d => `${this.getLabel(d.key[0])}, ${this.getLabel(d.key[1])}`)
+      });
+    }
     return chart.render();
   }
 }
