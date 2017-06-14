@@ -748,7 +748,7 @@ crossfilter2@~1.3:
   version "1.3.14"
   resolved "https://registry.yarnpkg.com/crossfilter2/-/crossfilter2-1.3.14.tgz#c45bd8d335f6c91accbac26eda203377f195f680"
 
-crossfilter@^1.3.12:
+crossfilter@1.3.12:
   version "1.3.12"
   resolved "https://registry.yarnpkg.com/crossfilter/-/crossfilter-1.3.12.tgz#147d7236a98c45c69f78bdc3a99d6fb00f70930c"
 
@@ -801,7 +801,7 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-dc@^2.0.2:
+dc@2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/dc/-/dc-2.0.2.tgz#212da3abaaee94357912662013e9e54e23b8b9d4"
   dependencies:
@@ -974,7 +974,11 @@ find-up@^1.0.0:
     path-exists "^2.0.0"
     pinkie-promise "^2.0.0"
 
-font-awesome@^4.7.0:
+flatten@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.2.tgz#dae46a9d78fbe25292258cc1e780a41d95c03782"
+
+font-awesome@4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
 
@@ -1142,6 +1146,10 @@ has@^1.0.1:
   dependencies:
     function-bind "^1.0.2"
 
+hash-sum@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/hash-sum/-/hash-sum-1.0.2.tgz#33b40777754c6432573c120cc3808bbd10d47f04"
+
 hawk@~3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/hawk/-/hawk-3.1.3.tgz#078444bd7c1640b0fe540d2c9b73d59678e8e1c4"
@@ -1243,6 +1251,10 @@ indent-string@^2.1.0:
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-2.1.0.tgz#8e2d48348742121b4a8218b7a137e9a52049dc80"
   dependencies:
     repeating "^2.0.0"
+
+indexes-of@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/indexes-of/-/indexes-of-1.0.1.tgz#f30f716c8e2bd346c7b67d3df3915566a7c05607"
 
 inflight@^1.0.4:
   version "1.0.6"
@@ -1921,6 +1933,14 @@ postcss-modules@^0.6.4:
     postcss "^5.2.8"
     string-hash "^1.1.1"
 
+postcss-selector-parser@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-2.2.3.tgz#f9437788606c3c9acee16ffe8d8b16297f27bb90"
+  dependencies:
+    flatten "^1.0.2"
+    indexes-of "^1.0.1"
+    uniq "^1.0.1"
+
 postcss@5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-5.1.2.tgz#bd84886a66bcad489afaf7c673eed5ef639551e2"
@@ -2330,20 +2350,22 @@ rollup-plugin-sourcemaps@^0.4.1:
     rollup-pluginutils "^1.5.0"
     source-map-resolve "^0.5.0"
 
-rollup-plugin-vue@^2.3:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-vue/-/rollup-plugin-vue-2.3.1.tgz#73b30ff0c6d37d87cbd02b6555680cb5c31f3a9e"
+rollup-plugin-vue@^2.4:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-vue/-/rollup-plugin-vue-2.4.0.tgz#d25dfa71c1972cd6acfd9aa37fcbffbbf6d1c8b7"
   dependencies:
     babel-runtime "^6.22.0"
     camelcase "^4.0.0"
     de-indent "^1.0.2"
     debug "^2.6.0"
+    hash-sum "^1.0.2"
     html-minifier "^3.2.3"
     magic-string "^0.19.0"
     merge-options "0.0.64"
     parse5 "^2.1.0"
     postcss "^5.2.11"
     postcss-modules "^0.6.4"
+    postcss-selector-parser "^2.2.3"
     posthtml "^0.9.2"
     posthtml-attrs-parser "^0.1.1"
     rollup-pluginutils "^2.0.1"
@@ -2590,7 +2612,7 @@ topojson-simplify@3.0.0:
     commander "2"
     topojson-client "3"
 
-topojson@^3.0.0:
+topojson@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/topojson/-/topojson-3.0.0.tgz#c2aca1b76435e801dce3f229586bbd5767115ce3"
   dependencies:
@@ -2640,6 +2662,10 @@ union@~0.4.3:
   resolved "https://registry.yarnpkg.com/union/-/union-0.4.6.tgz#198fbdaeba254e788b0efcb630bc11f24a2959e0"
   dependencies:
     qs "~2.3.3"
+
+uniq@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/uniq/-/uniq-1.0.1.tgz#b31c5ae8254844a3a8281541ce2b04b865a734ff"
 
 upper-case@^1.1.1:
   version "1.1.3"
@@ -2699,7 +2725,7 @@ vue-template-validator@^1.1.5:
   dependencies:
     chalk "^1.1.1"
 
-vue@^2.2.6:
+vue@2.2.6:
   version "2.2.6"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.2.6.tgz#451714b394dd6d4eae7b773c40c2034a59621aed"
 
