@@ -19,6 +19,7 @@ import HeatMap from './heat-map.vue'
 import Series from './series.vue'
 import Bubble from './bubble.vue'
 import AreaLine from './area-line.vue'
+import MultiLines from './multi-lines.vue'
 import resetAllButton from './reset-all-button.vue'
 import csvDownloadButton from './csv-download-button.vue'
 
@@ -41,6 +42,7 @@ const components = {
   'series': Series,
   'bubble': Bubble,
   'area-line': AreaLine,
+  'multi-lines': MultiLines,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton,
   'csv-download-button': csvDownloadButton
@@ -72,6 +74,7 @@ export default {
   Series: Series,
   Bubble: Bubble,
   AreaLine: AreaLine,
+  MultiLines: MultiLines,
   compose: compose,
   resetAllButton: resetAllButton,
   csvDownloadButton: csvDownloadButton,
