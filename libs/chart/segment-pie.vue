@@ -98,7 +98,7 @@ export default {
 </script>
 
 <style lang="less" module>
-.chart-root {
+.chart-root :global {
   .pie-label-group text {
     pointer-events: none;
   }
