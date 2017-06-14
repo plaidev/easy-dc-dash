@@ -102,6 +102,10 @@ export default {
     reduce: {},
 
     // basic render content
+    useDataPoints: {
+      type: Boolean,
+      default: true
+    },
     renderLabel: {
       type: Boolean,
       default: true
@@ -428,7 +432,7 @@ export default {
         chart.margins(margins)
       }
 
-      if (chart.renderDataPoints) {
+      if (this.useDataPoints && chart.renderDataPoints) {
         chart.renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5})
       }
 

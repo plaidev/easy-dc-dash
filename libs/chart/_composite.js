@@ -92,7 +92,7 @@ export function compose(Left, Right) {
           dimension: this.dimension,
           scale: this.scale,
           dateKey: this.dateKey,
-          legend: false
+          useLegend: false
         }
       })
 
