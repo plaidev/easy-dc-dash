@@ -56,7 +56,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height">
+    <card :title="title" :width="width" :height="height" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -175,6 +175,9 @@ export default {
   },
 
   computed: {
+    $style: function() {
+      return this.$options.cssModules || {'chart-root': 'easy-dc-chart-root'}
+    },
     parent: function() {
       return `#${this.id}`;
     },

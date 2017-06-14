@@ -64,8 +64,10 @@ export default {
 
 </script>
 
-<style scoped>
-.pie-label-group text {
-  pointer-events: none;
+<style lang='less' module>
+.chart-root :global {
+  .pie-label-group text {
+    pointer-events: none;
+  }
 }
 </style>

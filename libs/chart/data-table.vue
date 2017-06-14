@@ -1,5 +1,5 @@
 <template>
-  <card :width="width" :height="height" :title="title">
+  <card :width="width" :height="height" :title="title" :class="$style['chart-root']">
     <div class="data-table-container">
       <div class="table-paging" v-if="this.useTablePaging">
         <!--
@@ -360,23 +360,30 @@ export default {
 }
 </script>
 
-<style scoped>
-.data-table-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  height: calc(100% - 25px);
-  width: 94%;
-  padding-top: 25px;
-  font-size: 14px;
-}
-.table-container {
-  overflow-y: auto;
-  width: 100%;
-}
-table {
-}
-th.dc-table-head {
-  cursor: pointer
+<style lang="less" module>
+
+.chart-root :global {
+
+  .data-table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: calc(100% - 25px);
+    width: 94%;
+    padding-top: 25px;
+    font-size: 14px;
+  }
+
+  .table-container {
+    overflow-y: auto;
+    width: 100%;
+  }
+
+  table {
+  }
+
+  th.dc-table-head {
+    cursor: pointer
+  }
 }
 </style>

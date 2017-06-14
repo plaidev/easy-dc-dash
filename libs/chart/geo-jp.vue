@@ -86,11 +86,11 @@ export default {
 </script>
 
 
-<style scoped>
-
-.pref {
-  fill: #fff;
-  stroke: #aaa;
+<style lang="less" module>
+.chart-root :global {
+  .pref {
+    fill: #fff;
+    stroke: #aaa;
+  }
 }
-
 </style>

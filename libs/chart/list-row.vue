@@ -81,9 +81,11 @@ export default {
 
 </script>
 
-<style scoped>
-.krt-dc-component svg g.row text {
-  fill: #000;
-  pointer-events: none;
+<style lang="less" module>
+.chart-root :global {
+  g.row text {
+    fill: #000;
+    pointer-events: none;
+  }
 }
 </style>

@@ -1,6 +1,8 @@
 <template>
-  <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
-    <span v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
+  <div :class="$style['chart-root']">
+    <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
+      <span v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
+    </div>
   </div>
 </template>
 
@@ -157,21 +159,23 @@ export default {
 }
 </script>
 
-<style scoped>
-.nd-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 5px;
-  border: 2px solid;
-  background: #FFF;
-  color: #FFF;
-}
-.nd-box .number-display {
-  font-weight: bold;
-}
-.nd-box .number-unit {
-  font-size: 0.4em;
+<style lang="less" module>
+.chart-root :global {
+  .nd-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    border: 2px solid;
+    background: #FFF;
+    color: #FFF;
+  }
+  .nd-box .number-display {
+    font-weight: bold;
+  }
+  .nd-box .number-unit {
+    font-size: 0.4em;
+  }
 }
 </style>

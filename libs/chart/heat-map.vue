@@ -118,8 +118,10 @@ export default {
 
 </script>
 
-<style scoped>
-.box-group .heat-box:hover{
-  fill-opacity: 0.5;
+<style lang="less" module>
+.chart-root :global {
+  .box-group .heat-box:hover{
+    fill-opacity: 0.5;
+  }
 }
 </style>

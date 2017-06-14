@@ -133,9 +133,11 @@ export default {
 }
 </script>
 
-<style scoped>
-rect.bar.stack-deselected {
-  opacity: .8;
-  fill-opacity: .5;
+<style lang="less" module>
+.chart-root :global {
+  rect.bar.stack-deselected {
+    opacity: .8;
+    fill-opacity: .5;
+  }
 }
 </style>

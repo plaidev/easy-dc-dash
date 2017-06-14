@@ -58,7 +58,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style module>
   .krt-dc-tooltip {
     pointer-events: none;
     color: #000;

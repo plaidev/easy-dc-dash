@@ -41,7 +41,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style module>
 .outer-container {
   position: relative;
 }
