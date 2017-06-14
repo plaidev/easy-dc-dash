@@ -110,19 +110,23 @@ export default {
         .stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i]))
         .hidableStacks(true)
     }
+
     // select <-> deselect && redraw
-    chart.selectAll('rect.bar')
-      .classed('deselected', false)
-      .classed('stack-deselected', (d) => {
-        return chart.filter() && chart.filters().findIndex((f) =>
-          f[0] === d.x && f[1] === d.layer
-        ) === -1;
-      })
-      .on('click', (d) => {
-        let f = [d.x, d.layer]
-        chart.filter(dc.filters.TwoDimensionalFilter(f))
-        dc.redrawAll();
-      })
+    chart.on('pretransition', (chart) => {
+      chart.selectAll('rect.bar')
+        .classed('deselected', false)
+        .classed('stack-deselected', (d) => {
+          return chart.filter() && chart.filters().findIndex((f) =>
+            f[0] === d.x && f[1] === d.layer
+          ) === -1;
+        })
+        .on('click', (d) => {
+          const f = [d.x, d.layer]
+          chart.filter(dc.filters.TwoDimensionalFilter(f))
+          dc.redrawAll();
+        })
+    })
+
     this.applyLegend({reverseOrder:true})
     return chart.render();
   }
