@@ -111,8 +111,10 @@ export default {
 
 </script>
 
-<style scoped>
-g.row text {
+<style lang="less" module>
+.chart-root :global {
+  g.row text {
     pointer-events: none;
   }
+}
 </style>

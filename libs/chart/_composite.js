@@ -2,7 +2,7 @@ import Vue from 'vue/dist/vue.js'
 import Base from './_base.js'
 import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
-import {generateExtractor} from '../utils'
+import {generateExtractor, margeCssModules} from '../utils'
 import {TIME_FORMATS} from '../utils/time-format'
 
 function _getReduceKeySuper(Component) {
@@ -24,7 +24,17 @@ export function compose(Left, Right) {
         default: 'compositeChart'
       }
     },
-    methods: {
+    data: function() {
+      return {childCssModules: []}
+    },
+    computed: {
+      $style: function() {
+        const cssModule = this.$options.cssModules || {'chart-root': 'easy-dc-chart-root'}
+        this.childCssModules.forEach((childCssModule) => {
+          margeCssModules(cssModule, childCssModule)
+        })
+        return cssModule
+      }
     },
     mounted: function() {
 
@@ -91,6 +101,12 @@ export function compose(Left, Right) {
       coordinateGridBase.mounted.apply(leftInstance)
       Base.mounted.apply(rightInstance)
       coordinateGridBase.mounted.apply(rightInstance)
+
+      // ummmmmm.
+      if (Right.cssModules)
+        this.childCssModules.push(Right.cssModules)
+      if (Left.cssModules)
+        this.childCssModules.push(Left.cssModules)
 
       const dim = this.grouping;
       const composite = this.chart;

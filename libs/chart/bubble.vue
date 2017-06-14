@@ -205,8 +205,10 @@ export default {
 
 </script>
 
-<style scoped>
-.node text {
-  pointer-events: none;
+<style lang="less" module>
+.chart-root :global {
+  .node text {
+    pointer-events: none;
+  }
 }
 </style>

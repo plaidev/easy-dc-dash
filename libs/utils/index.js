@@ -174,3 +174,20 @@ export function roundDecimalFormat(number, n) {
   const _pow = Math.pow(10,n) ;
   return Math.round(number * _pow) / _pow;
 }
+
+
+export function margeCssModules(cssModule, childCssModule) {
+  if (!childCssModule) return;
+
+  for (let k in childCssModule) {
+    if (cssModule[k]) {
+      cssModule[k] = childCssModule[k]
+      continue
+    }
+    else {
+      cssModule[k] += ' ' + childCssModule[k]
+    }
+  }
+
+  return cssModule
+}
