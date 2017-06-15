@@ -6,7 +6,7 @@ import coordinateGridBase from './_coordinateGridBase.js'
 import StackedLines from './stacked-lines.vue'
 import AreaLine from './area-line.vue'
 import Store from '../store'
-import {margeCssModules} from '../utils'
+import {mergeCssModules} from '../utils'
 import Vue from 'vue/dist/vue.js'
 
 
@@ -36,7 +36,7 @@ export default {
     $style: function() {
       const cssModule = this.$options.cssModules || {'chart-root': 'easy-dc-chart-root'}
       this.childCssModules.forEach((childCssModule) => {
-        margeCssModules(cssModule, childCssModule)
+        mergeCssModules(cssModule, childCssModule)
       })
       return cssModule
     },
