@@ -18,6 +18,7 @@ export default {
 </script>
 
 <style scoped>
+  /* bootstrap を参照しているのでscopedを使う */
   .reset-all-button a {
     cursor: pointer;
     font-weight: bold;

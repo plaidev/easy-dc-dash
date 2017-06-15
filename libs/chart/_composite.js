@@ -2,7 +2,7 @@ import Vue from 'vue/dist/vue.js'
 import Base from './_base.js'
 import coordinateGridBase from './_coordinateGridBase.js'
 import Store from '../store'
-import {generateExtractor, margeCssModules} from '../utils'
+import {generateExtractor, mergeCssModules} from '../utils'
 import {TIME_FORMATS} from '../utils/time-format'
 
 function _getReduceKeySuper(Component) {
@@ -31,7 +31,7 @@ export function compose(Left, Right) {
       $style: function() {
         const cssModule = this.$options.cssModules || {'chart-root': 'easy-dc-chart-root'}
         this.childCssModules.forEach((childCssModule) => {
-          margeCssModules(cssModule, childCssModule)
+          mergeCssModules(cssModule, childCssModule)
         })
         return cssModule
       }
@@ -92,7 +92,7 @@ export function compose(Left, Right) {
           dimension: this.dimension,
           scale: this.scale,
           dateKey: this.dateKey,
-          legend: false
+          useLegend: false
         }
       })
 

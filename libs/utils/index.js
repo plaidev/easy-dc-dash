@@ -176,7 +176,7 @@ export function roundDecimalFormat(number, n) {
 }
 
 
-export function margeCssModules(cssModule, childCssModule) {
+export function mergeCssModules(cssModule, childCssModule) {
   if (!childCssModule) return;
 
   for (let k in childCssModule) {
