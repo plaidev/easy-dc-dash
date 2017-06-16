@@ -57,6 +57,12 @@
     ></number-display>
   </div>
 
+  <date-volume-chart
+    id="volume-chart"
+    dimension='d.session_end_date'
+    reduce='d.pv'
+  ></date-volume-chart>
+
   <week-row dimension='d.session_end_date' reduce='d.session_cnt'></week-row>
 
   <!-- Object segments -->
@@ -87,11 +93,6 @@
     reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
     labels='直帰,非直帰,直帰率'
   ></stack-and-rate>
-  <date-volume-chart
-    id="volume-chart"
-    dimension='d.session_end_date'
-    reduce='d.pv'
-  ></date-volume-chart>
 
   <list-row
     title='list-row'
@@ -178,7 +179,7 @@
     columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
     sort-by="name"
     order="descending"
-    link-column='link'
+    :representations="{link: 'linkFormat'}"
     :width=1000
     :height=600
     :use-table-paging=true
@@ -228,6 +229,13 @@ const bindData = {
 for (let k in bindData) {
   EasyDC.Store.setBindData(k, bindData[k])
 }
+
+EasyDC.Store.registerRepresentation('linkFormat', (v, d, k) => {
+  return v.split(', ').map((v) => {
+    return `<a href="${v}" target="_blank">${v}</a>`
+  }).join(', ')
+})
+
 
 EasyDC.run(true)
 
