@@ -4,6 +4,7 @@ import 'dc/dc.css'
 import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder, splitKey, extractName, roundDecimalFormat} from '../utils'
 import {TIME_INTERVALS, TIME_FORMATS} from '../utils/time-format'
+import assignDeep from 'assign-deep'
 
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
@@ -156,6 +157,9 @@ export default {
     },
     height: {
     },
+    layoutDetails: {
+      type: String
+    },
 
     // chart specific labels
     labels: {
@@ -289,10 +293,15 @@ export default {
     layoutSettings: function() {
       const {width, height} = this.getContainerInnerSize()
       const legendable = this.useLegend
-      return Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable});
+      const setting = Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable})
+      if (this.layoutDetails) {
+        const custom = generateExtractor(this.layoutDetails)(setting)
+        return assignDeep({}, setting, custom)
+      }
+      return setting
     },
     colorSettings: function() {
-      return Store.getTheme().colors(this.chartType)
+      return Store.getTheme().colors(this.chartType, '')
     },
     textSelector: function() {
       if(this.chartType === 'bubbleChart') return `#${this.id} .node text`

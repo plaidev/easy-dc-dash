@@ -12,8 +12,8 @@
     <multidim-pie
       title="TITLE"
       dimension="d1,d2"
-      reduce="v">
-    </multidim-pie>
+      reduce="v"
+    ></multidim-pie>
 
     <multidim-pie
       title="simple square"
@@ -22,16 +22,23 @@
       :labels="{a: 'A', b: 'B'}"
       width="233"
       height="233"
-      >
-    </multidim-pie>
+    ></multidim-pie>
 
     <multidim-pie
       dimension="d2"
       reduce="v"
       width="610"
       height="377"
-    >
-    </multidim-pie>
+    ></multidim-pie>
+
+    <multidim-pie
+      title="design customized"
+      dimension="d2"
+      reduce="v"
+      width="233"
+      height="233"
+      layout-details="{chartCenter: {y: d.chartCenter.y+20}, height: d.height+20}"
+    ></multidim-pie>
 
     <script type="text/javascript">
       EasyDC.Store.registerData([

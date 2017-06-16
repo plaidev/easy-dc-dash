@@ -1,10 +1,10 @@
 
 export default {
 
-  colors: function(name) {
+  colors: function(chartType, name, options={}) {
     let ordinal, weekOrdinal, valueGradation;
 
-    if (name == 'heatMap') {
+    if (chartType == 'heatMap') {
       valueGradation = ["#e5e5e5", "green"]
     }
 
