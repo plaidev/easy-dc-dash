@@ -8,7 +8,6 @@ import DefaultTheme from './themes/default'
 //-------------------------------------
 
 function _defaultRepresentation(v, d, key) {
-  console.log(v, d, key)
   if (v instanceof Array || typeof v == 'array') {
     return v.map((item) => {
     if (item instanceof Date) return TIME_FORMATS.ymd(item)
