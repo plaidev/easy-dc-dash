@@ -20,6 +20,7 @@
       :rows-per-page=5
       :height=300
     ></data-table>
+
     <data-table
       title='name'
       dimension="name"
@@ -29,12 +30,21 @@
       :use-table-paging=false
       :height=300
     ></data-table>
+
     <data-table
       title='link'
       dimension="d.date"
       columns="{date: d.date, link: d.link}"
-      link-column='link'
+      :representations="{link: 'linkFormat'}"
       :height=300
+    ></data-table>
+
+    <data-table
+      title='mixed repsesentation'
+      dimension="name"
+      columns="{name: d.name, meta: d.meta, v: d.v, cnt: d.cnt, rate: {count: d.cnt}}"
+      sort-by="name"
+      :representations="{name: 'mixedFormat', v: null, cnt: null, rate: null}"
     ></data-table>
 
     <script type="text/javascript">
@@ -50,6 +60,13 @@
         {date: new Date('2017-05-20 10:00'), name: '', meta: '', cnt: 0, v: 0, link: ''},
         {date: new Date('2017-05-20 10:00'), name: 'null', meta: 'null', cnt: 0, v: 0, link: 'null'},
       ])
+      EasyDC.Store.registerRepresentation('linkFormat', (v, d, key) => {
+        return `<a href="${v}" target="_blank">${v}</a>`
+      })
+      EasyDC.Store.registerRepresentation('mixedFormat', (v, d, key) => {
+        const rate = (d.cnt !== 0) ? d.v / d.cnt: 0
+        return `${v}(${d.v}, ${d.cnt}, ${rate})`
+      })
       console.log(EasyDC);
       EasyDC.run()
     </script>
