@@ -1,10 +1,23 @@
 import crossfilter from 'crossfilter'
 import dc from 'dc'
 import {downloadCSV} from './utils/blob-csv'
+import {TIME_FORMATS} from './utils/time-format'
 
 import DefaultTheme from './themes/default'
 
 //-------------------------------------
+
+function _defaultRepresentation(v, d, key) {
+  console.log(v, d, key)
+  if (v instanceof Array || typeof v == 'array') {
+    return v.map((item) => {
+    if (item instanceof Date) return TIME_FORMATS.ymd(item)
+      return item
+    }).join(', ')
+  }
+  if (v.per != undefined) return v.per
+  return v
+}
 
 
 class DashboardStore {
@@ -24,6 +37,9 @@ class DashboardStore {
       default: {
         '': {} // チャート固有でない辞書
       }
+    };
+
+    this._representations = {
     };
   }
 
@@ -163,6 +179,19 @@ class DashboardStore {
       }
     }
     return null
+  }
+
+  registerRepresentation(name, rep) {
+    this._representations[name] = rep
+  }
+
+  getRepresentation(name) {
+    if (!name) return _defaultRepresentation
+    if (!(name in this._representations)) {
+      console.log('warn: representation name "'+name+'" is not registererd')
+      return _defaultRepresentation
+    }
+    return this._representations[name]
   }
 
   getTheme() {
