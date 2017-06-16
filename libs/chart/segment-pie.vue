@@ -79,12 +79,19 @@ export default {
     }
   },
 
+  watch: {
+    layoutSettings: function() {
+      this.chart
+        .cx(this.layoutSettings.chartCenter.x)
+        .cy(this.layoutSettings.chartCenter.y)
+        .render()
+    }
+  },
+
   mounted: function() {
     const chart = this.chart;
     chart
       .othersLabel(this.othersLabel)
-      .cx(this.layoutSettings.chartCenter.x)
-      .cy(this.layoutSettings.chartCenter.y)
       .label((d) => this.segmentLabel(d.key))
     if(this.cap && this.cap > 0) chart.slicesCap(this.cap)
     return chart.render()
