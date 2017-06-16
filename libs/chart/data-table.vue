@@ -22,7 +22,6 @@ import d3 from 'd3'
 import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
-import {TIME_FORMATS} from '../utils/time-format'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import '../styles/font-awesome-variables.scss'
@@ -38,6 +37,7 @@ function _isDescendantOf(el, klass) {
   if (el.classList.contains(klass)) return el;
   return _isDescendantOf(el.parentElement, klass)
 }
+
 
 // 'TypeError: n.dimension(...).bottom is not a function' occured when set d3.ascending in .order (e.g.: chart.order(d3.ascending))
 // There is workaround for this -> https://github.com/dc-js/dc.js/issues/1115
@@ -127,6 +127,9 @@ export default {
     renderTooltip: {
       type: Boolean,
       default: false
+    },
+    representations: {
+      type: Object
     }
   },
   data () {
@@ -292,28 +295,25 @@ export default {
       return schema
     },
     buildFormatter: function(key) {
-      if(this.linkCol && this.linkCol.includes(key)) {
-        return (d) => this.insertLink(d.value[key])
+      let repName = null
+      if (this.representations && key in this.representations){
+        repName = this.representations[key]
+        // 明示的にnullであるとき、非表示
+        if (!repName) return
       }
-      return (d) => {
-        if (d.value[key] instanceof Array || typeof d.value[key] == 'array') {
-          return d.value[key].map((item) => {
-            if (item instanceof Date) return TIME_FORMATS.ymd(item)
-            return item
-          }).join(', ')
-        }
-        if (d.value[key].per != undefined) return d.value[key].per
-        return d.value[key]
-      }
+      const repFunc = Store.getRepresentation(repName)
+      return (d) => repFunc(d.value[key], d.value, d.key)
     },
     insertLink: function(v) {
       return `<a href=${v}>${v}</a>`
     },
     applyColumnSettings: function() {
       this.colsKeys.forEach((k) => {
+        const formatter = this.buildFormatter(k)
+        if (!formatter) return
         this.columnSettings.push({
           label: this.getLabel(k),
-          format: this.buildFormatter(k)
+          format: formatter
         })
       })
     },
