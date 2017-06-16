@@ -96,9 +96,6 @@ export default {
       type: String,
       default: 'descending'
     },
-    linkColumn: {
-      type: String
-    },
     // chart style
     width: {
       type: Number,
@@ -184,10 +181,6 @@ export default {
     },
     isLastPage: function() {
       return ((this.ofs + this.pag) >= this.filteredSize) ? 'true' : null
-    },
-    linkCol: function() {
-      if(!this.linkColumn) return null
-      return this.linkColumn.replace(/\s/g, '').split(',')
     },
     reducer: function() {
       return null
@@ -304,9 +297,6 @@ export default {
       const repFunc = Store.getRepresentation(repName)
       return (d) => repFunc(d.value[key], d.value, d.key)
     },
-    insertLink: function(v) {
-      return `<a href=${v}>${v}</a>`
-    },
     applyColumnSettings: function() {
       this.colsKeys.forEach((k) => {
         const formatter = this.buildFormatter(k)
@@ -334,6 +324,7 @@ export default {
     }
   },
   mounted: function() {
+
     this.applyColumnSettings()
 
     const chart = this.chart;
