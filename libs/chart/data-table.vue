@@ -197,6 +197,7 @@ export default {
           const vals = this.getColsExtractor(v);
           if(vals[this.dimensionName] === '') return p;
           this.colsKeys.forEach((k) => {
+            if (vals[k] === null || vals[k] === undefined) return;
             if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
               p[k].count += vals[k].count;
               p[k].value += vals[k].value;
@@ -222,6 +223,7 @@ export default {
           const vals = this.getColsExtractor(v);
           if(vals[this.dimension] === '') return p;
           this.colsKeys.forEach((k) => {
+            if (vals[k] === null || vals[k] === undefined) return;
             if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
               p[k].count -= vals[k].count;
               p[k].value -= vals[k].value;
