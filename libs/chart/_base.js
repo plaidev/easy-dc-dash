@@ -57,7 +57,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" @update:fullscreen="v => isFullscreen = v" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -184,7 +184,7 @@ export default {
 
   data: function() {
     // umm.
-    return {isMounted: false}
+    return {isMounted: false, isFullscreen: false}
   },
 
   computed: {
@@ -299,7 +299,7 @@ export default {
       if (!this.containerInnerSize) return {}
       const {width, height} = this.containerInnerSize
       const legendable = this.useLegend
-      const setting = Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable})
+      const setting = Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable, fullscreen: this.isFullscreen})
       if (this.layoutDetails) {
         const custom = generateExtractor(this.layoutDetails)(setting)
         return assignDeep({}, setting, custom)
@@ -319,8 +319,10 @@ export default {
         width = this.parent.width()
         height = this.parent.height()
       }
-      if (this.width) width = parseFloat(this.width);
-      if (this.height) height = parseFloat(this.height);
+      if (!this.isFullscreen) {
+        if (this.width) width = parseFloat(this.width);
+        if (this.height) height = parseFloat(this.height);
+      }
 
       return {width, height}
     },

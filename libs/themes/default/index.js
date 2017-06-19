@@ -19,7 +19,8 @@ export default {
     const {
       width = 377,
       height = 233,
-      legendable = true
+      legendable = true,
+      fullscreen = false
     } = options;
 
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
@@ -46,6 +47,7 @@ export default {
 
     if (name === 'square-and-legend') {
       return {
+        name: name,
         width: width,
         height: height * heightCoef,
         margins: {
@@ -75,6 +77,7 @@ export default {
       const length = Math.min(width, height * heightCoef)
 
       return {
+        name: name,
         width: length,
         height: length,
         margins: {
@@ -97,6 +100,7 @@ export default {
 
     else if (name === 'overlay-legend') {
       return {
+        name: name,
         width: width,
         height: height * heightCoef,
         margins: {
@@ -139,6 +143,7 @@ export default {
       }
 
       return {
+        name: name,
         width: width,
         height: height * heightCoef,
         margins: margins,
