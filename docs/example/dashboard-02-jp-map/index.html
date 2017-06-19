@@ -14,13 +14,13 @@
 <div>
   <easy-dc-dataset csv='./dataset.csv' date-fields="sync_date" date-format="%Y-%m-%d"></easy-dc-dataset>
 
-  <div style="position: absolute">
+  <div style="position: absolute; z-index: 100">
     <stacked-lines scale='time' dimension='d.sync_date' reduce='[d.bounce_count, d.session_pv - d.bounce_count]'></stacked-lines>
   </div>
 
-  <list-row dimension='d.pref' reduce='d.session_count' :height=400></list-row>
   <div>
     <geo-jp dimension='d.prefCode' reduce='d.bounce_rate' :width=580 :height=696 :geo-scale=1400></geo-jp>
+    <list-row dimension='d.pref' reduce='d.session_count' :height=400></list-row>
     <geo-jp dimension='d.prefCode' reduce='d.session_count' :width=768 :height=922 :geo-scale=1680></geo-jp>
   </div>
 
