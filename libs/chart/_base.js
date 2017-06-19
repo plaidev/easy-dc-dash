@@ -94,7 +94,7 @@ export default {
       type: String,
       default: 'ordinal.ordinal'
     },
-    extraDimensionScale: {
+    extraScale: {
       type: String
     },
     dateKey: {
