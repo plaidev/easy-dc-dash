@@ -1,9 +1,9 @@
 <template>
-  <div class="reset-button">
+  <div class="reset-button" @click="reset">
     <span class='reset' style="display: none;">
       <span class='filter badge'></span>
     </span>
-    <a class="reset" style="display: none;" @click="reset">
+    <a class="reset" style="display: none;">
       <i class="fa fa-ban">&nbsp;</i>
     </a>
   </div>
@@ -27,6 +27,8 @@ export default {
   top: 0;
   padding-right: 5px;
   padding-bottom: 5px;
+  margin-right: 1.8em;
+  color: gray;
 }
 .reset {
   vertical-align: middle;
@@ -40,13 +42,16 @@ export default {
   text-overflow: ellipsis;
   word-wrap: nowrap;
 }
+.reset i:hover {
+  color: black;
+}
 .badge {
   max-width: 200px;
   background-color: #2FAB9F;
   font-size: 12px;
   font-weight: 200;
-  vertical-align: 8%;
   white-space: normal;
   word-wrap: break-all;
+  vertical-align: middle;
 }
 </style>
