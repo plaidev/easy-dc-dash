@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+  <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
+
+    <multidim-pie
+      title="TITLE"
+      dimension="d1"
+      reduce="v"
+      chart-link='link'
+      :labels='linkLabels'
+    ></multidim-pie>
+
+    <ordinal-bar
+      title="TITLE"
+      dimension="d1"
+      reduce="v"
+      chart-link='link'
+      :labels='linkLabels'
+    ></ordinal-bar>
+
+    <script type="text/javascript">
+      const data = [
+        {d1: 'a', d2: true, v: 1+11, link: 'https://www.google.co.jp'},
+        {d1: 'a', d2: false, v: 2+7, link: 'https://www.google.com'},
+        {d1: 'b', d2: true, v: 4+5, link: 'https://www.yahoo.co.jp'},
+        {d1: 'b', d2: false, v: 8+3, link: 'https://www.yahoo.com'},
+      ]
+      const labels = {}
+      data.map(d => labels[d.d1] = d.link)
+      EasyDC.Store.setBindData('linkLabels', labels)
+      EasyDC.Store.registerData(data, labels)
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>

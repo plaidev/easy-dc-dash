@@ -3,22 +3,14 @@
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins, roundDecimalFormat} from '../utils'
+import {roundDecimalFormat} from '../utils'
 
 export default {
   extends: Base,
-
   props: {
-    dimension: {
-      type: String,
-    },
     chartType: {
       type: String,
       default: 'pieChart'
-    },
-    useLegend: {
-      type: Boolean,
-      default: true
     }
   },
 

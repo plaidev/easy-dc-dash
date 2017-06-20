@@ -31,6 +31,7 @@ export default {
 .reset {
   vertical-align: middle;
   margin-left: 2px;
+  cursor: pointer;
 }
 .reset i {
   vertical-align: middle;

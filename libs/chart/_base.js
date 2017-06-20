@@ -9,6 +9,7 @@ import assignDeep from 'assign-deep'
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
 import KrtDcTooltip from '../components/krt-dc-tooltip.vue'
+import ChartLink from '../components/chart-link.vue'
 
 function generateScales(scaleCode) {
   if (!scaleCode) return {};
@@ -61,6 +62,7 @@ export default {
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
+        <chart-link ref='chartLink'></chart-link>
       </div>
     </card>
   `,
@@ -68,7 +70,8 @@ export default {
   components: {
     'card': CardContainer,
     'reset-button': ResetButton,
-    'krt-dc-tooltip': KrtDcTooltip
+    'krt-dc-tooltip': KrtDcTooltip,
+    'chart-link': ChartLink
   },
 
   props: {
@@ -146,6 +149,9 @@ export default {
     renderTooltip: {
       type: Boolean,
       default: true
+    },
+    chartLink: {
+      type: String
     },
 
     // size / layout
@@ -458,6 +464,10 @@ export default {
     },
     removeTooltip: function() {
       this.$refs.tooltip.remove();
+    },
+    showChartLink: function(chart, filterValue) {
+      const link = this.getLabel(filterValue)
+      this.$refs.chartLink.show(chart, filterValue, link)
     }
   },
 
@@ -527,11 +537,15 @@ export default {
 
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
-        d3.selectAll(this.tooltipSelector)
+        chart.selectAll(this.tooltipSelector)
           .on("mouseover", this.showTooltip)
           .on("mousemove", this.moveTooltip)
           .on("mouseout", this.removeTooltip)
-      })
+        })
+    }
+    if(this.chartLink) {
+      // .on("clicked") だと一部のチャートでfilterのclickとぶつかる
+      chart.on('filtered', this.showChartLink)
     }
 
     // deisgn hack
