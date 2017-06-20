@@ -97,7 +97,7 @@ export default {
 
 .fullscreen .backdrop {
   position: fixed;
-  z-index: 3;
+  z-index: 2;
   top: 0;
   left: 0;
   right: 0;
@@ -152,7 +152,6 @@ export default {
 }
 
 .title {
-  z-index: 1;
   opacity: 0.6;
   font-size: 24px;
 }
@@ -161,7 +160,7 @@ export default {
   position: absolute;
   right: 10px;
   top: 3px;
-  z-index: 2;
+  z-index: 1;
   height: 1.5em;
   width: 2em;
   display: flex;
