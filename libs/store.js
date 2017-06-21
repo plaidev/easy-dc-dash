@@ -42,6 +42,7 @@ class DashboardStore {
     };
 
     this._linkFormatters = {
+      default: (v) => v
     };
   }
 

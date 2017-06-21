@@ -150,14 +150,11 @@ export default {
       type: Boolean,
       default: true
     },
-    displayLink: {
-      type: Boolean,
-      default: false
-    },
 
     // formatter
     linkFormatter: {
-      type: String
+      type: String,
+      default: 'default'
     },
 
     // size / layout
@@ -556,7 +553,7 @@ export default {
           .on("mouseout", this.removeTooltip)
         })
     }
-    if(this.displayLink) {
+    if(this.linkFormatter) {
       // .on("click") だと一部のチャートでfilterのclickとぶつかる
       chart.on('filtered', this.showChartLink)
     }
