@@ -544,7 +544,7 @@ export default {
         })
     }
     if(this.chartLink) {
-      // .on("clicked") だと一部のチャートでfilterのclickとぶつかる
+      // .on("click") だと一部のチャートでfilterのclickとぶつかる
       chart.on('filtered', this.showChartLink)
     }
 
