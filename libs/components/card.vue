@@ -97,7 +97,7 @@ export default {
 
 .fullscreen .backdrop {
   position: fixed;
-  z-index: 2;
+  z-index: 99;
   top: 0;
   left: 0;
   right: 0;
@@ -121,7 +121,7 @@ export default {
   left: 5vw;
   right: 5vw;
   bottom: 5vh;
-  z-index: 3;
+  z-index: 100;
 }
 
 .inner-container {
@@ -148,19 +148,19 @@ export default {
   position: absolute;
   top: 0;
   left: 10px;
-  right: 0;
+  right: 10px;
 }
 
 .title {
+  width: calc(100% - 2em);
   opacity: 0.6;
   font-size: 24px;
 }
 
 .icon-box {
   position: absolute;
-  right: 10px;
+  right: 0px;
   top: 3px;
-  z-index: 1;
   height: 1.5em;
   width: 2em;
   display: flex;
@@ -179,6 +179,5 @@ export default {
   border: solid 1px gray;
   border-radius: 3px;
 }
-
 
 </style>
