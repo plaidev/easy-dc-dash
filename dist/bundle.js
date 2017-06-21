@@ -24498,14 +24498,63 @@ function downloadCSV(name_or_data, filename, labels) {
   pom.click();
 }
 
+var ymdhmsFormat = d3$1.time.format('%Y-%m-%d %H:%M:%S');
+var ymdhmFormat = d3$1.time.format('%Y-%m-%d %H:%M');
+var ymdhFormat = d3$1.time.format('%Y-%m-%d %H');
+var ymdFormat = d3$1.time.format('%Y-%m-%d');
+var ymFormat = d3$1.time.format('%Y-%m');
+var weekOfYearFormat = d3$1.time.format("%Y-w%W");
+var yearFormat = d3$1.time.format('%Y');
+var monthFormat = d3$1.time.format('%m');
+var weekFormat = d3$1.time.format('%w');
+var dayFormat = d3$1.time.format('%d');
+var hourFormat = d3$1.time.format('%H');
+var minuteFormat = d3$1.time.format('%M');
+var secondFormat = d3$1.time.format('%S');
+
+var yearInterval = d3$1.time.year;
+var monthInterval = d3$1.time.month;
+var weekInterval = d3$1.time.week;
+var dayInterval = d3$1.time.day;
+var hourInterval = d3$1.time.hour;
+var minuteInterval = d3$1.time.minute;
+var secondInterval = d3$1.time.second;
+
+var TIME_FORMATS = {
+  ymdhms: ymdhmsFormat,
+  ymdhm: ymdhmFormat,
+  ymdh: ymdhFormat,
+  ymd: ymdFormat,
+  ym: ymFormat,
+  weekOfYear: weekOfYearFormat,
+  year: yearFormat,
+  month: monthFormat,
+  week: weekFormat,
+  day: dayFormat,
+  hour: hourFormat,
+  minute: minuteFormat,
+  second: secondFormat
+};
+var TIME_INTERVALS = {
+  year: yearInterval,
+  month: monthInterval,
+  week: weekInterval,
+  day: dayInterval,
+  hour: hourInterval,
+  minute: minuteInterval,
+  second: secondInterval
+};
+
 var DefaultTheme = {
 
-  colors: function colors(name) {
+  colors: function colors(chartType, name) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     var ordinal = void 0,
         weekOrdinal = void 0,
         valueGradation = void 0;
 
-    if (name == 'heatMap') {
+    if (chartType == 'heatMap') {
       valueGradation = ["#e5e5e5", "green"];
     }
 
@@ -24523,7 +24572,9 @@ var DefaultTheme = {
         _options$height = options.height,
         height = _options$height === undefined ? 233 : _options$height,
         _options$legendable = options.legendable,
-        legendable = _options$legendable === undefined ? true : _options$legendable;
+        legendable = _options$legendable === undefined ? true : _options$legendable,
+        _options$fullscreen = options.fullscreen,
+        fullscreen = _options$fullscreen === undefined ? false : _options$fullscreen;
 
 
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
@@ -24547,6 +24598,7 @@ var DefaultTheme = {
 
     if (name === 'square-and-legend') {
       return {
+        name: name,
         width: width,
         height: height * heightCoef,
         margins: {
@@ -24574,6 +24626,7 @@ var DefaultTheme = {
       var length = Math.min(width, height * heightCoef);
 
       return {
+        name: name,
         width: length,
         height: length,
         margins: {
@@ -24594,6 +24647,7 @@ var DefaultTheme = {
       };
     } else if (name === 'overlay-legend') {
       return {
+        name: name,
         width: width,
         height: height * heightCoef,
         margins: {
@@ -24625,15 +24679,15 @@ var DefaultTheme = {
         bottom: 30,
         left: 60,
         right: legendWidth
-      };
 
-      // FIXME: このあたり、どのくらい計算的に出すか難しい...
-      if (margins.top + margins.bottom > height / 2) {
+        // FIXME: このあたり、どのくらい計算的に出すか難しい...
+      };if (margins.top + margins.bottom > height / 2) {
         margins.top = height / 6;
         margins.bottom = height / 3;
       }
 
       return {
+        name: name,
         width: width,
         height: height * heightCoef,
         margins: margins,
@@ -24662,6 +24716,16 @@ var DefaultTheme = {
 
 //-------------------------------------
 
+function _defaultRepresentation(v, d, key) {
+  if (v instanceof Array || typeof v == 'array') {
+    return v.map(function (item) {
+      if (item instanceof Date) return TIME_FORMATS.ymd(item);
+      return item;
+    }).join(', ');
+  }
+  if (v.per != undefined) return v.per;
+  return v;
+}
 
 var DashboardStore = function () {
   function DashboardStore() {
@@ -24681,6 +24745,14 @@ var DashboardStore = function () {
     this._labels = {
       default: {
         '': {} // チャート固有でない辞書
+      }
+    };
+
+    this._representations = {};
+
+    this._linkFormatters = {
+      default: function _default(v) {
+        return v;
       }
     };
   }
@@ -24853,6 +24925,35 @@ var DashboardStore = function () {
         }
       }
       return null;
+    }
+  }, {
+    key: 'registerRepresentation',
+    value: function registerRepresentation(name, rep) {
+      this._representations[name] = rep;
+    }
+  }, {
+    key: 'getRepresentation',
+    value: function getRepresentation(name) {
+      if (!name) return _defaultRepresentation;
+      if (!(name in this._representations)) {
+        console.log('warn: representation name "' + name + '" is not registererd');
+        return _defaultRepresentation;
+      }
+      return this._representations[name];
+    }
+  }, {
+    key: 'registerLinkFormatter',
+    value: function registerLinkFormatter(name, format) {
+      this._linkFormatters[name] = format;
+    }
+  }, {
+    key: 'getLinkFormatter',
+    value: function getLinkFormatter(name) {
+      if (!name) return;
+      if (!(name in this._linkFormatters)) {
+        return console.log('warn: linkFormatter name "' + name + '" is not registererd');
+      }
+      return this._linkFormatters[name];
     }
   }, {
     key: 'getTheme',
@@ -25066,58 +25167,281 @@ function roundDecimalFormat(number, n) {
   return Math.round(number * _pow) / _pow;
 }
 
-var ymdhmsFormat = d3$1.time.format('%Y-%m-%d %H:%M:%S');
-var ymdhmFormat = d3$1.time.format('%Y-%m-%d %H:%M');
-var ymdhFormat = d3$1.time.format('%Y-%m-%d %H');
-var ymdFormat = d3$1.time.format('%Y-%m-%d');
-var ymFormat = d3$1.time.format('%Y-%m');
-var weekOfYearFormat = d3$1.time.format("%Y-w%W");
-var yearFormat = d3$1.time.format('%Y');
-var monthFormat = d3$1.time.format('%m');
-var weekFormat = d3$1.time.format('%w');
-var dayFormat = d3$1.time.format('%d');
-var hourFormat = d3$1.time.format('%H');
-var minuteFormat = d3$1.time.format('%M');
-var secondFormat = d3$1.time.format('%S');
+function mergeCssModules(cssModule, childCssModule) {
+  if (!childCssModule) return;
 
-var yearInterval = d3$1.time.year;
-var monthInterval = d3$1.time.month;
-var weekInterval = d3$1.time.week;
-var dayInterval = d3$1.time.day;
-var hourInterval = d3$1.time.hour;
-var minuteInterval = d3$1.time.minute;
-var secondInterval = d3$1.time.second;
+  for (var k in childCssModule) {
+    if (cssModule[k]) {
+      cssModule[k] = childCssModule[k];
+      continue;
+    } else {
+      cssModule[k] += ' ' + childCssModule[k];
+    }
+  }
 
-var TIME_FORMATS = {
-  ymdhms: ymdhmsFormat,
-  ymdhm: ymdhmFormat,
-  ymdh: ymdhFormat,
-  ymd: ymdFormat,
-  ym: ymFormat,
-  weekOfYear: weekOfYearFormat,
-  year: yearFormat,
-  month: monthFormat,
-  week: weekFormat,
-  day: dayFormat,
-  hour: hourFormat,
-  minute: minuteFormat,
-  second: secondFormat
+  return cssModule;
+}
+
+/*!
+ * is-primitive <https://github.com/jonschlinkert/is-primitive>
+ *
+ * Copyright (c) 2014-2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+// see http://jsperf.com/testing-value-is-primitive/7
+
+var index$6 = function isPrimitive(value) {
+  return value == null || typeof value !== 'function' && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object';
 };
-var TIME_INTERVALS = {
-  year: yearInterval,
-  month: monthInterval,
-  week: weekInterval,
-  day: dayInterval,
-  hour: hourInterval,
-  minute: minuteInterval,
-  second: secondInterval
+
+/*!
+ * assign-symbols <https://github.com/jonschlinkert/assign-symbols>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+var index$8 = function index(receiver, objects) {
+  if (receiver === null || typeof receiver === 'undefined') {
+    throw new TypeError('expected first argument to be an object.');
+  }
+
+  if (typeof objects === 'undefined' || typeof Symbol === 'undefined') {
+    return receiver;
+  }
+
+  if (typeof Object.getOwnPropertySymbols !== 'function') {
+    return receiver;
+  }
+
+  var isEnumerable = Object.prototype.propertyIsEnumerable;
+  var target = Object(receiver);
+  var len = arguments.length,
+      i = 0;
+
+  while (++i < len) {
+    var provider = Object(arguments[i]);
+    var names = Object.getOwnPropertySymbols(provider);
+
+    for (var j = 0; j < names.length; j++) {
+      var key = names[j];
+
+      if (isEnumerable.call(provider, key)) {
+        target[key] = provider[key];
+      }
+    }
+  }
+  return target;
 };
+
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+// The _isBuffer check is for Safari 5-7 support, because it's missing
+// Object.prototype.constructor. Remove this eventually
+var index$12 = function index(obj) {
+  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer);
+};
+
+function isBuffer(obj) {
+  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj);
+}
+
+// For Node v0.10 support. Remove this eventually.
+function isSlowBuffer(obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0));
+}
+
+var toString = Object.prototype.toString;
+
+/**
+ * Get the native `typeof` a value.
+ *
+ * @param  {*} `val`
+ * @return {*} Native javascript type
+ */
+
+var index$10 = function kindOf(val) {
+  // primitivies
+  if (typeof val === 'undefined') {
+    return 'undefined';
+  }
+  if (val === null) {
+    return 'null';
+  }
+  if (val === true || val === false || val instanceof Boolean) {
+    return 'boolean';
+  }
+  if (typeof val === 'string' || val instanceof String) {
+    return 'string';
+  }
+  if (typeof val === 'number' || val instanceof Number) {
+    return 'number';
+  }
+
+  // functions
+  if (typeof val === 'function' || val instanceof Function) {
+    return 'function';
+  }
+
+  // array
+  if (typeof Array.isArray !== 'undefined' && Array.isArray(val)) {
+    return 'array';
+  }
+
+  // check for instances of RegExp and Date before calling `toString`
+  if (val instanceof RegExp) {
+    return 'regexp';
+  }
+  if (val instanceof Date) {
+    return 'date';
+  }
+
+  // other objects
+  var type = toString.call(val);
+
+  if (type === '[object RegExp]') {
+    return 'regexp';
+  }
+  if (type === '[object Date]') {
+    return 'date';
+  }
+  if (type === '[object Arguments]') {
+    return 'arguments';
+  }
+  if (type === '[object Error]') {
+    return 'error';
+  }
+
+  // buffer
+  if (index$12(val)) {
+    return 'buffer';
+  }
+
+  // es6: Map, WeakMap, Set, WeakSet
+  if (type === '[object Set]') {
+    return 'set';
+  }
+  if (type === '[object WeakSet]') {
+    return 'weakset';
+  }
+  if (type === '[object Map]') {
+    return 'map';
+  }
+  if (type === '[object WeakMap]') {
+    return 'weakmap';
+  }
+  if (type === '[object Symbol]') {
+    return 'symbol';
+  }
+
+  // typed arrays
+  if (type === '[object Int8Array]') {
+    return 'int8array';
+  }
+  if (type === '[object Uint8Array]') {
+    return 'uint8array';
+  }
+  if (type === '[object Uint8ClampedArray]') {
+    return 'uint8clampedarray';
+  }
+  if (type === '[object Int16Array]') {
+    return 'int16array';
+  }
+  if (type === '[object Uint16Array]') {
+    return 'uint16array';
+  }
+  if (type === '[object Int32Array]') {
+    return 'int32array';
+  }
+  if (type === '[object Uint32Array]') {
+    return 'uint32array';
+  }
+  if (type === '[object Float32Array]') {
+    return 'float32array';
+  }
+  if (type === '[object Float64Array]') {
+    return 'float64array';
+  }
+
+  // must be a plain object
+  return 'object';
+};
+
+function assign(target /*, objects*/) {
+  target = target || {};
+  var len = arguments.length,
+      i = 0;
+  if (len === 1) {
+    return target;
+  }
+  while (++i < len) {
+    var val = arguments[i];
+    if (index$6(target)) {
+      target = val;
+    }
+    if (isObject(val)) {
+      extend(target, val);
+    }
+  }
+  return target;
+}
+
+/**
+ * Shallow extend
+ */
+
+function extend(target, obj) {
+  index$8(target, obj);
+
+  for (var key in obj) {
+    if (hasOwn(obj, key)) {
+      var val = obj[key];
+      if (isObject(val)) {
+        if (index$10(target[key]) === 'undefined' && index$10(val) === 'function') {
+          target[key] = val;
+        }
+        target[key] = assign(target[key] || {}, val);
+      } else {
+        target[key] = val;
+      }
+    }
+  }
+  return target;
+}
+
+/**
+ * Returns true if the object is a plain object or a function.
+ */
+
+function isObject(obj) {
+  return index$10(obj) === 'object' || index$10(obj) === 'function';
+}
+
+/**
+ * Returns true if the given `key` is an own property of `obj`.
+ */
+
+function hasOwn(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
+ * Expose `assign`
+ */
+
+var index$5 = assign;
 
 (function () {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .reset-button { position: absolute; right: 0; top: 0; padding-right: 5px; padding-bottom: 5px; } .reset { vertical-align: middle; margin-left: 2px; } .reset i { vertical-align: middle; } .filter { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .badge { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; vertical-align: 8%; white-space: normal; word-wrap: break-all; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 0; top: 0; padding-right: 5px; padding-bottom: 5px; margin-right: 1.8em; color: gray; } .reset[data-v-3fb031d6] { vertical-align: middle; margin-left: 2px; cursor: pointer; } .reset i[data-v-3fb031d6] { vertical-align: middle; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25126,10 +25450,12 @@ var TIME_INTERVALS = {
 })();
 
 var ResetButton = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button" }, [_vm._m(0), _c('a', { staticClass: "reset", staticStyle: { "display": "none" }, on: { "click": _vm.reset } }, [_c('i', { staticClass: "fa fa-ban" }, [_vm._v(" ")])])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button", on: { "click": _vm.reset } }, [_vm._m(0), _vm._m(1)]);
   }, staticRenderFns: [function () {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('span', { staticClass: "filter badge" })]);
-  }],
+  }, function () {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('i', { staticClass: "fa fa-ban" }, [_vm._v(" ")])]);
+  }], _scopeId: 'data-v-3fb031d6',
   methods: {
     reset: function reset() {
       this.$emit('reset');
@@ -25141,7 +25467,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .outer-container { position: relative; } .inner-container { background-color: white; position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; } .card-container { margin: -2px; display: flex; align-items: center; justify-content: center; } .title { position: absolute; top: 0; left: 10px; opacity: 0.6; font-size: 24px; } .render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: white; position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__inner-container { position: relative; margin: -2px; display: flex; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 10px; right: 10px; } .card__title { width: calc(100% - 2em); opacity: 0.6; font-size: 24px; } .card__icon-box { position: absolute; right: 0px; top: 3px; height: 1.5em; width: 2em; display: flex; flex-direction: row-reverse; align-items: center; color: gray; } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25150,8 +25476,8 @@ var ResetButton = { render: function render() {
 })();
 
 var CardContainer = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "outer-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "inner-container" }, [_c('div', { staticClass: "card-container", style: _vm.sizeStyle }, [_c('h3', { staticClass: "title", domProps: { "textContent": _vm._s(_vm.title) } }), _c('div', { staticClass: "render-area" }, [_vm._t("default")], 2)])])]);
-  }, staticRenderFns: [],
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area" }, [_vm._t("default")], 2)])])]);
+  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box" },
   props: {
     title: {
       type: String
@@ -25161,19 +25487,59 @@ var CardContainer = { render: function render() {
     },
     height: {
       default: 233
+    },
+    fullscreen: {
+      type: Boolean,
+      default: false
     }
   },
+  data: function data() {
+    return { isFullscreen: false };
+  },
   computed: {
-    sizeStyle: function sizeStyle() {
+    outerSizeStyle: function outerSizeStyle() {
       var style = {};
       if (this.width) style.width = this.width + 'px';
       if (this.height) style.height = this.height + 'px';
       return style;
+    },
+    sizeStyle: function sizeStyle() {
+      var style = {};
+      if (this.isFullscreen) {
+        style.width = 90 + 'vw';
+        style.height = 90 + 'vh';
+      } else {
+        if (this.width) style.width = this.width + 'px';
+        if (this.height) style.height = this.height + 'px';
+      }
+      return style;
+    },
+    screenModeClass: function screenModeClass() {
+      if (this.isFullscreen) {
+        return this.$options.cssModules['fullscreen'];
+      }
+      return '';
+    },
+    fullscreenIconClass: function fullscreenIconClass() {
+      return this.isFullscreen ? 'fa-window-minimize' : 'fa-window-maximize';
+    }
+  },
+  watch: {
+    fullscreen: function fullscreen(v) {
+      this.isFullscreen = v;
     }
   },
   methods: {
     reset: function reset() {
       this.$emit('reset');
+    },
+    toggleFullscreen: function toggleFullscreen() {
+      var _this = this;
+
+      this.isFullscreen = !this.isFullscreen;
+      setTimeout(function () {
+        _this.$emit('update:fullscreen', _this.isFullscreen);
+      }, 0);
     }
   }
 };
@@ -25182,7 +25548,7 @@ var CardContainer = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip .circle-box { height: 100%; width: 30px; } .krt-dc-tooltip .circle-box .circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip .chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip .chart-data .key { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-tooltip__krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box { height: 100%; width: 30px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box .krt-dc-tooltip__circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__key { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25191,12 +25557,12 @@ var CardContainer = { render: function render() {
 })();
 
 var KrtDcTooltip = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "circle-box" }, [_c('div', { staticClass: "circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "chart-data" }, [_c('div', { staticClass: "key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip__krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "krt-dc-tooltip__circle-box" }, [_c('div', { staticClass: "krt-dc-tooltip__circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "krt-dc-tooltip__chart-data" }, [_c('div', { staticClass: "krt-dc-tooltip__key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
       return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
     })], 2), _c('div', { staticClass: "val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
       return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
     })], 2), _c('div', { staticClass: "rate" }, [_vm.data.rate !== undefined && _vm.data.rate !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.rate) + "%")])]) : _vm._e()])])]) : _vm._e();
-  }, staticRenderFns: [],
+  }, staticRenderFns: [], cssModules: { "krt-dc-tooltip": "krt-dc-tooltip__krt-dc-tooltip", "circle-box": "krt-dc-tooltip__circle-box", "circle": "krt-dc-tooltip__circle", "chart-data": "krt-dc-tooltip__chart-data", "key": "krt-dc-tooltip__key" },
   name: 'KrtDcTooltip',
   data: function data() {
     return {
@@ -25219,6 +25585,39 @@ var KrtDcTooltip = { render: function render() {
     },
     remove: function remove() {
       this.data = null;
+    }
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " .chart-link__krt-dc-chart-link { color: #000; font-size: 12px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: absolute; padding: 4px 6px; z-index: 2; right: 0; bottom: 0; display: flex; flex-direction: row; align-items: center; align-content: center; } .chart-link__krt-dc-chart-link .chart-link__link-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chart-link__krt-dc-chart-link .chart-link__link-icon { padding-left: 5px; font-size: 14px; vertical-align: text-bottom; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var ChartLink = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.link ? _c('div', { staticClass: "chart-link__krt-dc-chart-link" }, [_c('span', [_c('a', { staticClass: "chart-link__link-text", attrs: { "href": _vm.link, "target": "_blank" }, domProps: { "textContent": _vm._s(_vm.link) } })]), _vm._v(" "), _c('span', [_c('a', { attrs: { "href": _vm.link, "target": "_blank" } }, [_c('i', { staticClass: "fa fa-external-link chart-link__link-icon", attrs: { "aria-hidden": "true" } })])])]) : _vm._e();
+  }, staticRenderFns: [], cssModules: { "krt-dc-chart-link": "chart-link__krt-dc-chart-link", "link-text": "chart-link__link-text", "link-icon": "chart-link__link-icon" },
+  name: 'KrtDcChartLink',
+  data: function data() {
+    return {
+      link: null
+    };
+  },
+
+  methods: {
+    show: function show(c, link) {
+      if (c.filters().length === 0) return this.remove();
+      this.link = link;
+    },
+    remove: function remove() {
+      this.link = null;
     }
   }
 };
@@ -25270,12 +25669,13 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" @update:fullscreen="v => isFullscreen = v" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
     'reset-button': ResetButton,
-    'krt-dc-tooltip': KrtDcTooltip
+    'krt-dc-tooltip': KrtDcTooltip,
+    'chart-link': ChartLink
   },
 
   props: {
@@ -25301,7 +25701,7 @@ var Base = {
       type: String,
       default: 'ordinal.ordinal'
     },
-    extraDimensionScale: {
+    extraScale: {
       type: String
     },
     dateKey: {
@@ -25310,6 +25710,10 @@ var Base = {
     reduce: {},
 
     // basic render content
+    useDataPoints: {
+      type: Boolean,
+      default: true
+    },
     renderLabel: {
       type: Boolean,
       default: true
@@ -25351,6 +25755,12 @@ var Base = {
       default: true
     },
 
+    // formatter
+    linkFormatter: {
+      type: String,
+      default: 'default'
+    },
+
     // size / layout
     layout: {
       type: String,
@@ -25358,6 +25768,9 @@ var Base = {
     },
     width: {},
     height: {},
+    layoutDetails: {
+      type: String
+    },
 
     // chart specific labels
     labels: {},
@@ -25381,7 +25794,15 @@ var Base = {
     }
   },
 
+  data: function data() {
+    // umm.
+    return { isMounted: false, isFullscreen: false };
+  },
+
   computed: {
+    $style: function $style() {
+      return this.$options.cssModules || { 'chart-root': 'easy-dc-chart-root' };
+    },
     parent: function parent() {
       return '#' + this.id;
     },
@@ -25493,15 +25914,41 @@ var Base = {
       return generateScales(this.extraScale);
     },
     layoutSettings: function layoutSettings() {
-      var _getContainerInnerSiz = this.getContainerInnerSize(),
-          width = _getContainerInnerSiz.width,
-          height = _getContainerInnerSiz.height;
+      if (!this.containerInnerSize) return {};
+      var _containerInnerSize = this.containerInnerSize,
+          width = _containerInnerSize.width,
+          height = _containerInnerSize.height;
 
       var legendable = this.useLegend;
-      return Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height, legendable: legendable });
+      var setting = Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height, legendable: legendable, fullscreen: this.isFullscreen });
+      if (this.layoutDetails) {
+        var custom = generateExtractor(this.layoutDetails)(setting);
+        return index$5({}, setting, custom);
+      }
+      return setting;
+    },
+    containerInnerSize: function containerInnerSize() {
+      if (!this.isMounted) return;
+
+      var width = void 0,
+          height = void 0;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        var el = this.$el.querySelector(this.parent).parentNode;
+        width = el.clientWidth;
+        height = el.clientHeight;
+      } else {
+        width = this.parent.width();
+        height = this.parent.height();
+      }
+      if (!this.isFullscreen) {
+        if (this.width) width = parseFloat(this.width);
+        if (this.height) height = parseFloat(this.height);
+      }
+
+      return { width: width, height: height };
     },
     colorSettings: function colorSettings() {
-      return Store.getTheme().colors(this.chartType);
+      return Store.getTheme().colors(this.chartType, '');
     },
     textSelector: function textSelector() {
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .node text';else if (this.chartType === 'heatMap') return '#' + this.id + ' g.cols.axis text';else return '#' + this.id + ' g.x text';
@@ -25621,30 +26068,14 @@ var Base = {
 
       if (reverseOrder) reverseLegendOrder(this.chart);
     },
-    getContainerInnerSize: function getContainerInnerSize() {
-      var width = void 0,
-          height = void 0;
-      if (typeof this.parent === 'string' || this.parent instanceof String) {
-        var el = document.querySelector(this.parent).parentNode;
-        width = el.clientWidth;
-        height = el.clientHeight;
-      } else {
-        width = this.parent.width();
-        height = this.parent.height();
-      }
-      if (this.width) width = parseFloat(this.width);
-      if (this.height) height = parseFloat(this.height);
-
-      return { width: width, height: height };
-    },
     applyStyles: function applyStyles() {
+      if (!this.containerInnerSize || !this.layoutSettings || !this.chart) return;
       var chart = this.chart;
       var legend = this.legend;
 
-      var _getContainerInnerSiz2 = this.getContainerInnerSize(),
-          defaultWidth = _getContainerInnerSiz2.width,
-          defaultHeight = _getContainerInnerSiz2.height;
-
+      var _containerInnerSize2 = this.containerInnerSize,
+          defaultWidth = _containerInnerSize2.width,
+          defaultHeight = _containerInnerSize2.height;
       var _layoutSettings = this.layoutSettings,
           _layoutSettings$width = _layoutSettings.width,
           width = _layoutSettings$width === undefined ? defaultWidth : _layoutSettings$width,
@@ -25661,9 +26092,11 @@ var Base = {
         chart.margins(margins);
       }
 
-      if (chart.renderDataPoints) {
+      if (this.useDataPoints && chart.renderDataPoints) {
         chart.renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5 });
       }
+
+      if (this.useLegend) this.applyLegend();
     },
     showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -25677,11 +26110,31 @@ var Base = {
     },
     removeTooltip: function removeTooltip() {
       this.$refs.tooltip.remove();
+    },
+    showChartLink: function showChartLink(chart, filterValue) {
+      var link = void 0;
+      if (this.linkFormatter) {
+        var formatter = Store.getLinkFormatter(this.linkFormatter);
+        link = formatter === undefined ? filterValue : formatter(filterValue);
+      } else {
+        link = filterValue;
+      }
+      this.$refs.chartLink.show(chart, link);
+    }
+  },
+
+  watch: {
+    layoutSettings: function layoutSettings() {
+      this.applyStyles();
+      this.chart.render();
     }
   },
 
   mounted: function mounted() {
     var _this5 = this;
+
+    // layoutが確定する
+    this.isMounted = true;
 
     var chart = Store.registerChart(this.parent, this.id, this.chartType, { volume: this.volume });
 
@@ -25711,9 +26164,6 @@ var Base = {
       });
     }
 
-    if (this.useLegend) this.applyLegend();
-    this.applyStyles();
-
     chart.renderLabel(this.renderLabel).renderTitle(this.renderTitle).transitionDuration(this.transitionDuration).label(function (d) {
       return _this5.getLabel(d.key);
     }).filterPrinter(function (filters) {
@@ -25735,8 +26185,12 @@ var Base = {
 
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
-        d3$1.selectAll(_this5.tooltipSelector).on("mouseover", _this5.showTooltip).on("mousemove", _this5.moveTooltip).on("mouseout", _this5.removeTooltip);
+        chart.selectAll(_this5.tooltipSelector).on("mouseover", _this5.showTooltip).on("mousemove", _this5.moveTooltip).on("mouseout", _this5.removeTooltip);
       });
+    }
+    if (this.linkFormatter) {
+      // .on("click") だと一部のチャートでfilterのclickとぶつかる
+      chart.on('filtered', this.showChartLink);
     }
 
     // deisgn hack
@@ -25759,6 +26213,8 @@ var Base = {
           return d.length > 15 ? d.substr(0, 15) + '...' : d;
         });
       }
+
+      // TODO: layout system
       if (!_this5.hideXAxisLabel && _this5.rotateXAxisLabel) {
         chart.selectAll('#' + _this5.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
@@ -25842,7 +26298,7 @@ var coordinateGridBase = {
 
 var vue = createCommonjsModule(function (module, exports) {
   /*!
-   * Vue.js v2.2.6
+   * Vue.js v2.3.4
    * (c) 2014-2017 Evan You
    * Released under the MIT License.
    */
@@ -25853,11 +26309,58 @@ var vue = createCommonjsModule(function (module, exports) {
 
     /*  */
 
+    // these helpers produces better vm code in JS engines due to their
+    // explicitness and function inlining
+
+    function isUndef(v) {
+      return v === undefined || v === null;
+    }
+
+    function isDef(v) {
+      return v !== undefined && v !== null;
+    }
+
+    function isTrue(v) {
+      return v === true;
+    }
+
+    function isFalse(v) {
+      return v === false;
+    }
+    /**
+     * Check if value is primitive
+     */
+    function isPrimitive(value) {
+      return typeof value === 'string' || typeof value === 'number';
+    }
+
+    /**
+     * Quick object check - this is primarily used to tell
+     * Objects from primitive values when we know the value
+     * is a JSON-compliant type.
+     */
+    function isObject(obj) {
+      return obj !== null && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object';
+    }
+
+    var _toString = Object.prototype.toString;
+
+    /**
+     * Strict object type check. Only returns true
+     * for plain JavaScript objects.
+     */
+    function isPlainObject(obj) {
+      return _toString.call(obj) === '[object Object]';
+    }
+
+    function isRegExp(v) {
+      return _toString.call(v) === '[object RegExp]';
+    }
+
     /**
      * Convert a value to a string that is actually rendered.
      */
-
-    function _toString(val) {
+    function toString(val) {
       return val == null ? '' : (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' ? JSON.stringify(val, null, 2) : String(val);
     }
 
@@ -25910,13 +26413,6 @@ var vue = createCommonjsModule(function (module, exports) {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     function hasOwn(obj, key) {
       return hasOwnProperty.call(obj, key);
-    }
-
-    /**
-     * Check if value is primitive
-     */
-    function isPrimitive(value) {
-      return typeof value === 'string' || typeof value === 'number';
     }
 
     /**
@@ -25989,25 +26485,6 @@ var vue = createCommonjsModule(function (module, exports) {
         to[key] = _from[key];
       }
       return to;
-    }
-
-    /**
-     * Quick object check - this is primarily used to tell
-     * Objects from primitive values when we know the value
-     * is a JSON-compliant type.
-     */
-    function isObject(obj) {
-      return obj !== null && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object';
-    }
-
-    /**
-     * Strict object type check. Only returns true
-     * for plain JavaScript objects.
-     */
-    var toString = Object.prototype.toString;
-    var OBJECT_STRING = '[object Object]';
-    function isPlainObject(obj) {
-      return toString.call(obj) === OBJECT_STRING;
     }
 
     /**
@@ -26089,10 +26566,16 @@ var vue = createCommonjsModule(function (module, exports) {
       return function () {
         if (!called) {
           called = true;
-          fn();
+          fn.apply(this, arguments);
         }
       };
     }
+
+    var SSR_ATTR = 'data-server-rendered';
+
+    var ASSET_TYPES = ['component', 'directive', 'filter'];
+
+    var LIFECYCLE_HOOKS = ['beforeCreate', 'created', 'beforeMount', 'mounted', 'beforeUpdate', 'updated', 'beforeDestroy', 'destroyed', 'activated', 'deactivated'];
 
     /*  */
 
@@ -26144,6 +26627,12 @@ var vue = createCommonjsModule(function (module, exports) {
       isReservedTag: no,
 
       /**
+       * Check if an attribute is reserved so that it cannot be used as a component
+       * prop. This is platform-dependent and may be overwritten.
+       */
+      isReservedAttr: no,
+
+      /**
        * Check if a tag is an unknown element.
        * Platform-dependent.
        */
@@ -26166,19 +26655,9 @@ var vue = createCommonjsModule(function (module, exports) {
       mustUseProp: no,
 
       /**
-       * List of asset types that a component can own.
+       * Exposed for legacy reasons
        */
-      _assetTypes: ['component', 'directive', 'filter'],
-
-      /**
-       * List of lifecycle hooks.
-       */
-      _lifecycleHooks: ['beforeCreate', 'created', 'beforeMount', 'mounted', 'beforeUpdate', 'updated', 'beforeDestroy', 'destroyed', 'activated', 'deactivated'],
-
-      /**
-       * Max circular updates allowed in a scheduler flush cycle.
-       */
-      _maxUpdateCount: 100
+      _lifecycleHooks: LIFECYCLE_HOOKS
     };
 
     /*  */
@@ -26226,6 +26705,108 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     /*  */
+
+    var warn = noop;
+    var tip = noop;
+    var formatComponentName = null; // work around flow check
+
+    {
+      var hasConsole = typeof console !== 'undefined';
+      var classifyRE = /(?:^|[-_])(\w)/g;
+      var classify = function classify(str) {
+        return str.replace(classifyRE, function (c) {
+          return c.toUpperCase();
+        }).replace(/[-_]/g, '');
+      };
+
+      warn = function warn(msg, vm) {
+        if (hasConsole && !config.silent) {
+          console.error("[Vue warn]: " + msg + (vm ? generateComponentTrace(vm) : ''));
+        }
+      };
+
+      tip = function tip(msg, vm) {
+        if (hasConsole && !config.silent) {
+          console.warn("[Vue tip]: " + msg + (vm ? generateComponentTrace(vm) : ''));
+        }
+      };
+
+      formatComponentName = function formatComponentName(vm, includeFile) {
+        if (vm.$root === vm) {
+          return '<Root>';
+        }
+        var name = typeof vm === 'string' ? vm : typeof vm === 'function' && vm.options ? vm.options.name : vm._isVue ? vm.$options.name || vm.$options._componentTag : vm.name;
+
+        var file = vm._isVue && vm.$options.__file;
+        if (!name && file) {
+          var match = file.match(/([^/\\]+)\.vue$/);
+          name = match && match[1];
+        }
+
+        return (name ? "<" + classify(name) + ">" : "<Anonymous>") + (file && includeFile !== false ? " at " + file : '');
+      };
+
+      var repeat = function repeat(str, n) {
+        var res = '';
+        while (n) {
+          if (n % 2 === 1) {
+            res += str;
+          }
+          if (n > 1) {
+            str += str;
+          }
+          n >>= 1;
+        }
+        return res;
+      };
+
+      var generateComponentTrace = function generateComponentTrace(vm) {
+        if (vm._isVue && vm.$parent) {
+          var tree = [];
+          var currentRecursiveSequence = 0;
+          while (vm) {
+            if (tree.length > 0) {
+              var last = tree[tree.length - 1];
+              if (last.constructor === vm.constructor) {
+                currentRecursiveSequence++;
+                vm = vm.$parent;
+                continue;
+              } else if (currentRecursiveSequence > 0) {
+                tree[tree.length - 1] = [last, currentRecursiveSequence];
+                currentRecursiveSequence = 0;
+              }
+            }
+            tree.push(vm);
+            vm = vm.$parent;
+          }
+          return '\n\nfound in\n\n' + tree.map(function (vm, i) {
+            return "" + (i === 0 ? '---> ' : repeat(' ', 5 + i * 2)) + (Array.isArray(vm) ? formatComponentName(vm[0]) + "... (" + vm[1] + " recursive calls)" : formatComponentName(vm));
+          }).join('\n');
+        } else {
+          return "\n\n(found in " + formatComponentName(vm) + ")";
+        }
+      };
+    }
+
+    /*  */
+
+    function handleError(err, vm, info) {
+      if (config.errorHandler) {
+        config.errorHandler.call(null, err, vm, info);
+      } else {
+        {
+          warn("Error in " + info + ": \"" + err.toString() + "\"", vm);
+        }
+        /* istanbul ignore else */
+        if (inBrowser && typeof console !== 'undefined') {
+          console.error(err);
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    /*  */
     /* globals MutationObserver */
 
     // can we use __proto__?
@@ -26240,6 +26821,20 @@ var vue = createCommonjsModule(function (module, exports) {
     var isAndroid = UA && UA.indexOf('android') > 0;
     var isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
     var isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
+
+    var supportsPassive = false;
+    if (inBrowser) {
+      try {
+        var opts = {};
+        Object.defineProperty(opts, 'passive', {
+          get: function get$$1() {
+            /* istanbul ignore next */
+            supportsPassive = true;
+          }
+        }); // https://github.com/facebook/flow/issues/285
+        window.addEventListener('test-passive', null, opts);
+      } catch (e) {}
+    }
 
     // this needs to be lazy-evaled because vue may be required before
     // vue-server-renderer can set VUE_ENV
@@ -26263,8 +26858,7 @@ var vue = createCommonjsModule(function (module, exports) {
 
     /* istanbul ignore next */
     function isNative(Ctor) {
-      return (/native code/.test(Ctor.toString())
-      );
+      return typeof Ctor === 'function' && /native code/.test(Ctor.toString());
     }
 
     var hasSymbol = typeof Symbol !== 'undefined' && isNative(Symbol) && typeof Reflect !== 'undefined' && isNative(Reflect.ownKeys);
@@ -26336,9 +26930,12 @@ var vue = createCommonjsModule(function (module, exports) {
         var _resolve;
         callbacks.push(function () {
           if (cb) {
-            cb.call(ctx);
-          }
-          if (_resolve) {
+            try {
+              cb.call(ctx);
+            } catch (e) {
+              handleError(e, ctx, 'nextTick');
+            }
+          } else if (_resolve) {
             _resolve(ctx);
           }
         });
@@ -26347,7 +26944,7 @@ var vue = createCommonjsModule(function (module, exports) {
           timerFunc();
         }
         if (!cb && typeof Promise !== 'undefined') {
-          return new Promise(function (resolve) {
+          return new Promise(function (resolve, reject) {
             _resolve = resolve;
           });
         }
@@ -26379,64 +26976,16 @@ var vue = createCommonjsModule(function (module, exports) {
       }();
     }
 
-    var warn = noop;
-    var tip = noop;
-    var formatComponentName;
-
-    {
-      var hasConsole = typeof console !== 'undefined';
-      var classifyRE = /(?:^|[-_])(\w)/g;
-      var classify = function classify(str) {
-        return str.replace(classifyRE, function (c) {
-          return c.toUpperCase();
-        }).replace(/[-_]/g, '');
-      };
-
-      warn = function warn(msg, vm) {
-        if (hasConsole && !config.silent) {
-          console.error("[Vue warn]: " + msg + " " + (vm ? formatLocation(formatComponentName(vm)) : ''));
-        }
-      };
-
-      tip = function tip(msg, vm) {
-        if (hasConsole && !config.silent) {
-          console.warn("[Vue tip]: " + msg + " " + (vm ? formatLocation(formatComponentName(vm)) : ''));
-        }
-      };
-
-      formatComponentName = function formatComponentName(vm, includeFile) {
-        if (vm.$root === vm) {
-          return '<Root>';
-        }
-        var name = typeof vm === 'string' ? vm : typeof vm === 'function' && vm.options ? vm.options.name : vm._isVue ? vm.$options.name || vm.$options._componentTag : vm.name;
-
-        var file = vm._isVue && vm.$options.__file;
-        if (!name && file) {
-          var match = file.match(/([^/\\]+)\.vue$/);
-          name = match && match[1];
-        }
-
-        return (name ? "<" + classify(name) + ">" : "<Anonymous>") + (file && includeFile !== false ? " at " + file : '');
-      };
-
-      var formatLocation = function formatLocation(str) {
-        if (str === "<Anonymous>") {
-          str += " - use the \"name\" option for better debugging messages.";
-        }
-        return "\n(found in " + str + ")";
-      };
-    }
-
     /*  */
 
-    var uid$1 = 0;
+    var uid = 0;
 
     /**
      * A dep is an observable that can have multiple
      * directives subscribing to it.
      */
     var Dep = function Dep() {
-      this.id = uid$1++;
+      this.id = uid++;
       this.subs = [];
     };
 
@@ -26829,7 +27378,7 @@ var vue = createCommonjsModule(function (module, exports) {
       return childVal ? parentVal ? parentVal.concat(childVal) : Array.isArray(childVal) ? childVal : [childVal] : parentVal;
     }
 
-    config._lifecycleHooks.forEach(function (hook) {
+    LIFECYCLE_HOOKS.forEach(function (hook) {
       strats[hook] = mergeHook;
     });
 
@@ -26845,7 +27394,7 @@ var vue = createCommonjsModule(function (module, exports) {
       return childVal ? extend(res, childVal) : res;
     }
 
-    config._assetTypes.forEach(function (type) {
+    ASSET_TYPES.forEach(function (type) {
       strats[type + 's'] = mergeAssets;
     });
 
@@ -26966,19 +27515,20 @@ var vue = createCommonjsModule(function (module, exports) {
       {
         checkComponents(child);
       }
+
+      if (typeof child === 'function') {
+        child = child.options;
+      }
+
       normalizeProps(child);
       normalizeDirectives(child);
       var extendsFrom = child.extends;
       if (extendsFrom) {
-        parent = typeof extendsFrom === 'function' ? mergeOptions(parent, extendsFrom.options, vm) : mergeOptions(parent, extendsFrom, vm);
+        parent = mergeOptions(parent, extendsFrom, vm);
       }
       if (child.mixins) {
         for (var i = 0, l = child.mixins.length; i < l; i++) {
-          var mixin = child.mixins[i];
-          if (mixin.prototype instanceof Vue$3) {
-            mixin = mixin.options;
-          }
-          parent = mergeOptions(parent, mixin, vm);
+          parent = mergeOptions(parent, child.mixins[i], vm);
         }
       }
       var options = {};
@@ -27118,20 +27668,13 @@ var vue = createCommonjsModule(function (module, exports) {
       }
     }
 
-    /**
-     * Assert the type of a value
-     */
+    var simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/;
+
     function assertType(value, type) {
       var valid;
       var expectedType = getType(type);
-      if (expectedType === 'String') {
-        valid = (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === (expectedType = 'string');
-      } else if (expectedType === 'Number') {
-        valid = (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === (expectedType = 'number');
-      } else if (expectedType === 'Boolean') {
-        valid = (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === (expectedType = 'boolean');
-      } else if (expectedType === 'Function') {
-        valid = (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === (expectedType = 'function');
+      if (simpleCheckRE.test(expectedType)) {
+        valid = (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === expectedType.toLowerCase();
       } else if (expectedType === 'Object') {
         valid = isPlainObject(value);
       } else if (expectedType === 'Array') {
@@ -27152,7 +27695,7 @@ var vue = createCommonjsModule(function (module, exports) {
      */
     function getType(fn) {
       var match = fn && fn.toString().match(/^\s*function (\w+)/);
-      return match && match[1];
+      return match ? match[1] : '';
     }
 
     function isType(type, fn) {
@@ -27168,19 +27711,24 @@ var vue = createCommonjsModule(function (module, exports) {
       return false;
     }
 
-    function handleError(err, vm, info) {
-      if (config.errorHandler) {
-        config.errorHandler.call(null, err, vm, info);
-      } else {
-        {
-          warn("Error in " + info + ":", vm);
-        }
-        /* istanbul ignore else */
-        if (inBrowser && typeof console !== 'undefined') {
-          console.error(err);
-        } else {
-          throw err;
-        }
+    /*  */
+
+    var mark;
+    var measure;
+
+    {
+      var perf = inBrowser && window.performance;
+      /* istanbul ignore if */
+      if (perf && perf.mark && perf.measure && perf.clearMarks && perf.clearMeasures) {
+        mark = function mark(tag) {
+          return perf.mark(tag);
+        };
+        measure = function measure(name, startTag, endTag) {
+          perf.measure(name, startTag, endTag);
+          perf.clearMarks(startTag);
+          perf.clearMarks(endTag);
+          perf.clearMeasures(name);
+        };
       }
     }
 
@@ -27245,25 +27793,6 @@ var vue = createCommonjsModule(function (module, exports) {
       };
     }
 
-    var mark;
-    var measure;
-
-    {
-      var perf = inBrowser && window.performance;
-      /* istanbul ignore if */
-      if (perf && perf.mark && perf.measure && perf.clearMarks && perf.clearMeasures) {
-        mark = function mark(tag) {
-          return perf.mark(tag);
-        };
-        measure = function measure(name, startTag, endTag) {
-          perf.measure(name, startTag, endTag);
-          perf.clearMarks(startTag);
-          perf.clearMarks(endTag);
-          perf.clearMeasures(name);
-        };
-      }
-    }
-
     /*  */
 
     var VNode = function VNode(tag, data, children, text, elm, context, componentOptions) {
@@ -27317,6 +27846,7 @@ var vue = createCommonjsModule(function (module, exports) {
       cloned.ns = vnode.ns;
       cloned.isStatic = vnode.isStatic;
       cloned.key = vnode.key;
+      cloned.isComment = vnode.isComment;
       cloned.isCloned = true;
       return cloned;
     }
@@ -27333,6 +27863,8 @@ var vue = createCommonjsModule(function (module, exports) {
     /*  */
 
     var normalizeEvent = cached(function (name) {
+      var passive = name.charAt(0) === '&';
+      name = passive ? name.slice(1) : name;
       var once$$1 = name.charAt(0) === '~'; // Prefixed last, checked first
       name = once$$1 ? name.slice(1) : name;
       var capture = name.charAt(0) === '!';
@@ -27340,7 +27872,8 @@ var vue = createCommonjsModule(function (module, exports) {
       return {
         name: name,
         once: once$$1,
-        capture: capture
+        capture: capture,
+        passive: passive
       };
     });
 
@@ -27368,20 +27901,20 @@ var vue = createCommonjsModule(function (module, exports) {
         cur = on[name];
         old = oldOn[name];
         event = normalizeEvent(name);
-        if (!cur) {
+        if (isUndef(cur)) {
           "development" !== 'production' && warn("Invalid handler for event \"" + event.name + "\": got " + String(cur), vm);
-        } else if (!old) {
-          if (!cur.fns) {
+        } else if (isUndef(old)) {
+          if (isUndef(cur.fns)) {
             cur = on[name] = createFnInvoker(cur);
           }
-          add(event.name, cur, event.once, event.capture);
+          add(event.name, cur, event.once, event.capture, event.passive);
         } else if (cur !== old) {
           old.fns = cur;
           on[name] = old;
         }
       }
       for (name in oldOn) {
-        if (!on[name]) {
+        if (isUndef(on[name])) {
           event = normalizeEvent(name);
           remove$$1(event.name, oldOn[name], event.capture);
         }
@@ -27401,12 +27934,12 @@ var vue = createCommonjsModule(function (module, exports) {
         remove(invoker.fns, wrappedHook);
       }
 
-      if (!oldHook) {
+      if (isUndef(oldHook)) {
         // no existing hook
         invoker = createFnInvoker([wrappedHook]);
       } else {
         /* istanbul ignore if */
-        if (oldHook.fns && oldHook.merged) {
+        if (isDef(oldHook.fns) && isTrue(oldHook.merged)) {
           // already a merged invoker
           invoker = oldHook;
           invoker.fns.push(wrappedHook);
@@ -27418,6 +27951,53 @@ var vue = createCommonjsModule(function (module, exports) {
 
       invoker.merged = true;
       def[hookKey] = invoker;
+    }
+
+    /*  */
+
+    function extractPropsFromVNodeData(data, Ctor, tag) {
+      // we are only extracting raw values here.
+      // validation and default values are handled in the child
+      // component itself.
+      var propOptions = Ctor.options.props;
+      if (isUndef(propOptions)) {
+        return;
+      }
+      var res = {};
+      var attrs = data.attrs;
+      var props = data.props;
+      if (isDef(attrs) || isDef(props)) {
+        for (var key in propOptions) {
+          var altKey = hyphenate(key);
+          {
+            var keyInLowerCase = key.toLowerCase();
+            if (key !== keyInLowerCase && attrs && hasOwn(attrs, keyInLowerCase)) {
+              tip("Prop \"" + keyInLowerCase + "\" is passed to component " + formatComponentName(tag || Ctor) + ", but the declared prop name is" + " \"" + key + "\". " + "Note that HTML attributes are case-insensitive and camelCased " + "props need to use their kebab-case equivalents when using in-DOM " + "templates. You should probably use \"" + altKey + "\" instead of \"" + key + "\".");
+            }
+          }
+          checkProp(res, props, key, altKey, true) || checkProp(res, attrs, key, altKey, false);
+        }
+      }
+      return res;
+    }
+
+    function checkProp(res, hash, key, altKey, preserve) {
+      if (isDef(hash)) {
+        if (hasOwn(hash, key)) {
+          res[key] = hash[key];
+          if (!preserve) {
+            delete hash[key];
+          }
+          return true;
+        } else if (hasOwn(hash, altKey)) {
+          res[key] = hash[altKey];
+          if (!preserve) {
+            delete hash[altKey];
+          }
+          return true;
+        }
+      }
+      return false;
     }
 
     /*  */
@@ -27451,12 +28031,16 @@ var vue = createCommonjsModule(function (module, exports) {
       return isPrimitive(children) ? [createTextVNode(children)] : Array.isArray(children) ? normalizeArrayChildren(children) : undefined;
     }
 
+    function isTextNode(node) {
+      return isDef(node) && isDef(node.text) && isFalse(node.isComment);
+    }
+
     function normalizeArrayChildren(children, nestedIndex) {
       var res = [];
       var i, c, last;
       for (i = 0; i < children.length; i++) {
         c = children[i];
-        if (c == null || typeof c === 'boolean') {
+        if (isUndef(c) || typeof c === 'boolean') {
           continue;
         }
         last = res[res.length - 1];
@@ -27464,18 +28048,22 @@ var vue = createCommonjsModule(function (module, exports) {
         if (Array.isArray(c)) {
           res.push.apply(res, normalizeArrayChildren(c, (nestedIndex || '') + "_" + i));
         } else if (isPrimitive(c)) {
-          if (last && last.text) {
+          if (isTextNode(last)) {
+            // merge adjacent text nodes
+            // this is necessary for SSR hydration because text nodes are
+            // essentially merged when rendered to HTML strings
             last.text += String(c);
           } else if (c !== '') {
             // convert primitive to vnode
             res.push(createTextVNode(c));
           }
         } else {
-          if (c.text && last && last.text) {
+          if (isTextNode(c) && isTextNode(last)) {
+            // merge adjacent text nodes
             res[res.length - 1] = createTextVNode(last.text + c.text);
           } else {
             // default key for nested array children (likely generated by v-for)
-            if (c.tag && c.key == null && nestedIndex != null) {
+            if (isTrue(children._isVList) && isDef(c.tag) && isUndef(c.key) && isDef(nestedIndex)) {
               c.key = "__vlist" + nestedIndex + "_" + i + "__";
             }
             res.push(c);
@@ -27487,11 +28075,113 @@ var vue = createCommonjsModule(function (module, exports) {
 
     /*  */
 
-    function getFirstComponentChild(children) {
-      return children && children.filter(function (c) {
-        return c && c.componentOptions;
-      })[0];
+    function ensureCtor(comp, base) {
+      return isObject(comp) ? base.extend(comp) : comp;
     }
+
+    function resolveAsyncComponent(factory, baseCtor, context) {
+      if (isTrue(factory.error) && isDef(factory.errorComp)) {
+        return factory.errorComp;
+      }
+
+      if (isDef(factory.resolved)) {
+        return factory.resolved;
+      }
+
+      if (isTrue(factory.loading) && isDef(factory.loadingComp)) {
+        return factory.loadingComp;
+      }
+
+      if (isDef(factory.contexts)) {
+        // already pending
+        factory.contexts.push(context);
+      } else {
+        var contexts = factory.contexts = [context];
+        var sync = true;
+
+        var forceRender = function forceRender() {
+          for (var i = 0, l = contexts.length; i < l; i++) {
+            contexts[i].$forceUpdate();
+          }
+        };
+
+        var resolve = once(function (res) {
+          // cache resolved
+          factory.resolved = ensureCtor(res, baseCtor);
+          // invoke callbacks only if this is not a synchronous resolve
+          // (async resolves are shimmed as synchronous during SSR)
+          if (!sync) {
+            forceRender();
+          }
+        });
+
+        var reject = once(function (reason) {
+          "development" !== 'production' && warn("Failed to resolve async component: " + String(factory) + (reason ? "\nReason: " + reason : ''));
+          if (isDef(factory.errorComp)) {
+            factory.error = true;
+            forceRender();
+          }
+        });
+
+        var res = factory(resolve, reject);
+
+        if (isObject(res)) {
+          if (typeof res.then === 'function') {
+            // () => Promise
+            if (isUndef(factory.resolved)) {
+              res.then(resolve, reject);
+            }
+          } else if (isDef(res.component) && typeof res.component.then === 'function') {
+            res.component.then(resolve, reject);
+
+            if (isDef(res.error)) {
+              factory.errorComp = ensureCtor(res.error, baseCtor);
+            }
+
+            if (isDef(res.loading)) {
+              factory.loadingComp = ensureCtor(res.loading, baseCtor);
+              if (res.delay === 0) {
+                factory.loading = true;
+              } else {
+                setTimeout(function () {
+                  if (isUndef(factory.resolved) && isUndef(factory.error)) {
+                    factory.loading = true;
+                    forceRender();
+                  }
+                }, res.delay || 200);
+              }
+            }
+
+            if (isDef(res.timeout)) {
+              setTimeout(function () {
+                if (isUndef(factory.resolved)) {
+                  reject("timeout (" + res.timeout + "ms)");
+                }
+              }, res.timeout);
+            }
+          }
+        }
+
+        sync = false;
+        // return in case resolved synchronously
+        return factory.loading ? factory.loadingComp : factory.resolved;
+      }
+    }
+
+    /*  */
+
+    function getFirstComponentChild(children) {
+      if (Array.isArray(children)) {
+        for (var i = 0; i < children.length; i++) {
+          var c = children[i];
+          if (isDef(c) && isDef(c.componentOptions)) {
+            return c;
+          }
+        }
+      }
+    }
+
+    /*  */
 
     /*  */
 
@@ -27625,12 +28315,12 @@ var vue = createCommonjsModule(function (module, exports) {
         return slots;
       }
       var defaultSlot = [];
-      var name, child;
       for (var i = 0, l = children.length; i < l; i++) {
-        child = children[i];
+        var child = children[i];
         // named slots should only be respected if the vnode was rendered in the
         // same context.
-        if ((child.context === context || child.functionalContext === context) && child.data && (name = child.data.slot)) {
+        if ((child.context === context || child.functionalContext === context) && child.data && child.data.slot != null) {
+          var name = child.data.slot;
           var slot = slots[name] || (slots[name] = []);
           if (child.tag === 'template') {
             slot.push.apply(slot, child.children);
@@ -27652,10 +28342,15 @@ var vue = createCommonjsModule(function (module, exports) {
       return node.isComment || node.text === ' ';
     }
 
-    function resolveScopedSlots(fns) {
-      var res = {};
+    function resolveScopedSlots(fns, // see flow/vnode
+    res) {
+      res = res || {};
       for (var i = 0; i < fns.length; i++) {
-        res[fns[i][0]] = fns[i][1];
+        if (Array.isArray(fns[i])) {
+          resolveScopedSlots(fns[i], res);
+        } else {
+          res[fns[i].key] = fns[i].fn;
+        }
       }
       return res;
     }
@@ -27895,7 +28590,7 @@ var vue = createCommonjsModule(function (module, exports) {
       } else if (vm._directInactive) {
         return;
       }
-      if (vm._inactive || vm._inactive == null) {
+      if (vm._inactive || vm._inactive === null) {
         vm._inactive = false;
         for (var i = 0; i < vm.$children.length; i++) {
           activateChildComponent(vm.$children[i]);
@@ -27938,7 +28633,10 @@ var vue = createCommonjsModule(function (module, exports) {
 
     /*  */
 
+    var MAX_UPDATE_COUNT = 100;
+
     var queue = [];
+    var activatedChildren = [];
     var has = {};
     var circular = {};
     var waiting = false;
@@ -27949,7 +28647,7 @@ var vue = createCommonjsModule(function (module, exports) {
      * Reset the scheduler's state.
      */
     function resetSchedulerState() {
-      queue.length = 0;
+      index = queue.length = activatedChildren.length = 0;
       has = {};
       {
         circular = {};
@@ -27962,7 +28660,7 @@ var vue = createCommonjsModule(function (module, exports) {
      */
     function flushSchedulerQueue() {
       flushing = true;
-      var watcher, id, vm;
+      var watcher, id;
 
       // Sort queue before flush.
       // This ensures that:
@@ -27986,31 +28684,56 @@ var vue = createCommonjsModule(function (module, exports) {
         // in dev build, check and stop circular updates.
         if ("development" !== 'production' && has[id] != null) {
           circular[id] = (circular[id] || 0) + 1;
-          if (circular[id] > config._maxUpdateCount) {
+          if (circular[id] > MAX_UPDATE_COUNT) {
             warn('You may have an infinite update loop ' + (watcher.user ? "in watcher with expression \"" + watcher.expression + "\"" : "in a component render function."), watcher.vm);
             break;
           }
         }
       }
 
-      // reset scheduler before updated hook called
-      var oldQueue = queue.slice();
+      // keep copies of post queues before resetting state
+      var activatedQueue = activatedChildren.slice();
+      var updatedQueue = queue.slice();
+
       resetSchedulerState();
 
-      // call updated hooks
-      index = oldQueue.length;
-      while (index--) {
-        watcher = oldQueue[index];
-        vm = watcher.vm;
-        if (vm._watcher === watcher && vm._isMounted) {
-          callHook(vm, 'updated');
-        }
-      }
+      // call component updated and activated hooks
+      callActivatedHooks(activatedQueue);
+      callUpdateHooks(updatedQueue);
 
       // devtool hook
       /* istanbul ignore if */
       if (devtools && config.devtools) {
         devtools.emit('flush');
+      }
+    }
+
+    function callUpdateHooks(queue) {
+      var i = queue.length;
+      while (i--) {
+        var watcher = queue[i];
+        var vm = watcher.vm;
+        if (vm._watcher === watcher && vm._isMounted) {
+          callHook(vm, 'updated');
+        }
+      }
+    }
+
+    /**
+     * Queue a kept-alive component that was activated during patch.
+     * The queue will be processed after the entire tree has been patched.
+     */
+    function queueActivatedComponent(vm) {
+      // setting _inactive to false here so that a render function can
+      // rely on checking whether it's in an inactive tree (e.g. router-view)
+      vm._inactive = false;
+      activatedChildren.push(vm);
+    }
+
+    function callActivatedHooks(queue) {
+      for (var i = 0; i < queue.length; i++) {
+        queue[i]._inactive = true;
+        activateChildComponent(queue[i], true /* true */);
       }
     }
 
@@ -28029,10 +28752,10 @@ var vue = createCommonjsModule(function (module, exports) {
           // if already flushing, splice the watcher based on its id
           // if already past its id, it will be run next immediately.
           var i = queue.length - 1;
-          while (i >= 0 && queue[i].id > watcher.id) {
+          while (i > index && queue[i].id > watcher.id) {
             i--;
           }
-          queue.splice(Math.max(i, index) + 1, 0, watcher);
+          queue.splice(i + 1, 0, watcher);
         }
         // queue the flush
         if (!waiting) {
@@ -28312,7 +29035,11 @@ var vue = createCommonjsModule(function (module, exports) {
       }
     }
 
-    var isReservedProp = { key: 1, ref: 1, slot: 1 };
+    var isReservedProp = {
+      key: 1,
+      ref: 1,
+      slot: 1
+    };
 
     function initProps(vm, propsOptions) {
       var propsData = vm.$options.propsData || {};
@@ -28328,7 +29055,7 @@ var vue = createCommonjsModule(function (module, exports) {
         var value = validateProp(key, propsOptions, propsData, vm);
         /* istanbul ignore else */
         {
-          if (isReservedProp[key]) {
+          if (isReservedProp[key] || config.isReservedAttr(key)) {
             warn("\"" + key + "\" is a reserved attribute and cannot be used as component prop.", vm);
           }
           defineReactive$$1(props, key, value, function () {
@@ -28403,6 +29130,12 @@ var vue = createCommonjsModule(function (module, exports) {
         // at instantiation here.
         if (!(key in vm)) {
           defineComputed(vm, key, userDef);
+        } else {
+          if (key in vm.$data) {
+            warn("The computed property \"" + key + "\" is already defined in data.", vm);
+          } else if (vm.$options.props && key in vm.$options.props) {
+            warn("The computed property \"" + key + "\" is already defined as a prop.", vm);
+          }
         }
       }
     }
@@ -28515,6 +29248,103 @@ var vue = createCommonjsModule(function (module, exports) {
 
     /*  */
 
+    function initProvide(vm) {
+      var provide = vm.$options.provide;
+      if (provide) {
+        vm._provided = typeof provide === 'function' ? provide.call(vm) : provide;
+      }
+    }
+
+    function initInjections(vm) {
+      var result = resolveInject(vm.$options.inject, vm);
+      if (result) {
+        Object.keys(result).forEach(function (key) {
+          /* istanbul ignore else */
+          {
+            defineReactive$$1(vm, key, result[key], function () {
+              warn("Avoid mutating an injected value directly since the changes will be " + "overwritten whenever the provided component re-renders. " + "injection being mutated: \"" + key + "\"", vm);
+            });
+          }
+        });
+      }
+    }
+
+    function resolveInject(inject, vm) {
+      if (inject) {
+        // inject is :any because flow is not smart enough to figure out cached
+        // isArray here
+        var isArray = Array.isArray(inject);
+        var result = Object.create(null);
+        var keys = isArray ? inject : hasSymbol ? Reflect.ownKeys(inject) : Object.keys(inject);
+
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var provideKey = isArray ? key : inject[key];
+          var source = vm;
+          while (source) {
+            if (source._provided && provideKey in source._provided) {
+              result[key] = source._provided[provideKey];
+              break;
+            }
+            source = source.$parent;
+          }
+        }
+        return result;
+      }
+    }
+
+    /*  */
+
+    function createFunctionalComponent(Ctor, propsData, data, context, children) {
+      var props = {};
+      var propOptions = Ctor.options.props;
+      if (isDef(propOptions)) {
+        for (var key in propOptions) {
+          props[key] = validateProp(key, propOptions, propsData || {});
+        }
+      } else {
+        if (isDef(data.attrs)) {
+          mergeProps(props, data.attrs);
+        }
+        if (isDef(data.props)) {
+          mergeProps(props, data.props);
+        }
+      }
+      // ensure the createElement function in functional components
+      // gets a unique context - this is necessary for correct named slot check
+      var _context = Object.create(context);
+      var h = function h(a, b, c, d) {
+        return createElement(_context, a, b, c, d, true);
+      };
+      var vnode = Ctor.options.render.call(null, h, {
+        data: data,
+        props: props,
+        children: children,
+        parent: context,
+        listeners: data.on || {},
+        injections: resolveInject(Ctor.options.inject, context),
+        slots: function slots() {
+          return resolveSlots(children, context);
+        }
+      });
+      if (vnode instanceof VNode) {
+        vnode.functionalContext = context;
+        vnode.functionalOptions = Ctor.options;
+        if (data.slot) {
+          (vnode.data || (vnode.data = {})).slot = data.slot;
+        }
+      }
+      return vnode;
+    }
+
+    function mergeProps(to, from) {
+      for (var key in from) {
+        to[camelize(key)] = from[key];
+      }
+    }
+
+    /*  */
+
     // hooks to be invoked on component VNodes during patch
     var componentVNodeHooks = {
       init: function init(vnode, hydrating, parentElm, refElm) {
@@ -28539,21 +29369,33 @@ var vue = createCommonjsModule(function (module, exports) {
       },
 
       insert: function insert(vnode) {
-        if (!vnode.componentInstance._isMounted) {
-          vnode.componentInstance._isMounted = true;
-          callHook(vnode.componentInstance, 'mounted');
+        var context = vnode.context;
+        var componentInstance = vnode.componentInstance;
+        if (!componentInstance._isMounted) {
+          componentInstance._isMounted = true;
+          callHook(componentInstance, 'mounted');
         }
         if (vnode.data.keepAlive) {
-          activateChildComponent(vnode.componentInstance, true /* direct */);
+          if (context._isMounted) {
+            // vue-router#1212
+            // During updates, a kept-alive component's child components may
+            // change, so directly walking the tree here may call activated hooks
+            // on incorrect children. Instead we push them into a queue which will
+            // be processed after the whole patch process ended.
+            queueActivatedComponent(componentInstance);
+          } else {
+            activateChildComponent(componentInstance, true /* direct */);
+          }
         }
       },
 
       destroy: function destroy(vnode) {
-        if (!vnode.componentInstance._isDestroyed) {
+        var componentInstance = vnode.componentInstance;
+        if (!componentInstance._isDestroyed) {
           if (!vnode.data.keepAlive) {
-            vnode.componentInstance.$destroy();
+            componentInstance.$destroy();
           } else {
-            deactivateChildComponent(vnode.componentInstance, true /* direct */);
+            deactivateChildComponent(componentInstance, true /* direct */);
           }
         }
       }
@@ -28562,15 +29404,19 @@ var vue = createCommonjsModule(function (module, exports) {
     var hooksToMerge = Object.keys(componentVNodeHooks);
 
     function createComponent(Ctor, data, context, children, tag) {
-      if (!Ctor) {
+      if (isUndef(Ctor)) {
         return;
       }
 
       var baseCtor = context.$options._base;
+
+      // plain options object: turn it into a constructor
       if (isObject(Ctor)) {
         Ctor = baseCtor.extend(Ctor);
       }
 
+      // if at this stage it's not a constructor or an async component factory,
+      // reject.
       if (typeof Ctor !== 'function') {
         {
           warn("Invalid Component definition: " + String(Ctor), context);
@@ -28579,20 +29425,12 @@ var vue = createCommonjsModule(function (module, exports) {
       }
 
       // async component
-      if (!Ctor.cid) {
-        if (Ctor.resolved) {
-          Ctor = Ctor.resolved;
-        } else {
-          Ctor = resolveAsyncComponent(Ctor, baseCtor, function () {
-            // it's ok to queue this on every render because
-            // $forceUpdate is buffered by the scheduler.
-            context.$forceUpdate();
-          });
-          if (!Ctor) {
-            // return nothing if this is indeed an async component
-            // wait for the callback to trigger parent update.
-            return;
-          }
+      if (isUndef(Ctor.cid)) {
+        Ctor = resolveAsyncComponent(Ctor, baseCtor, context);
+        if (Ctor === undefined) {
+          // return nothing if this is indeed an async component
+          // wait for the callback to trigger parent update.
+          return;
         }
       }
 
@@ -28603,15 +29441,15 @@ var vue = createCommonjsModule(function (module, exports) {
       data = data || {};
 
       // transform component v-model data into props & events
-      if (data.model) {
+      if (isDef(data.model)) {
         transformModel(Ctor.options, data);
       }
 
       // extract props
-      var propsData = extractProps(data, Ctor, tag);
+      var propsData = extractPropsFromVNodeData(data, Ctor, tag);
 
       // functional component
-      if (Ctor.options.functional) {
+      if (isTrue(Ctor.options.functional)) {
         return createFunctionalComponent(Ctor, propsData, data, context, children);
       }
 
@@ -28621,7 +29459,7 @@ var vue = createCommonjsModule(function (module, exports) {
       // replace with listeners with .native modifier
       data.on = data.nativeOn;
 
-      if (Ctor.options.abstract) {
+      if (isTrue(Ctor.options.abstract)) {
         // abstract components do not keep anything
         // other than props & listeners
         data = {};
@@ -28633,38 +29471,6 @@ var vue = createCommonjsModule(function (module, exports) {
       // return a placeholder vnode
       var name = Ctor.options.name || tag;
       var vnode = new VNode("vue-component-" + Ctor.cid + (name ? "-" + name : ''), data, undefined, undefined, undefined, context, { Ctor: Ctor, propsData: propsData, listeners: listeners, tag: tag, children: children });
-      return vnode;
-    }
-
-    function createFunctionalComponent(Ctor, propsData, data, context, children) {
-      var props = {};
-      var propOptions = Ctor.options.props;
-      if (propOptions) {
-        for (var key in propOptions) {
-          props[key] = validateProp(key, propOptions, propsData);
-        }
-      }
-      // ensure the createElement function in functional components
-      // gets a unique context - this is necessary for correct named slot check
-      var _context = Object.create(context);
-      var h = function h(a, b, c, d) {
-        return createElement(_context, a, b, c, d, true);
-      };
-      var vnode = Ctor.options.render.call(null, h, {
-        props: props,
-        data: data,
-        parent: context,
-        children: children,
-        slots: function slots() {
-          return resolveSlots(children, context);
-        }
-      });
-      if (vnode instanceof VNode) {
-        vnode.functionalContext = context;
-        if (data.slot) {
-          (vnode.data || (vnode.data = {})).slot = data.slot;
-        }
-      }
       return vnode;
     }
 
@@ -28685,98 +29491,11 @@ var vue = createCommonjsModule(function (module, exports) {
       };
       // check inline-template render functions
       var inlineTemplate = vnode.data.inlineTemplate;
-      if (inlineTemplate) {
+      if (isDef(inlineTemplate)) {
         options.render = inlineTemplate.render;
         options.staticRenderFns = inlineTemplate.staticRenderFns;
       }
       return new vnodeComponentOptions.Ctor(options);
-    }
-
-    function resolveAsyncComponent(factory, baseCtor, cb) {
-      if (factory.requested) {
-        // pool callbacks
-        factory.pendingCallbacks.push(cb);
-      } else {
-        factory.requested = true;
-        var cbs = factory.pendingCallbacks = [cb];
-        var sync = true;
-
-        var resolve = function resolve(res) {
-          if (isObject(res)) {
-            res = baseCtor.extend(res);
-          }
-          // cache resolved
-          factory.resolved = res;
-          // invoke callbacks only if this is not a synchronous resolve
-          // (async resolves are shimmed as synchronous during SSR)
-          if (!sync) {
-            for (var i = 0, l = cbs.length; i < l; i++) {
-              cbs[i](res);
-            }
-          }
-        };
-
-        var reject = function reject(reason) {
-          "development" !== 'production' && warn("Failed to resolve async component: " + String(factory) + (reason ? "\nReason: " + reason : ''));
-        };
-
-        var res = factory(resolve, reject);
-
-        // handle promise
-        if (res && typeof res.then === 'function' && !factory.resolved) {
-          res.then(resolve, reject);
-        }
-
-        sync = false;
-        // return in case resolved synchronously
-        return factory.resolved;
-      }
-    }
-
-    function extractProps(data, Ctor, tag) {
-      // we are only extracting raw values here.
-      // validation and default values are handled in the child
-      // component itself.
-      var propOptions = Ctor.options.props;
-      if (!propOptions) {
-        return;
-      }
-      var res = {};
-      var attrs = data.attrs;
-      var props = data.props;
-      var domProps = data.domProps;
-      if (attrs || props || domProps) {
-        for (var key in propOptions) {
-          var altKey = hyphenate(key);
-          {
-            var keyInLowerCase = key.toLowerCase();
-            if (key !== keyInLowerCase && attrs && attrs.hasOwnProperty(keyInLowerCase)) {
-              tip("Prop \"" + keyInLowerCase + "\" is passed to component " + formatComponentName(tag || Ctor) + ", but the declared prop name is" + " \"" + key + "\". " + "Note that HTML attributes are case-insensitive and camelCased " + "props need to use their kebab-case equivalents when using in-DOM " + "templates. You should probably use \"" + altKey + "\" instead of \"" + key + "\".");
-            }
-          }
-          checkProp(res, props, key, altKey, true) || checkProp(res, attrs, key, altKey) || checkProp(res, domProps, key, altKey);
-        }
-      }
-      return res;
-    }
-
-    function checkProp(res, hash, key, altKey, preserve) {
-      if (hash) {
-        if (hasOwn(hash, key)) {
-          res[key] = hash[key];
-          if (!preserve) {
-            delete hash[key];
-          }
-          return true;
-        } else if (hasOwn(hash, altKey)) {
-          res[key] = hash[altKey];
-          if (!preserve) {
-            delete hash[altKey];
-          }
-          return true;
-        }
-      }
-      return false;
     }
 
     function mergeHooks(data) {
@@ -28804,7 +29523,7 @@ var vue = createCommonjsModule(function (module, exports) {
       var prop = options.model && options.model.prop || 'value';
       var event = options.model && options.model.event || 'input';(data.props || (data.props = {}))[prop] = data.model.value;
       var on = data.on || (data.on = {});
-      if (on[event]) {
+      if (isDef(on[event])) {
         on[event] = [data.model.callback].concat(on[event]);
       } else {
         on[event] = data.model.callback;
@@ -28824,14 +29543,14 @@ var vue = createCommonjsModule(function (module, exports) {
         children = data;
         data = undefined;
       }
-      if (alwaysNormalize) {
+      if (isTrue(alwaysNormalize)) {
         normalizationType = ALWAYS_NORMALIZE;
       }
       return _createElement(context, tag, data, children, normalizationType);
     }
 
     function _createElement(context, tag, data, children, normalizationType) {
-      if (data && data.__ob__) {
+      if (isDef(data) && isDef(data.__ob__)) {
         "development" !== 'production' && warn("Avoid using observed data object as vnode data: " + JSON.stringify(data) + "\n" + 'Always create fresh vnode data objects in each render!', context);
         return createEmptyVNode();
       }
@@ -28857,7 +29576,7 @@ var vue = createCommonjsModule(function (module, exports) {
         if (config.isReservedTag(tag)) {
           // platform built-in elements
           vnode = new VNode(config.parsePlatformTagName(tag), data, children, undefined, undefined, context);
-        } else if (Ctor = resolveAsset(context.$options, 'components', tag)) {
+        } else if (isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
           // component
           vnode = createComponent(Ctor, data, context, children, tag);
         } else {
@@ -28870,7 +29589,7 @@ var vue = createCommonjsModule(function (module, exports) {
         // direct component options / constructor
         vnode = createComponent(tag, data, context, children);
       }
-      if (vnode) {
+      if (isDef(vnode)) {
         if (ns) {
           applyNS(vnode, ns);
         }
@@ -28886,10 +29605,10 @@ var vue = createCommonjsModule(function (module, exports) {
         // use default namespace inside foreignObject
         return;
       }
-      if (vnode.children) {
+      if (isDef(vnode.children)) {
         for (var i = 0, l = vnode.children.length; i < l; i++) {
           var child = vnode.children[i];
-          if (child.tag && !child.ns) {
+          if (isDef(child.tag) && isUndef(child.ns)) {
             applyNS(child, ns);
           }
         }
@@ -28920,6 +29639,9 @@ var vue = createCommonjsModule(function (module, exports) {
           key = keys[i];
           ret[i] = render(val[key], key, i);
         }
+      }
+      if (isDef(ret)) {
+        ret._isVList = true;
       }
       return ret;
     }
@@ -29050,10 +29772,9 @@ var vue = createCommonjsModule(function (module, exports) {
     /*  */
 
     function initRender(vm) {
-      vm.$vnode = null; // the placeholder node in parent tree
       vm._vnode = null; // the root of the child tree
       vm._staticTrees = null;
-      var parentVnode = vm.$options._parentVnode;
+      var parentVnode = vm.$vnode = vm.$options._parentVnode; // the placeholder node in parent tree
       var renderContext = parentVnode && parentVnode.context;
       vm.$slots = resolveSlots(vm.$options._renderChildren, renderContext);
       vm.$scopedSlots = emptyObject;
@@ -29128,7 +29849,7 @@ var vue = createCommonjsModule(function (module, exports) {
       // code size.
       Vue.prototype._o = markOnce;
       Vue.prototype._n = toNumber;
-      Vue.prototype._s = _toString;
+      Vue.prototype._s = toString;
       Vue.prototype._l = renderList;
       Vue.prototype._t = renderSlot;
       Vue.prototype._q = looseEqual;
@@ -29144,54 +29865,13 @@ var vue = createCommonjsModule(function (module, exports) {
 
     /*  */
 
-    function initProvide(vm) {
-      var provide = vm.$options.provide;
-      if (provide) {
-        vm._provided = typeof provide === 'function' ? provide.call(vm) : provide;
-      }
-    }
-
-    function initInjections(vm) {
-      var inject = vm.$options.inject;
-      if (inject) {
-        // inject is :any because flow is not smart enough to figure out cached
-        // isArray here
-        var isArray = Array.isArray(inject);
-        var keys = isArray ? inject : hasSymbol ? Reflect.ownKeys(inject) : Object.keys(inject);
-
-        var loop = function loop(i) {
-          var key = keys[i];
-          var provideKey = isArray ? key : inject[key];
-          var source = vm;
-          while (source) {
-            if (source._provided && provideKey in source._provided) {
-              /* istanbul ignore else */
-              {
-                defineReactive$$1(vm, key, source._provided[provideKey], function () {
-                  warn("Avoid mutating an injected value directly since the changes will be " + "overwritten whenever the provided component re-renders. " + "injection being mutated: \"" + key + "\"", vm);
-                });
-              }
-              break;
-            }
-            source = source.$parent;
-          }
-        };
-
-        for (var i = 0; i < keys.length; i++) {
-          loop(i);
-        }
-      }
-    }
-
-    /*  */
-
-    var uid = 0;
+    var uid$1 = 0;
 
     function initMixin(Vue) {
       Vue.prototype._init = function (options) {
         var vm = this;
         // a uid
-        vm._uid = uid++;
+        vm._uid = uid$1++;
 
         var startTag, endTag;
         /* istanbul ignore if */
@@ -29284,26 +29964,29 @@ var vue = createCommonjsModule(function (module, exports) {
     function resolveModifiedOptions(Ctor) {
       var modified;
       var latest = Ctor.options;
+      var extended = Ctor.extendOptions;
       var sealed = Ctor.sealedOptions;
       for (var key in latest) {
         if (latest[key] !== sealed[key]) {
           if (!modified) {
             modified = {};
           }
-          modified[key] = dedupe(latest[key], sealed[key]);
+          modified[key] = dedupe(latest[key], extended[key], sealed[key]);
         }
       }
       return modified;
     }
 
-    function dedupe(latest, sealed) {
+    function dedupe(latest, extended, sealed) {
       // compare latest and sealed to ensure lifecycle hooks won't be duplicated
       // between merges
       if (Array.isArray(latest)) {
         var res = [];
         sealed = Array.isArray(sealed) ? sealed : [sealed];
+        extended = Array.isArray(extended) ? extended : [extended];
         for (var i = 0; i < latest.length; i++) {
-          if (sealed.indexOf(latest[i]) < 0) {
+          // push original options and not sealed options to exclude duplicated options
+          if (extended.indexOf(latest[i]) >= 0 || sealed.indexOf(latest[i]) < 0) {
             res.push(latest[i]);
           }
         }
@@ -29332,7 +30015,7 @@ var vue = createCommonjsModule(function (module, exports) {
       Vue.use = function (plugin) {
         /* istanbul ignore if */
         if (plugin.installed) {
-          return;
+          return this;
         }
         // additional parameters
         var args = toArray$$1(arguments, 1);
@@ -29352,6 +30035,7 @@ var vue = createCommonjsModule(function (module, exports) {
     function initMixin$1(Vue) {
       Vue.mixin = function (mixin) {
         this.options = mergeOptions(this.options, mixin);
+        return this;
       };
     }
 
@@ -29411,7 +30095,7 @@ var vue = createCommonjsModule(function (module, exports) {
 
         // create asset registers, so extended classes
         // can have their private assets too.
-        config._assetTypes.forEach(function (type) {
+        ASSET_TYPES.forEach(function (type) {
           Sub[type] = Super[type];
         });
         // enable recursive self-lookup
@@ -29452,7 +30136,7 @@ var vue = createCommonjsModule(function (module, exports) {
       /**
        * Create asset registration methods.
        */
-      config._assetTypes.forEach(function (type) {
+      ASSET_TYPES.forEach(function (type) {
         Vue[type] = function (id, definition) {
           if (!definition) {
             return this.options[type + 's'][id];
@@ -29488,20 +30172,22 @@ var vue = createCommonjsModule(function (module, exports) {
     function matches(pattern, name) {
       if (typeof pattern === 'string') {
         return pattern.split(',').indexOf(name) > -1;
-      } else if (pattern instanceof RegExp) {
+      } else if (isRegExp(pattern)) {
         return pattern.test(name);
       }
       /* istanbul ignore next */
       return false;
     }
 
-    function pruneCache(cache, filter) {
+    function pruneCache(cache, current, filter) {
       for (var key in cache) {
         var cachedNode = cache[key];
         if (cachedNode) {
           var name = getComponentName(cachedNode.componentOptions);
           if (name && !filter(name)) {
-            pruneCacheEntry(cachedNode);
+            if (cachedNode !== current) {
+              pruneCacheEntry(cachedNode);
+            }
             cache[key] = null;
           }
         }
@@ -29510,9 +30196,6 @@ var vue = createCommonjsModule(function (module, exports) {
 
     function pruneCacheEntry(vnode) {
       if (vnode) {
-        if (!vnode.componentInstance._inactive) {
-          callHook(vnode.componentInstance, 'deactivated');
-        }
         vnode.componentInstance.$destroy();
       }
     }
@@ -29540,12 +30223,12 @@ var vue = createCommonjsModule(function (module, exports) {
 
       watch: {
         include: function include(val) {
-          pruneCache(this.cache, function (name) {
+          pruneCache(this.cache, this._vnode, function (name) {
             return matches(val, name);
           });
         },
         exclude: function exclude(val) {
-          pruneCache(this.cache, function (name) {
+          pruneCache(this.cache, this._vnode, function (name) {
             return !matches(val, name);
           });
         }
@@ -29609,7 +30292,7 @@ var vue = createCommonjsModule(function (module, exports) {
       Vue.nextTick = nextTick;
 
       Vue.options = Object.create(null);
-      config._assetTypes.forEach(function (type) {
+      ASSET_TYPES.forEach(function (type) {
         Vue.options[type + 's'] = Object.create(null);
       });
 
@@ -29631,9 +30314,20 @@ var vue = createCommonjsModule(function (module, exports) {
       get: isServerRendering
     });
 
-    Vue$3.version = '2.2.6';
+    Object.defineProperty(Vue$3.prototype, '$ssrContext', {
+      get: function get$$1() {
+        /* istanbul ignore next */
+        return this.$vnode.ssrContext;
+      }
+    });
+
+    Vue$3.version = '2.3.4';
 
     /*  */
+
+    // these are reserved for web because they are directly compiled away
+    // during template compilation
+    var isReservedAttr = makeMap('style,class');
 
     // attributes that should be using props for binding
     var acceptValue = makeMap('input,textarea,option,select');
@@ -29665,13 +30359,13 @@ var vue = createCommonjsModule(function (module, exports) {
       var data = vnode.data;
       var parentNode = vnode;
       var childNode = vnode;
-      while (childNode.componentInstance) {
+      while (isDef(childNode.componentInstance)) {
         childNode = childNode.componentInstance._vnode;
         if (childNode.data) {
           data = mergeClassData(childNode.data, data);
         }
       }
-      while (parentNode = parentNode.parent) {
+      while (isDef(parentNode = parentNode.parent)) {
         if (parentNode.data) {
           data = mergeClassData(data, parentNode.data);
         }
@@ -29682,14 +30376,14 @@ var vue = createCommonjsModule(function (module, exports) {
     function mergeClassData(child, parent) {
       return {
         staticClass: concat(child.staticClass, parent.staticClass),
-        class: child.class ? [child.class, parent.class] : parent.class
+        class: isDef(child.class) ? [child.class, parent.class] : parent.class
       };
     }
 
     function genClassFromData(data) {
       var dynamicClass = data.class;
       var staticClass = data.staticClass;
-      if (staticClass || dynamicClass) {
+      if (isDef(staticClass) || isDef(dynamicClass)) {
         return concat(staticClass, stringifyClass(dynamicClass));
       }
       /* istanbul ignore next */
@@ -29701,18 +30395,18 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function stringifyClass(value) {
-      var res = '';
-      if (!value) {
-        return res;
+      if (isUndef(value)) {
+        return '';
       }
       if (typeof value === 'string') {
         return value;
       }
+      var res = '';
       if (Array.isArray(value)) {
         var stringified;
         for (var i = 0, l = value.length; i < l; i++) {
-          if (value[i]) {
-            if (stringified = stringifyClass(value[i])) {
+          if (isDef(value[i])) {
+            if (isDef(stringified = stringifyClass(value[i])) && stringified !== '') {
               res += stringified + ' ';
             }
           }
@@ -29940,18 +30634,6 @@ var vue = createCommonjsModule(function (module, exports) {
 
     var hooks = ['create', 'activate', 'update', 'remove', 'destroy'];
 
-    function isUndef(v) {
-      return v === undefined || v === null;
-    }
-
-    function isDef(v) {
-      return v !== undefined && v !== null;
-    }
-
-    function isTrue(v) {
-      return v === true;
-    }
-
     function sameVnode(a, b) {
       return a.key === b.key && a.tag === b.tag && a.isComment === b.isComment && isDef(a.data) === isDef(b.data) && sameInputType(a, b);
     }
@@ -30085,6 +30767,7 @@ var vue = createCommonjsModule(function (module, exports) {
       function initComponent(vnode, insertedVnodeQueue) {
         if (isDef(vnode.data.pendingInsert)) {
           insertedVnodeQueue.push.apply(insertedVnodeQueue, vnode.data.pendingInsert);
+          vnode.data.pendingInsert = null;
         }
         vnode.elm = vnode.componentInstance.$el;
         if (isPatchable(vnode)) {
@@ -30124,7 +30807,9 @@ var vue = createCommonjsModule(function (module, exports) {
       function insert(parent, elm, ref) {
         if (isDef(parent)) {
           if (isDef(ref)) {
-            nodeOps.insertBefore(parent, elm, ref);
+            if (ref.parentNode === parent) {
+              nodeOps.insertBefore(parent, elm, ref);
+            }
           } else {
             nodeOps.appendChild(parent, elm);
           }
@@ -30222,6 +30907,7 @@ var vue = createCommonjsModule(function (module, exports) {
 
       function removeAndInvokeRemoveHook(vnode, rm) {
         if (isDef(rm) || isDef(vnode.data)) {
+          var i;
           var listeners = cbs.remove.length + 1;
           if (isDef(rm)) {
             // we have a recursively passed down rm callback
@@ -30491,8 +31177,8 @@ var vue = createCommonjsModule(function (module, exports) {
               // mounting to a real element
               // check if this is server-rendered content and if we can perform
               // a successful hydration.
-              if (oldVnode.nodeType === 1 && oldVnode.hasAttribute('server-rendered')) {
-                oldVnode.removeAttribute('server-rendered');
+              if (oldVnode.nodeType === 1 && oldVnode.hasAttribute(SSR_ATTR)) {
+                oldVnode.removeAttribute(SSR_ATTR);
                 hydrating = true;
               }
               if (isTrue(hydrating)) {
@@ -30646,7 +31332,11 @@ var vue = createCommonjsModule(function (module, exports) {
     function callHook$1(dir, hook, vnode, oldVnode, isDestroy) {
       var fn = dir.def && dir.def[hook];
       if (fn) {
-        fn(vnode.elm, dir, vnode, oldVnode, isDestroy);
+        try {
+          fn(vnode.elm, dir, vnode, oldVnode, isDestroy);
+        } catch (e) {
+          handleError(e, vnode.context, "directive " + dir.name + " " + hook + " hook");
+        }
       }
     }
 
@@ -30655,7 +31345,7 @@ var vue = createCommonjsModule(function (module, exports) {
     /*  */
 
     function updateAttrs(oldVnode, vnode) {
-      if (!oldVnode.data.attrs && !vnode.data.attrs) {
+      if (isUndef(oldVnode.data.attrs) && isUndef(vnode.data.attrs)) {
         return;
       }
       var key, cur, old;
@@ -30663,7 +31353,7 @@ var vue = createCommonjsModule(function (module, exports) {
       var oldAttrs = oldVnode.data.attrs || {};
       var attrs = vnode.data.attrs || {};
       // clone observed objects, as the user probably wants to mutate it
-      if (attrs.__ob__) {
+      if (isDef(attrs.__ob__)) {
         attrs = vnode.data.attrs = extend({}, attrs);
       }
 
@@ -30680,7 +31370,7 @@ var vue = createCommonjsModule(function (module, exports) {
         setAttr(elm, 'value', attrs.value);
       }
       for (key in oldAttrs) {
-        if (attrs[key] == null) {
+        if (isUndef(attrs[key])) {
           if (isXlink(key)) {
             elm.removeAttributeNS(xlinkNS, getXlinkProp(key));
           } else if (!isEnumeratedAttr(key)) {
@@ -30727,7 +31417,7 @@ var vue = createCommonjsModule(function (module, exports) {
       var el = vnode.elm;
       var data = vnode.data;
       var oldData = oldVnode.data;
-      if (!data.staticClass && !data.class && (!oldData || !oldData.staticClass && !oldData.class)) {
+      if (isUndef(data.staticClass) && isUndef(data.class) && (isUndef(oldData) || isUndef(oldData.staticClass) && isUndef(oldData.class))) {
         return;
       }
 
@@ -30735,7 +31425,7 @@ var vue = createCommonjsModule(function (module, exports) {
 
       // handle transition classes
       var transitionClass = el._transitionClasses;
-      if (transitionClass) {
+      if (isDef(transitionClass)) {
         cls = concat(cls, stringifyClass(transitionClass));
       }
 
@@ -30891,7 +31581,12 @@ var vue = createCommonjsModule(function (module, exports) {
       (el.directives || (el.directives = [])).push({ name: name, rawName: rawName, value: value, arg: arg, modifiers: modifiers });
     }
 
-    function addHandler(el, name, value, modifiers, important) {
+    function addHandler(el, name, value, modifiers, important, warn) {
+      // warn prevent and passive modifier
+      /* istanbul ignore if */
+      if ("development" !== 'production' && warn && modifiers && modifiers.prevent && modifiers.passive) {
+        warn('passive and prevent can\'t be used together. ' + 'Passive handler can\'t prevent default event.');
+      }
       // check capture modifier
       if (modifiers && modifiers.capture) {
         delete modifiers.capture;
@@ -30900,6 +31595,11 @@ var vue = createCommonjsModule(function (module, exports) {
       if (modifiers && modifiers.once) {
         delete modifiers.once;
         name = '~' + name; // mark the event as once
+      }
+      /* istanbul ignore if */
+      if (modifiers && modifiers.passive) {
+        delete modifiers.passive;
+        name = '&' + name; // mark the event as passive
       }
       var events;
       if (modifiers && modifiers.native) {
@@ -31132,7 +31832,7 @@ var vue = createCommonjsModule(function (module, exports) {
       var trueValueBinding = getBindingAttr(el, 'true-value') || 'true';
       var falseValueBinding = getBindingAttr(el, 'false-value') || 'false';
       addProp(el, 'checked', "Array.isArray(" + value + ")" + "?_i(" + value + "," + valueBinding + ")>-1" + (trueValueBinding === 'true' ? ":(" + value + ")" : ":_q(" + value + "," + trueValueBinding + ")"));
-      addHandler(el, CHECKBOX_RADIO_TOKEN, "var $$a=" + value + "," + '$$el=$event.target,' + "$$c=$$el.checked?(" + trueValueBinding + "):(" + falseValueBinding + ");" + 'if(Array.isArray($$a)){' + "var $$v=" + (number ? '_n(' + valueBinding + ')' : valueBinding) + "," + '$$i=_i($$a,$$v);' + "if($$c){$$i<0&&(" + value + "=$$a.concat($$v))}" + "else{$$i>-1&&(" + value + "=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}" + "}else{" + value + "=$$c}", null, true);
+      addHandler(el, CHECKBOX_RADIO_TOKEN, "var $$a=" + value + "," + '$$el=$event.target,' + "$$c=$$el.checked?(" + trueValueBinding + "):(" + falseValueBinding + ");" + 'if(Array.isArray($$a)){' + "var $$v=" + (number ? '_n(' + valueBinding + ')' : valueBinding) + "," + '$$i=_i($$a,$$v);' + "if($$c){$$i<0&&(" + value + "=$$a.concat($$v))}" + "else{$$i>-1&&(" + value + "=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}" + "}else{" + genAssignmentCode(value, '$$c') + "}", null, true);
     }
 
     function genRadioModel(el, value, modifiers) {
@@ -31191,13 +31891,13 @@ var vue = createCommonjsModule(function (module, exports) {
     function normalizeEvents(on) {
       var event;
       /* istanbul ignore if */
-      if (on[RANGE_TOKEN]) {
+      if (isDef(on[RANGE_TOKEN])) {
         // IE input[type=range] only supports `change` event
         event = isIE ? 'change' : 'input';
         on[event] = [].concat(on[RANGE_TOKEN], on[event] || []);
         delete on[RANGE_TOKEN];
       }
-      if (on[CHECKBOX_RADIO_TOKEN]) {
+      if (isDef(on[CHECKBOX_RADIO_TOKEN])) {
         // Chrome fires microtasks in between click/change, leads to #4521
         event = isChrome ? 'click' : 'change';
         on[event] = [].concat(on[CHECKBOX_RADIO_TOKEN], on[event] || []);
@@ -31207,8 +31907,8 @@ var vue = createCommonjsModule(function (module, exports) {
 
     var target$1;
 
-    function add$1(event, _handler, once, capture) {
-      if (once) {
+    function add$1(event, _handler, once$$1, capture, passive) {
+      if (once$$1) {
         var oldHandler = _handler;
         var _target = target$1; // save current target element in closure
         _handler = function handler(ev) {
@@ -31218,7 +31918,7 @@ var vue = createCommonjsModule(function (module, exports) {
           }
         };
       }
-      target$1.addEventListener(event, _handler, capture);
+      target$1.addEventListener(event, _handler, supportsPassive ? { capture: capture, passive: passive } : capture);
     }
 
     function remove$2(event, handler, capture, _target) {
@@ -31226,7 +31926,7 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function updateDOMListeners(oldVnode, vnode) {
-      if (!oldVnode.data.on && !vnode.data.on) {
+      if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
         return;
       }
       var on = vnode.data.on || {};
@@ -31244,7 +31944,7 @@ var vue = createCommonjsModule(function (module, exports) {
     /*  */
 
     function updateDOMProps(oldVnode, vnode) {
-      if (!oldVnode.data.domProps && !vnode.data.domProps) {
+      if (isUndef(oldVnode.data.domProps) && isUndef(vnode.data.domProps)) {
         return;
       }
       var key, cur;
@@ -31252,12 +31952,12 @@ var vue = createCommonjsModule(function (module, exports) {
       var oldProps = oldVnode.data.domProps || {};
       var props = vnode.data.domProps || {};
       // clone observed objects, as the user probably wants to mutate it
-      if (props.__ob__) {
+      if (isDef(props.__ob__)) {
         props = vnode.data.domProps = extend({}, props);
       }
 
       for (key in oldProps) {
-        if (props[key] == null) {
+        if (isUndef(props[key])) {
           elm[key] = '';
         }
       }
@@ -31280,7 +31980,7 @@ var vue = createCommonjsModule(function (module, exports) {
           // non-string values will be stringified
           elm._value = cur;
           // avoid resetting cursor position when value is the same
-          var strCur = cur == null ? '' : String(cur);
+          var strCur = isUndef(cur) ? '' : String(cur);
           if (shouldUpdateValue(elm, vnode, strCur)) {
             elm.value = strCur;
           }
@@ -31305,10 +32005,10 @@ var vue = createCommonjsModule(function (module, exports) {
     function isInputChanged(elm, newVal) {
       var value = elm.value;
       var modifiers = elm._vModifiers; // injected by v-model runtime
-      if (modifiers && modifiers.number || elm.type === 'number') {
+      if (isDef(modifiers) && modifiers.number || elm.type === 'number') {
         return toNumber(value) !== toNumber(newVal);
       }
-      if (modifiers && modifiers.trim) {
+      if (isDef(modifiers) && modifiers.trim) {
         return value.trim() !== newVal.trim();
       }
       return value !== newVal;
@@ -31395,7 +32095,17 @@ var vue = createCommonjsModule(function (module, exports) {
       } else if (importantRE.test(val)) {
         el.style.setProperty(name, val.replace(importantRE, ''), 'important');
       } else {
-        el.style[normalize(name)] = val;
+        var normalizedName = normalize(name);
+        if (Array.isArray(val)) {
+          // Support values array created by autoprefixer, e.g.
+          // {display: ["-webkit-box", "-ms-flexbox", "flex"]}
+          // Set them one by one, and the browser will only set those it can recognize
+          for (var i = 0, len = val.length; i < len; i++) {
+            el.style[normalizedName] = val[i];
+          }
+        } else {
+          el.style[normalizedName] = val;
+        }
       }
     };
 
@@ -31421,26 +32131,29 @@ var vue = createCommonjsModule(function (module, exports) {
       var data = vnode.data;
       var oldData = oldVnode.data;
 
-      if (!data.staticStyle && !data.style && !oldData.staticStyle && !oldData.style) {
+      if (isUndef(data.staticStyle) && isUndef(data.style) && isUndef(oldData.staticStyle) && isUndef(oldData.style)) {
         return;
       }
 
       var cur, name;
       var el = vnode.elm;
-      var oldStaticStyle = oldVnode.data.staticStyle;
-      var oldStyleBinding = oldVnode.data.style || {};
+      var oldStaticStyle = oldData.staticStyle;
+      var oldStyleBinding = oldData.normalizedStyle || oldData.style || {};
 
       // if static style exists, stylebinding already merged into it when doing normalizeStyleData
       var oldStyle = oldStaticStyle || oldStyleBinding;
 
       var style = normalizeStyleBinding(vnode.data.style) || {};
 
-      vnode.data.style = style.__ob__ ? extend({}, style) : style;
+      // store normalized style under a different key for next diff
+      // make sure to clone it if it's reactive, since the user likley wants
+      // to mutate it.
+      vnode.data.normalizedStyle = isDef(style.__ob__) ? extend({}, style) : style;
 
       var newStyle = getStyle(vnode, true);
 
       for (name in oldStyle) {
-        if (newStyle[name] == null) {
+        if (isUndef(newStyle[name])) {
           setProp(el, name, '');
         }
       }
@@ -31679,18 +32392,18 @@ var vue = createCommonjsModule(function (module, exports) {
       var el = vnode.elm;
 
       // call leave callback now
-      if (el._leaveCb) {
+      if (isDef(el._leaveCb)) {
         el._leaveCb.cancelled = true;
         el._leaveCb();
       }
 
       var data = resolveTransition(vnode.data.transition);
-      if (!data) {
+      if (isUndef(data)) {
         return;
       }
 
       /* istanbul ignore if */
-      if (el._enterCb || el.nodeType !== 1) {
+      if (isDef(el._enterCb) || el.nodeType !== 1) {
         return;
       }
 
@@ -31807,18 +32520,18 @@ var vue = createCommonjsModule(function (module, exports) {
       var el = vnode.elm;
 
       // call enter callback now
-      if (el._enterCb) {
+      if (isDef(el._enterCb)) {
         el._enterCb.cancelled = true;
         el._enterCb();
       }
 
       var data = resolveTransition(vnode.data.transition);
-      if (!data) {
+      if (isUndef(data)) {
         return rm();
       }
 
       /* istanbul ignore if */
-      if (el._leaveCb || el.nodeType !== 1) {
+      if (isDef(el._leaveCb) || el.nodeType !== 1) {
         return;
       }
 
@@ -31839,7 +32552,7 @@ var vue = createCommonjsModule(function (module, exports) {
 
       var explicitLeaveDuration = toNumber(isObject(duration) ? duration.leave : duration);
 
-      if ("development" !== 'production' && explicitLeaveDuration != null) {
+      if ("development" !== 'production' && isDef(explicitLeaveDuration)) {
         checkDuration(explicitLeaveDuration, 'leave', vnode);
       }
 
@@ -31921,11 +32634,11 @@ var vue = createCommonjsModule(function (module, exports) {
      * - a plain function (.length)
      */
     function getHookArgumentsLength(fn) {
-      if (!fn) {
+      if (isUndef(fn)) {
         return false;
       }
       var invokerFns = fn.fns;
-      if (invokerFns) {
+      if (isDef(invokerFns)) {
         // invoker
         return getHookArgumentsLength(Array.isArray(invokerFns) ? invokerFns[0] : invokerFns);
       } else {
@@ -31934,7 +32647,7 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function _enter(_, vnode) {
-      if (!vnode.data.show) {
+      if (vnode.data.show !== true) {
         enter(vnode);
       }
     }
@@ -31944,7 +32657,7 @@ var vue = createCommonjsModule(function (module, exports) {
       activate: _enter,
       remove: function remove$$1(vnode, rm) {
         /* istanbul ignore else */
-        if (!vnode.data.show) {
+        if (vnode.data.show !== true) {
           leave(vnode, rm);
         } else {
           rm();
@@ -31992,6 +32705,11 @@ var vue = createCommonjsModule(function (module, exports) {
         } else if (vnode.tag === 'textarea' || el.type === 'text' || el.type === 'password') {
           el._vModifiers = binding.modifiers;
           if (!binding.modifiers.lazy) {
+            // Safari < 10.2 & UIWebView doesn't fire compositionend when
+            // switching focus before confirming composition choice
+            // this also fixes the issue where some browsers e.g. iOS Chrome
+            // fires "change" instead of "input" on autocomplete.
+            el.addEventListener('change', onCompositionEnd);
             if (!isAndroid) {
               el.addEventListener('compositionstart', onCompositionStart);
               el.addEventListener('compositionend', onCompositionEnd);
@@ -32067,6 +32785,10 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function onCompositionEnd(e) {
+      // prevent triggering an input event for no reason
+      if (!e.target.composing) {
+        return;
+      }
       e.target.composing = false;
       trigger(e.target, 'input');
     }
@@ -32190,8 +32912,11 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function placeholder(h, rawChild) {
-      return (/\d-keep-alive$/.test(rawChild.tag) ? h('keep-alive') : null
-      );
+      if (/\d-keep-alive$/.test(rawChild.tag)) {
+        return h('keep-alive', {
+          props: rawChild.componentOptions.propsData
+        });
+      }
     }
 
     function hasParentTransition(vnode) {
@@ -32483,6 +33208,7 @@ var vue = createCommonjsModule(function (module, exports) {
     // install platform specific utils
     Vue$3.config.mustUseProp = mustUseProp;
     Vue$3.config.isReservedTag = isReservedTag;
+    Vue$3.config.isReservedAttr = isReservedAttr;
     Vue$3.config.getTagNamespace = getTagNamespace;
     Vue$3.config.isUnknownElement = isUnknownElement;
 
@@ -33100,7 +33826,7 @@ var vue = createCommonjsModule(function (module, exports) {
             return;
           }
           var children = currentParent.children;
-          text = inPre || text.trim() ? decodeHTMLCached(text)
+          text = inPre || text.trim() ? isTextTag(currentParent) ? text : decodeHTMLCached(text)
           // only preserve whitespace if its not right after a starting tag
           : preserveWhitespace && children.length ? ' ' : '';
           if (text) {
@@ -33302,6 +34028,9 @@ var vue = createCommonjsModule(function (module, exports) {
               if (modifiers.camel) {
                 name = camelize(name);
               }
+              if (modifiers.sync) {
+                addHandler(el, "update:" + camelize(name), genAssignmentCode(value, "$event"));
+              }
             }
             if (isProp || platformMustUseProp(el.tag, el.attrsMap.type, name)) {
               addProp(el, name, value);
@@ -33311,7 +34040,7 @@ var vue = createCommonjsModule(function (module, exports) {
           } else if (onRE.test(name)) {
             // v-on
             name = name.replace(onRE, '');
-            addHandler(el, name, value, modifiers);
+            addHandler(el, name, value, modifiers, false, warn$2);
           } else {
             // normal directives
             name = name.replace(dirRE, '');
@@ -33364,12 +34093,17 @@ var vue = createCommonjsModule(function (module, exports) {
     function makeAttrsMap(attrs) {
       var map = {};
       for (var i = 0, l = attrs.length; i < l; i++) {
-        if ("development" !== 'production' && map[attrs[i].name] && !isIE) {
+        if ("development" !== 'production' && map[attrs[i].name] && !isIE && !isEdge) {
           warn$2('duplicate attribute: ' + attrs[i].name);
         }
         map[attrs[i].name] = attrs[i].value;
       }
       return map;
+    }
+
+    // for script (e.g. type="x/template") or style, do not decode content
+    function isTextTag(el) {
+      return el.tag === 'script' || el.tag === 'style';
     }
 
     function isForbiddenTag(el) {
@@ -33553,10 +34287,15 @@ var vue = createCommonjsModule(function (module, exports) {
       right: genGuard("'button' in $event && $event.button !== 2")
     };
 
-    function genHandlers(events, native) {
-      var res = native ? 'nativeOn:{' : 'on:{';
+    function genHandlers(events, isNative, warn) {
+      var res = isNative ? 'nativeOn:{' : 'on:{';
       for (var name in events) {
-        res += "\"" + name + "\":" + genHandler(name, events[name]) + ",";
+        var handler = events[name];
+        // #5330: warn click.right, since right clicks do not actually fire click events.
+        if ("development" !== 'production' && name === 'click' && handler && handler.modifiers && handler.modifiers.right) {
+          warn("Use \"contextmenu\" instead of \"click.right\" since right clicks " + "do not actually fire \"click\" events.");
+        }
+        res += "\"" + name + "\":" + genHandler(name, handler) + ",";
       }
       return res.slice(0, -1) + '}';
     }
@@ -33810,10 +34549,10 @@ var vue = createCommonjsModule(function (module, exports) {
       }
       // event handlers
       if (el.events) {
-        data += genHandlers(el.events) + ",";
+        data += genHandlers(el.events, false, warn$3) + ",";
       }
       if (el.nativeEvents) {
-        data += genHandlers(el.nativeEvents, true) + ",";
+        data += genHandlers(el.nativeEvents, true, warn$3) + ",";
       }
       // slot target
       if (el.slotTarget) {
@@ -33889,7 +34628,19 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function genScopedSlot(key, el) {
-      return "[" + key + ",function(" + String(el.attrsMap.scope) + "){" + "return " + (el.tag === 'template' ? genChildren(el) || 'void 0' : genElement(el)) + "}]";
+      if (el.for && !el.forProcessed) {
+        return genForScopedSlot(key, el);
+      }
+      return "{key:" + key + ",fn:function(" + String(el.attrsMap.scope) + "){" + "return " + (el.tag === 'template' ? genChildren(el) || 'void 0' : genElement(el)) + "}}";
+    }
+
+    function genForScopedSlot(key, el) {
+      var exp = el.for;
+      var alias = el.alias;
+      var iterator1 = el.iterator1 ? "," + el.iterator1 : '';
+      var iterator2 = el.iterator2 ? "," + el.iterator2 : '';
+      el.forProcessed = true; // avoid recursion
+      return "_l((" + exp + ")," + "function(" + alias + iterator1 + iterator2 + "){" + "return " + genScopedSlot(key, el) + '})';
     }
 
     function genChildren(el, checkSkip) {
@@ -34043,8 +34794,9 @@ var vue = createCommonjsModule(function (module, exports) {
     }
 
     function checkEvent(exp, text, errors) {
-      var keywordMatch = exp.replace(stripStringRE, '').match(unaryOperatorsRE);
-      if (keywordMatch) {
+      var stipped = exp.replace(stripStringRE, '');
+      var keywordMatch = stipped.match(unaryOperatorsRE);
+      if (keywordMatch && stipped.charAt(keywordMatch.index - 1) !== '$') {
         errors.push("avoid using JavaScript unary operator as property name: " + "\"" + keywordMatch[0] + "\" in expression " + text.trim());
       }
       checkExpression(exp, text, errors);
@@ -34428,7 +35180,18 @@ function compose(Left, Right) {
         default: 'compositeChart'
       }
     },
-    methods: {},
+    data: function data() {
+      return { childCssModules: [] };
+    },
+    computed: {
+      $style: function $style() {
+        var cssModule = this.$options.cssModules || { 'chart-root': 'easy-dc-chart-root' };
+        this.childCssModules.forEach(function (childCssModule) {
+          mergeCssModules(cssModule, childCssModule);
+        });
+        return cssModule;
+      }
+    },
     mounted: function mounted() {
       var _this = this;
 
@@ -34486,7 +35249,7 @@ function compose(Left, Right) {
           dimension: this.dimension,
           scale: this.scale,
           dateKey: this.dateKey,
-          legend: false
+          useLegend: false
         }
       });
 
@@ -34495,6 +35258,10 @@ function compose(Left, Right) {
       coordinateGridBase.mounted.apply(leftInstance);
       Base.mounted.apply(rightInstance);
       coordinateGridBase.mounted.apply(rightInstance);
+
+      // ummmmmm.
+      if (Right.cssModules) this.childCssModules.push(Right.cssModules);
+      if (Left.cssModules) this.childCssModules.push(Left.cssModules);
 
       var dim = this.grouping;
       var composite = this.chart;
@@ -34526,7 +35293,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 5px; border: 2px solid; background: #FFF; color: #FFF; } .nd-box .number-display { font-weight: bold; } .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".number-display__chart-root .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 5px; border: 2px solid; background: #FFF; color: #FFF; } .number-display__chart-root .nd-box .number-display { font-weight: bold; } .number-display__chart-root .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34535,8 +35302,8 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "title", style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.title || this.reduce) } })]);
-  }, staticRenderFns: [],
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { class: _vm.$style['chart-root'] }, [_c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.title || this.reduce) } })])]);
+  }, staticRenderFns: [], cssModules: { "chartRoot": "number-display__chart-root", "chart-root": "number-display__chart-root" },
   extends: Base,
   props: {
     dimension: {
@@ -34744,7 +35511,7 @@ var DateVolumeChart = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".segment-pie__chart-root .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34752,7 +35519,7 @@ var DateVolumeChart = {
   }
 })();
 
-var SegmentPie = {
+var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-root": "segment-pie__chart-root" },
   extends: Base,
 
   props: {
@@ -34827,11 +35594,17 @@ var SegmentPie = {
     }
   },
 
+  watch: {
+    layoutSettings: function layoutSettings() {
+      this.chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).render();
+    }
+  },
+
   mounted: function mounted() {
     var _this2 = this;
 
     var chart = this.chart;
-    chart.othersLabel(this.othersLabel).cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).label(function (d) {
+    chart.othersLabel(this.othersLabel).label(function (d) {
       return _this2.segmentLabel(d.key);
     });
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
@@ -34847,7 +35620,7 @@ var SegmentPie = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".multi-dimension-pie__chart-root .pie-label-group text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34855,20 +35628,12 @@ var SegmentPie = {
   }
 })();
 
-var MultiDimensionPie = {
+var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart-root", "chart-root": "multi-dimension-pie__chart-root" },
   extends: Base,
-
   props: {
-    dimension: {
-      type: String
-    },
     chartType: {
       type: String,
       default: 'pieChart'
-    },
-    useLegend: {
-      type: Boolean,
-      default: true
     }
   },
 
@@ -34895,10 +35660,17 @@ var MultiDimensionPie = {
     }
   },
 
+  watch: {
+    layoutSettings: function layoutSettings() {
+      this.chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).render();
+    }
+  },
+
   mounted: function mounted() {
     var chart = this.chart;
-    chart.othersLabel(this.othersLabel).cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y);
+    chart.othersLabel(this.othersLabel);
 
+    // TODO: このあたりもlayoutとして調整するか？
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart.render();
   },
@@ -34912,7 +35684,7 @@ var MultiDimensionPie = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " g.row text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".week-row__chart-root g.row text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -34920,7 +35692,7 @@ var MultiDimensionPie = {
   }
 })();
 
-var WeekRow = {
+var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root": "week-row__chart-root" },
   extends: Base,
 
   props: {
@@ -35092,7 +35864,7 @@ var WeeklySeries = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-component svg g.row text { fill: #000; pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".list-row__chart-root g.row text { fill: #000; pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35100,7 +35872,7 @@ var WeeklySeries = {
   }
 })();
 
-var ListRow = {
+var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root": "list-row__chart-root" },
   extends: Base,
 
   props: {
@@ -35227,7 +35999,7 @@ var StackedLines = {
     combinedGroup: function combinedGroup() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
       var _reducer = this.reducerExtractor;
-      var lineNum = _reducer(dim.top(1)[0]).length;
+      var lineNum = _reducer({}).length;
       var groups = [];
 
       var _loop = function _loop(i) {
@@ -35243,11 +36015,27 @@ var StackedLines = {
     },
     reducer: function reducer() {
       return null; // disable default reducer
+    },
+    isRateReducer: function isRateReducer() {
+      // 最初の一つがrateなら、全てがrateであると仮定する
+      var v = this.reducerExtractor({})[0];
+      if (v instanceof Object && 'count' in v) return true;
+      return false;
+    }
+  },
+  methods: {
+    generateValueAccessor: function generateValueAccessor(idx) {
+      var _this = this;
+
+      return function (d) {
+        if (_this.isRateReducer) {
+          return d.value[idx].count !== 0 ? d.value[idx].value / d.value[idx].count : 0;
+        }
+        return d.value[idx];
+      };
     }
   },
   mounted: function mounted() {
-    var _this = this;
-
     var chart = this.chart;
     var dim = this.grouping;
     var _reducer = this.reducerExtractor;
@@ -35256,18 +36044,9 @@ var StackedLines = {
 
     var lineNum = _reducer(dim.top(1)[0] || {}).length;
 
-    chart.brushOn(false).group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), function (d) {
-      return d.value[0];
-    }).renderArea(true);
-
-    var _loop2 = function _loop2(i) {
-      chart.stack(_this.combinedGroup, _this.getLabel(_this.getReduceKey(i)), function (d) {
-        return d.value[i];
-      }).hidableStacks(true);
-    };
-
+    chart.brushOn(false).group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), this.generateValueAccessor(0)).renderArea(true);
     for (var i = 1; i < lineNum; i++) {
-      _loop2(i);
+      chart.stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), this.generateValueAccessor(i)).hidableStacks(true);
     }
     // FIXME:
     // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
@@ -35453,7 +36232,7 @@ var StackedBar = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".filter-stacked-bar__chart-root rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35461,7 +36240,7 @@ var StackedBar = {
   }
 })();
 
-var FilterStackedBar = {
+var FilterStackedBar = { cssModules: { "chartRoot": "filter-stacked-bar__chart-root", "chart-root": "filter-stacked-bar__chart-root" },
   extends: coordinateGridBase,
 
   props: {
@@ -35560,16 +36339,20 @@ var FilterStackedBar = {
     for (var i = 1; i < barNum; i++) {
       chart.stack(this.reducer, String(stackKeys[i]), this.selStacks(stackKeys[i])).hidableStacks(true);
     }
+
     // select <-> deselect && redraw
-    chart.selectAll('rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
-      return chart.filter() && chart.filters().findIndex(function (f) {
-        return f[0] === d.x && f[1] === d.layer;
-      }) === -1;
-    }).on('click', function (d) {
-      var f = [d.x, d.layer];
-      chart.filter(index$2.filters.TwoDimensionalFilter(f));
-      index$2.redrawAll();
+    chart.on('pretransition', function (chart) {
+      chart.selectAll('rect.bar').classed('deselected', false).classed('stack-deselected', function (d) {
+        return chart.filter() && chart.filters().findIndex(function (f) {
+          return f[0] === d.x && f[1] === d.layer;
+        }) === -1;
+      }).on('click', function (d) {
+        var f = [d.x, d.layer];
+        chart.filter(index$2.filters.TwoDimensionalFilter(f));
+        index$2.redrawAll();
+      });
     });
+
     this.applyLegend({ reverseOrder: true });
     return chart.render();
   }
@@ -36007,7 +36790,7 @@ function reverse$1(array, start, end) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .pref { fill: #fff; stroke: #aaa; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".geo-jp__chart-root .pref { fill: #fff; stroke: #aaa; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36015,11 +36798,7 @@ function reverse$1(array, start, end) {
   }
 })();
 
-var GeoJP = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "krt-dc-geo-chart", attrs: { "id": _vm.id } }, [_c('krt-dc-tooltip', { ref: "tooltip" }), _c('reset-button', { on: { "reset": function reset($event) {
-          _vm.removeFilterAndRedrawChart();
-        } } }), _c('div', { staticStyle: { "font-size": "24px", "text-align": "center" }, domProps: { "textContent": _vm._s(_vm.title) } })], 1);
-  }, staticRenderFns: [],
+var GeoJP = { cssModules: { "chartRoot": "geo-jp__chart-root", "chart-root": "geo-jp__chart-root" },
   extends: Base,
 
   props: {
@@ -36084,7 +36863,7 @@ var _computed;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .data-table-container { display: flex; flex-direction: column; align-items: flex-start; height: calc(100% - 25px); width: 94%; padding-top: 25px; font-size: 14px; } .table-container { overflow-y: auto; width: 100%; } table { } th.dc-table-head { cursor: pointer } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; height: calc(75%); width: 94%; padding-top: 25px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; width: 100%; } .data-table__chart-root th.dc-table-head { cursor: pointer; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36143,14 +36922,16 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { class: _vm.$style['chart-root'], attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title }, on: { "update:fullscreen": function updateFullscreen(v) {
+          return _vm.isFullscreen = v;
+        } } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
         } } }, [_vm._v("Next")])]) : _vm._e(), _c('div', { staticClass: "table-container" }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
           _vm.onclick($event);
         } } })])])]);
-  }, staticRenderFns: [],
+  }, staticRenderFns: [], cssModules: { "chartRoot": "data-table__chart-root", "chart-root": "data-table__chart-root" },
   extends: Base,
   props: {
     chartType: {
@@ -36167,9 +36948,6 @@ var DataTable = { render: function render() {
     order: {
       type: String,
       default: 'descending'
-    },
-    linkColumn: {
-      type: String
     },
     // chart style
     width: {
@@ -36199,6 +36977,9 @@ var DataTable = { render: function render() {
     renderTooltip: {
       type: Boolean,
       default: false
+    },
+    representations: {
+      type: Object
     }
   },
   data: function data() {
@@ -36254,10 +37035,6 @@ var DataTable = { render: function render() {
     },
     isLastPage: function isLastPage() {
       return this.ofs + this.pag >= this.filteredSize ? 'true' : null;
-    },
-    linkCol: function linkCol() {
-      if (!this.linkColumn) return null;
-      return this.linkColumn.replace(/\s/g, '').split(',');
     }
   }, defineProperty(_computed, 'reducer', function reducer() {
     return null;
@@ -36270,6 +37047,7 @@ var DataTable = { render: function render() {
       var vals = _this.getColsExtractor(v);
       if (vals[_this.dimensionName] === '') return p;
       _this.colsKeys.forEach(function (k) {
+        if (vals[k] === null || vals[k] === undefined) return;
         if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
           p[k].count += vals[k].count;
           p[k].value += vals[k].value;
@@ -36294,6 +37072,7 @@ var DataTable = { render: function render() {
       var vals = _this.getColsExtractor(v);
       if (vals[_this.dimension] === '') return p;
       _this.colsKeys.forEach(function (k) {
+        if (vals[k] === null || vals[k] === undefined) return;
         if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
           p[k].count -= vals[k].count;
           p[k].value -= vals[k].value;
@@ -36358,34 +37137,26 @@ var DataTable = { render: function render() {
       return schema;
     },
     buildFormatter: function buildFormatter(key) {
-      var _this4 = this;
-
-      if (this.linkCol && this.linkCol.includes(key)) {
-        return function (d) {
-          return _this4.insertLink(d.value[key]);
-        };
+      var repName = null;
+      if (this.representations && key in this.representations) {
+        repName = this.representations[key];
+        // 明示的にnullであるとき、非表示
+        if (!repName) return;
       }
+      var repFunc = Store.getRepresentation(repName);
       return function (d) {
-        if (d.value[key] instanceof Array || typeof d.value[key] == 'array') {
-          return d.value[key].map(function (item) {
-            if (item instanceof Date) return TIME_FORMATS.ymd(item);
-            return item;
-          }).join(', ');
-        }
-        if (d.value[key].per != undefined) return d.value[key].per;
-        return d.value[key];
+        return repFunc(d.value[key], d.value, d.key);
       };
     },
-    insertLink: function insertLink(v) {
-      return '<a href=' + v + '>' + v + '</a>';
-    },
     applyColumnSettings: function applyColumnSettings() {
-      var _this5 = this;
+      var _this4 = this;
 
       this.colsKeys.forEach(function (k) {
-        _this5.columnSettings.push({
-          label: _this5.getLabel(k),
-          format: _this5.buildFormatter(k)
+        var formatter = _this4.buildFormatter(k);
+        if (!formatter) return;
+        _this4.columnSettings.push({
+          label: _this4.getLabel(k),
+          format: formatter
         });
       });
     },
@@ -36406,7 +37177,7 @@ var DataTable = { render: function render() {
     }
   },
   mounted: function mounted() {
-    var _this6 = this;
+    var _this5 = this;
 
     this.applyColumnSettings();
 
@@ -36418,10 +37189,10 @@ var DataTable = { render: function render() {
     }).size(Infinity).showGroups(false).columns(this.columnSettings).sortBy(function (d) {
       return _valueAccessor(d, sortKey);
     }).order(d3$1[this.order]).on('renderlet', function () {
-      var dim = Store.getDimension(_this6.dimensionName, { dataset: _this6.dataset });
-      _this6.filteredDataSize = dim.groupAll().value();
-      _this6.filteredSize = _this6.grouping.size();
-      var ths = d3$1.selectAll('#' + _this6.id + ' th.dc-table-head');
+      var dim = Store.getDimension(_this5.dimensionName, { dataset: _this5.dataset });
+      _this5.filteredDataSize = dim.groupAll().value();
+      _this5.filteredSize = _this5.grouping.size();
+      var ths = d3$1.selectAll('#' + _this5.id + ' th.dc-table-head');
       ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
     });
     this.updateTable();
@@ -36433,7 +37204,7 @@ var DataTable = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .box-group .heat-box:hover{ fill-opacity: 0.5; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".heat-map__chart-root .box-group .heat-box:hover { fill-opacity: 0.5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36441,7 +37212,7 @@ var DataTable = { render: function render() {
   }
 })();
 
-var HeatMap = {
+var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root": "heat-map__chart-root" },
   extends: Base,
 
   props: {
@@ -36689,7 +37460,7 @@ var _props;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .node text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".bubble__chart-root .node text { pointer-events: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36697,7 +37468,7 @@ var _props;
   }
 })();
 
-var Bubble = {
+var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "bubble__chart-root" },
   extends: coordinateGridBase,
 
   props: (_props = {
@@ -36891,7 +37662,167 @@ var Bubble = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .reset-all-button a { cursor: pointer; font-weight: bold; } .reset-all-button a:not([href]):not([tabindex]) { color: #fff; } .reset-all-button a:not([href]):not([tabindex]):hover { color: #fff; } .reset-all-button .btn-primary { border-color: #2AAB9F; background-color: #2AAB9F; } .reset-all-button .btn-primary:hover { opacity: .6; color: #fff; border-color: #2AAB9F; background-color: #2AAB9F; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".area-line__chart-root .dc-chart .stack._0 .area { fill-opacity: 0; } ";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+var AreaLine = { cssModules: { "chartRoot": "area-line__chart-root", "chart-root": "area-line__chart-root" },
+  extends: StackedLines,
+  props: {
+    useDataPoints: {
+      default: false
+    }
+  },
+  methods: {
+    _getValue: function _getValue(d, idx) {
+      if (this.isRateReducer) {
+        return d.value[idx].count !== 0 ? d.value[idx].value / d.value[idx].count : 0;
+      }
+      return d.value[idx];
+    },
+    generateValueAccessor: function generateValueAccessor(idx) {
+      var _this = this;
+
+      return function (d) {
+        if (idx === 0) return _this._getValue(d, 0);else {
+          return _this._getValue(d, idx) - _this._getValue(d, 0);
+        }
+      };
+    }
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = "";style.type = 'text/css';if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }head.appendChild(style);
+  }
+})();
+
+function _getReduceKeySuper$1(Component) {
+  if (!Component) return;
+  if (Component.methods && Component.methods.getReduceKey) return Component.methods.getReduceKey;
+  return _getReduceKeySuper$1(Component.extends);
+}
+
+var MultiLines = {
+  extends: coordinateGridBase,
+
+  props: {
+    chartType: {
+      type: String,
+      default: 'compositeChart'
+    },
+    scale: {
+      default: 'linear'
+    }
+  },
+  data: function data() {
+    return { childCssModules: [] };
+  },
+  computed: {
+    $style: function $style() {
+      var cssModule = this.$options.cssModules || { 'chart-root': 'easy-dc-chart-root' };
+      this.childCssModules.forEach(function (childCssModule) {
+        mergeCssModules(cssModule, childCssModule);
+      });
+      return cssModule;
+    },
+    reducer: function reducer() {
+      return null; // disable default reducer
+    }
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    var chart = this.chart;
+    var dim = this.grouping;
+    var _reducer = this.reducerExtractor;
+
+    var lineNum = _reducer({}).length;
+
+    var lines = [];
+
+    for (var i = 0; i < lineNum; i++) {
+      {
+        (function () {
+          var idx = i;
+          var schema = _reducer({})[idx];
+          var BaseChart = void 0;
+          if (schema instanceof Array || typeof schema === 'array') {
+            BaseChart = AreaLine;
+          } else {
+            BaseChart = coordinateGridBase;
+          }
+
+          var chartInstance = new vue({
+            extends: BaseChart,
+            computed: {
+              parent: function parent() {
+                return chart;
+              },
+              reducerExtractor: function reducerExtractor() {
+                return function (d) {
+                  return _reducer(d)[idx];
+                };
+              }
+            },
+            propsData: {
+              dimension: _this.dimension,
+              dateKey: _this.dateKey,
+              chartType: 'lineChart',
+              scale: _this.scale,
+              useLegend: false
+            },
+            methods: {
+              getReduceKey: function getReduceKey(i) {
+                var s = _getReduceKeySuper$1(BaseChart);
+                if (!s) return String(idx);
+                return idx + ':' + s.apply(this, [i]);
+              }
+            }
+          });
+
+          // ummmmmm.
+          if (BaseChart.cssModules) _this.childCssModules.push(BaseChart.cssModules);
+
+          // ummmm.
+          var _chart = Base.mounted.apply(chartInstance);
+          coordinateGridBase.mounted.apply(chartInstance);
+          if (BaseChart === AreaLine) StackedLines.mounted.apply(chartInstance);
+          if (chartInstance.mounted) chartInstance.mounted();
+
+          lines.push(_chart);
+        })();
+      }
+    }
+
+    chart.dimension(dim).shareColors(true).compose(lines);
+
+    this.applyLegend({ indexLabel: true });
+
+    // FIXME:
+    // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
+    // this called from dc/line-chart.js and utils/reverseLegendOrder()
+    // if(this.useLegend) this.applyLegend({reverseOrder: true})
+    return chart.render();
+  }
+};
+
+(function () {
+  if (document) {
+    var head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style'),
+        css = " /* bootstrap を参照しているのでscopedを使う */ .reset-all-button a[data-v-55544fb0] { cursor: pointer; font-weight: bold; } .reset-all-button a[data-v-55544fb0]:not([href]):not([tabindex]) { color: #fff; } .reset-all-button a[data-v-55544fb0]:not([href]):not([tabindex]):hover { color: #fff; } .reset-all-button .btn-primary[data-v-55544fb0] { border-color: #2AAB9F; background-color: #2AAB9F; } .reset-all-button .btn-primary[data-v-55544fb0]:hover { opacity: .6; color: #fff; border-color: #2AAB9F; background-color: #2AAB9F; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36901,7 +37832,7 @@ var Bubble = {
 
 var resetAllButton = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-all-button" }, [_c('a', { staticClass: "btn btn-primary btn-lg", on: { "click": _vm.resetAll } }, [_vm._v("Reset All")])]);
-  }, staticRenderFns: [],
+  }, staticRenderFns: [], _scopeId: 'data-v-55544fb0',
   methods: {
     resetAll: function resetAll() {
       index$2.filterAll();
@@ -36914,7 +37845,7 @@ var resetAllButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .download-csv-button a:not([href]):not([tabindex]) { color: #2AAB9F; cursor: pointer; font-weight: bold; } .download-csv-button .btn.btn-outline-primary { border-color: #2AAB9F; } .download-csv-button .btn.btn-outline-primary:hover { color: #2AAB9F; border-color: #2AAB9F; background-color: #fff; opacity: .8; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .download-csv-button a[data-v-f6d3e728]:not([href]):not([tabindex]) { color: #2AAB9F; cursor: pointer; font-weight: bold; } .download-csv-button .btn.btn-outline-primary[data-v-f6d3e728] { border-color: #2AAB9F; } .download-csv-button .btn.btn-outline-primary[data-v-f6d3e728]:hover { color: #2AAB9F; border-color: #2AAB9F; background-color: #fff; opacity: .8; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -36926,7 +37857,7 @@ var csvDownloadButton = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "download-csv-button" }, [_c('a', { staticClass: "btn btn-outline-primary btn-lg", on: { "click": function click($event) {
           _vm.downloadCSV('data');
         } } }, [_vm._v("csv download")])]);
-  }, staticRenderFns: [],
+  }, staticRenderFns: [], _scopeId: 'data-v-f6d3e728',
   methods: {
     downloadCSV: function downloadCSV(data) {
       return EasyDC.Store.downloadCSV(data);
@@ -36952,6 +37883,8 @@ var components = {
   'heat-map': HeatMap,
   'series': Series,
   'bubble': Bubble,
+  'area-line': AreaLine,
+  'multi-lines': MultiLines,
   'stack-and-rate': compose(StackedLines, RateLine),
   'reset-all-button': resetAllButton,
   'csv-download-button': csvDownloadButton
@@ -36982,6 +37915,8 @@ var Chart = {
   HeatMap: HeatMap,
   Series: Series,
   Bubble: Bubble,
+  AreaLine: AreaLine,
+  MultiLines: MultiLines,
   compose: compose,
   resetAllButton: resetAllButton,
   csvDownloadButton: csvDownloadButton,
