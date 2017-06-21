@@ -57,7 +57,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" @update:fullscreen="v => isFullscreen = v" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -94,7 +94,7 @@ export default {
       type: String,
       default: 'ordinal.ordinal'
     },
-    extraDimensionScale: {
+    extraScale: {
       type: String
     },
     dateKey: {
@@ -180,6 +180,11 @@ export default {
       type: String,
       default: 'Others'
     },
+  },
+
+  data: function() {
+    // umm.
+    return {isMounted: false, isFullscreen: false}
   },
 
   computed: {
@@ -291,14 +296,35 @@ export default {
       return generateScales(this.extraScale)
     },
     layoutSettings: function() {
-      const {width, height} = this.getContainerInnerSize()
+      if (!this.containerInnerSize) return {}
+      const {width, height} = this.containerInnerSize
       const legendable = this.useLegend
-      const setting = Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable})
+      const setting = Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable, fullscreen: this.isFullscreen})
       if (this.layoutDetails) {
         const custom = generateExtractor(this.layoutDetails)(setting)
         return assignDeep({}, setting, custom)
       }
       return setting
+    },
+    containerInnerSize: function() {
+      if (!this.isMounted) return
+
+      let width, height;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        const el = this.$el.querySelector(this.parent).parentNode
+        width = el.clientWidth
+        height = el.clientHeight
+      }
+      else {
+        width = this.parent.width()
+        height = this.parent.height()
+      }
+      if (!this.isFullscreen) {
+        if (this.width) width = parseFloat(this.width);
+        if (this.height) height = parseFloat(this.height);
+      }
+
+      return {width, height}
     },
     colorSettings: function() {
       return Store.getTheme().colors(this.chartType, '')
@@ -404,27 +430,12 @@ export default {
 
       if(reverseOrder) reverseLegendOrder(this.chart)
     },
-    getContainerInnerSize: function() {
-      let width, height;
-      if (typeof this.parent === 'string' || this.parent instanceof String) {
-        const el = document.querySelector(this.parent).parentNode
-        width = el.clientWidth
-        height = el.clientHeight
-      }
-      else {
-        width = this.parent.width()
-        height = this.parent.height()
-      }
-      if (this.width) width = parseFloat(this.width);
-      if (this.height) height = parseFloat(this.height);
-
-      return {width, height}
-    },
     applyStyles: function() {
+      if (!this.containerInnerSize || !this.layoutSettings || !this.chart) return
       const chart = this.chart;
       const legend = this.legend;
 
-      const {width: defaultWidth, height: defaultHeight} = this.getContainerInnerSize()
+      const {width: defaultWidth, height: defaultHeight} = this.containerInnerSize
       const {
         width = defaultWidth,
         height = defaultHeight,
@@ -445,6 +456,7 @@ export default {
         chart.renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5})
       }
 
+      if (this.useLegend) this.applyLegend();
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill');
@@ -461,7 +473,17 @@ export default {
     }
   },
 
+  watch: {
+    layoutSettings: function() {
+      this.applyStyles()
+      this.chart.render()
+    }
+  },
+
   mounted: function() {
+    // layoutが確定する
+    this.isMounted = true
+
     const chart = Store.registerChart(
       this.parent,
       this.id,
@@ -495,9 +517,6 @@ export default {
         return d.key[0]
       })
     }
-
-    if (this.useLegend) this.applyLegend();
-    this.applyStyles();
 
     chart
       .renderLabel(this.renderLabel)
@@ -553,8 +572,9 @@ export default {
             let d = _d.key || _d;
             return d.length > 15 ? d.substr(0,15)+'...' : d
         })
-
       }
+
+      // TODO: layout system
       if(!this.hideXAxisLabel && this.rotateXAxisLabel) {
         chart.selectAll(`#${this.id} g.x text`)
           .attr('transform', 'translate(-10,5) rotate(330)')
