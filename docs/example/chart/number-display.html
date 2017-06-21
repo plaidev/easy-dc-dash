@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+  <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
+
+    <number-display
+      title="COUNT"
+      reduce="cnt"
+      unit-label="人">
+    </number-display>
+
+    <number-display
+      title="VALUE"
+      :fill-box-color=false
+      reduce="val">
+    </number-display>
+
+    <number-display
+      title="VALUE"
+      reduce="{count: d.cnt, value: d.val}">
+    </number-display>
+
+    <number-display
+      box-label="irregal value"
+      reduce="d.d">
+    </number-display>
+
+    <multidim-pie
+      dimension="d.d"
+      reduce="{count: d.cnt, value: d.val}"
+      width="377"
+      height="377">
+    </multidim-pie>
+
+    <script type="text/javascript">
+      EasyDC.Store.registerData([
+        {d: 'a', cnt: 2, val: 5},
+        {d: 'b', cnt: 3, val: 2},
+        {d: 'c',  cnt: 5, val: 10},
+      ], {
+        labels: {
+          'a': 'A',
+          'b': 'B',
+          'c': 'C'
+        }
+      })
+
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>

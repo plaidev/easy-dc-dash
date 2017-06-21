@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+  <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
+
+    <filter-stacked-bar
+      title="filter-stacked-bar"
+      date-key="date"
+      dimension="week"
+      extra-dimension="weekofyear"
+      scale="ordinal"
+      reduce="d.v"
+    ></filter-stacked-bar>
+    
+    <filter-stacked-bar
+      title="filter-stacked-bar2"
+      scale="time.day"
+      dimension="date"
+      extra-dimension="d"
+      reduce="d.v">
+    </filter-stacked-bar>
+
+    <filter-stacked-bar
+      title="rate reduce"
+      scale="time.day"
+      dimension="date"
+      extra-dimension="d"
+      reduce="{count: 2, value: d.v}">
+    </filter-stacked-bar>
+
+
+    <script type="text/javascript">
+      EasyDC.Store.registerData([
+        {date: new Date('2017-05-22 10:00'), d: 'a', v: 1+15},
+        {date: new Date('2017-05-23 10:00'), d: 'b', v: 1+13},
+        {date: new Date('2017-05-24 10:00'), d: 'b', v: 1+11},
+        {date: new Date('2017-05-24 10:00'), d: 'b', v: 1+50},
+        {date: new Date('2017-05-25 10:00'), d: 'b', v: 2+7},
+        {date: new Date('2017-05-26 10:00'), d: 'b', v: 4+5},
+        {date: new Date('2017-05-27 10:00'), d: 'b', v: 8+3},
+        {date: new Date('2017-05-28 10:00'), d: 'a', v: 16+1},
+        {date: new Date('2017-05-29 10:00'), d: 'b', v: 32+3},
+        {date: new Date('2017-05-30 10:00'), d: 'a', v: 64+5},
+        {date: new Date('2017-05-31 10:00'), d: 'a', v: 128+7},
+        {date: new Date('2017-05-22 10:00'), d: 'b', v: 1+23},
+        {date: new Date('2017-05-23 10:00'), d: 'a', v: 1+21},
+        {date: new Date('2017-05-24 10:00'), d: 'b', v: 1+19},
+        {date: new Date('2017-05-25 10:00'), d: 'b', v: 1+17},
+      ])
+
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>
