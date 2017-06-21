@@ -35,6 +35,7 @@
   "scripts": {
     "build": "rollup -c -m",
     "watch": "rollup -c -m -w",
+    "watch-lite": "rollup -c rollup.watch.config.js -m -w",
     "http-server": "http-server -i"
   },
   "files": [

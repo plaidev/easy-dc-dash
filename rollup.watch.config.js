@@ -4,7 +4,7 @@ import commonjs     from 'rollup-plugin-commonjs'
 import babel        from 'rollup-plugin-babel'
 import vue          from 'rollup-plugin-vue'
 import replace      from 'rollup-plugin-replace'
-import sourcemaps   from 'rollup-plugin-sourcemaps'
+//import sourcemaps   from 'rollup-plugin-sourcemaps'
 import scss         from 'rollup-plugin-scss'
 import css          from 'rollup-plugin-css-only'
 
@@ -16,12 +16,10 @@ export default {
   // entry
   entry: 'index.js',
 
-  sourceMap: true,
+  sourceMap: false,
 
   // output
   targets: [
-    { dest: 'dist/bundle.js', format: 'cjs' },
-    { dest: 'dist/bundle.es.js', format: 'es' },
     { dest: 'dist/bundle.browser.js', format: 'iife' } // 直接実行可能な形式
   ],
 
@@ -39,13 +37,14 @@ export default {
     commonjs(),
 
     // 一応入れてみた。子のファイルのsourcemapurlを追跡する？
-    sourcemaps(),
+    //sourcemaps(),
 
     // .vueのrequire
     vue({
       css: true // dynamically inject
     }),
 
+    // less
     scss(),
 
     css({
