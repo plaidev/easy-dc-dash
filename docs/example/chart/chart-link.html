@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+  <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
+
+    <multidim-pie
+      title="TITLE"
+      dimension="link"
+      reduce="v"
+      link-formatter='default'
+    ></multidim-pie>
+
+    <ordinal-bar
+      title="TITLE"
+      dimension="name"
+      reduce="v"
+      link-formatter='example'
+    ></ordinal-bar>
+
+    <ordinal-bar
+      title="TITLE"
+      dimension="name"
+      reduce="v"
+      link-formatter='example2'
+    ></ordinal-bar>
+
+    <script type="text/javascript">
+
+      EasyDC.Store.registerData([
+        {name: 'a', link: 'https://google.co.jp', v: 1+11},
+        {name: 'b', link: 'https://google.com', v: 2+7},
+        {name: 'c', link: 'https://yahoo.co.jp', v: 4+5},
+        {name: 'd', link: 'https://yahoo.com', v: 8+3}
+      ])
+
+      EasyDC.Store.setLabels({
+        'a': 'https://google.co.jp',
+        'b': 'https://google.com',
+        'c': 'https://yahoo.co.jp',
+        'd': 'https://yahoo.com'
+      })
+
+      EasyDC.Store.registerLinkFormatter('example', (v) => {
+        return 'https://example.com?' + v
+      })
+      EasyDC.Store.registerLinkFormatter('example2', (v) => {
+        return EasyDC.Store.getLabel(v)
+      })
+
+      EasyDC.run()
+    </script>
+
+  </body>
+
+</html>
