@@ -11,31 +11,50 @@
 
     <multidim-pie
       title="TITLE"
-      dimension="d1"
+      dimension="link"
       reduce="v"
-      chart-link='link'
-      :labels='linkLabels'
+      :display-link=true
     ></multidim-pie>
 
     <ordinal-bar
       title="TITLE"
-      dimension="d1"
+      dimension="name"
       reduce="v"
-      chart-link='link'
-      :labels='linkLabels'
+      :display-link=true
+      link-formatter='example'
+    ></ordinal-bar>
+
+    <ordinal-bar
+      title="TITLE"
+      dimension="name"
+      reduce="v"
+      :display-link=true
+      link-formatter='example2'
     ></ordinal-bar>
 
     <script type="text/javascript">
-      const data = [
-        {d1: 'a', d2: true, v: 1+11, link: 'https://www.google.co.jp'},
-        {d1: 'a', d2: false, v: 2+7, link: 'https://www.google.com'},
-        {d1: 'b', d2: true, v: 4+5, link: 'https://www.yahoo.co.jp'},
-        {d1: 'b', d2: false, v: 8+3, link: 'https://www.yahoo.com'},
-      ]
-      const labels = {}
-      data.map(d => labels[d.d1] = d.link)
-      EasyDC.Store.setBindData('linkLabels', labels)
-      EasyDC.Store.registerData(data, labels)
+
+      EasyDC.Store.registerData([
+        {name: 'a', link: 'https://google.co.jp', v: 1+11},
+        {name: 'b', link: 'https://google.com', v: 2+7},
+        {name: 'c', link: 'https://yahoo.co.jp', v: 4+5},
+        {name: 'd', link: 'https://yahoo.com', v: 8+3}
+      ])
+
+      EasyDC.Store.setLabels({
+        'a': 'https://google.co.jp',
+        'b': 'https://google.com',
+        'c': 'https://yahoo.co.jp',
+        'd': 'https://yahoo.com'
+      })
+
+      EasyDC.Store.registerLinkFormatter('example', (v) => {
+        return 'https://example.com?' + v
+      })
+      EasyDC.Store.registerLinkFormatter('example2', (v) => {
+        return EasyDC.Store.getLabel(v)
+      })
+
       EasyDC.run()
     </script>
 

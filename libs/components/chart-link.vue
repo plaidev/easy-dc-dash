@@ -1,8 +1,8 @@
 <template>
-  <div class="krt-dc-chart-link" v-if="value">
-    <span><a class='link-text' :href='label' target='_blank' v-text='value'></a></span>
+  <div class="krt-dc-chart-link" v-if="link">
+    <span><a class='link-text' :href='link' target='_blank' v-text='link'></a></span>
     <span>
-      <a :href='label' target='_blank'>
+      <a :href='link' target='_blank'>
         <i class='fa fa-external-link link-icon' aria-hidden='true'></i>
       </a>
     </span>
@@ -15,19 +15,16 @@ export default {
   name: 'KrtDcChartLink',
   data () {
     return {
-      value: null,
-      label: null
+      link: null
     }
   },
   methods: {
-    show: function(c, value, label) {
+    show: function(c, link) {
       if(c.filters().length === 0) return this.remove()
-      this.value = value;
-      this.label = label;
+      this.link = link;
     },
     remove: function() {
-      this.value = null;
-      this.label = null;
+      this.link = null;
     }
   }
 }

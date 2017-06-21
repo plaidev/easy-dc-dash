@@ -40,6 +40,9 @@ class DashboardStore {
 
     this._representations = {
     };
+
+    this._linkFormatters = {
+    };
   }
 
   setBindData(name, data) {
@@ -191,6 +194,18 @@ class DashboardStore {
       return _defaultRepresentation
     }
     return this._representations[name]
+  }
+
+  registerLinkFormatter(name, format) {
+    this._linkFormatters[name] = format
+  }
+
+  getLinkFormatter(name) {
+    if (!name) return
+    if (!(name in this._linkFormatters)) {
+      return console.log('warn: linkFormatter name "'+name+'" is not registererd')
+    }
+    return this._linkFormatters[name]
   }
 
   getTheme() {

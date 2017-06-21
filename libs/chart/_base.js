@@ -150,7 +150,13 @@ export default {
       type: Boolean,
       default: true
     },
-    chartLink: {
+    displayLink: {
+      type: Boolean,
+      default: false
+    },
+
+    // formatter
+    linkFormatter: {
       type: String
     },
 
@@ -466,8 +472,15 @@ export default {
       this.$refs.tooltip.remove();
     },
     showChartLink: function(chart, filterValue) {
-      const link = this.getLabel(filterValue)
-      this.$refs.chartLink.show(chart, filterValue, link)
+      let link;
+      if(this.linkFormatter) {
+        const formatter = Store.getLinkFormatter(this.linkFormatter)
+        link = formatter === undefined ? filterValue : formatter(filterValue)
+      }
+      else {
+        link = filterValue
+      }
+      this.$refs.chartLink.show(chart, link)
     }
   },
 
@@ -543,7 +556,7 @@ export default {
           .on("mouseout", this.removeTooltip)
         })
     }
-    if(this.chartLink) {
+    if(this.displayLink) {
       // .on("click") だと一部のチャートでfilterのclickとぶつかる
       chart.on('filtered', this.showChartLink)
     }
