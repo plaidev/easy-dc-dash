@@ -18,6 +18,7 @@ function autoLoad() {
     const csv = el.getAttribute('csv');
 
     const labels = el.getAttribute('labels')
+    const labelMapper = el.getAttribute('label-mapper')
     const intFields = el.getAttribute('int-fields')
     const floatFields = el.getAttribute('float-fields')
     const dateFields = el.getAttribute('date-fields')
@@ -28,6 +29,7 @@ function autoLoad() {
 
     const options = {
       labels,
+      labelMapper,
       intFields: intFields ? intFields.split(','): undefined,
       floatFields: floatFields ? floatFields.split(','): undefined,
       dateFields: dateFields ? dateFields.split(','): undefined,
@@ -41,11 +43,11 @@ function autoLoad() {
 
     if (mode) {
       p = loadMode(mode, options)
-        .then(({content, labels}) => Store.registerData(content, {dataset, labels}))
+        .then(({content, labels}) => Store.registerData(content, {dataset, labels, labelMapper}))
     }
     else if (csv) {
       p = loadCSV(csv, options)
-        .then(({content, labels}) => Store.registerData(content, {dataset, labels}))
+        .then(({content, labels}) => Store.registerData(content, {dataset, labels, labelMapper}))
     }
     else {
       p = Promise.resolve()

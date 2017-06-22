@@ -2,6 +2,7 @@ import crossfilter from 'crossfilter'
 import dc from 'dc'
 import {downloadCSV} from './utils/blob-csv'
 import {TIME_FORMATS} from './utils/time-format'
+import {generateExtractor} from './utils'
 
 import DefaultTheme from './themes/default'
 
@@ -16,6 +17,24 @@ function _defaultRepresentation(v, d, key) {
   }
   if (v.per != undefined) return v.per
   return v
+}
+
+function _collectLabelsByRecords(content, labelMapper) {
+  if (!labelMapper) return {}
+  const labels = {}
+  const mapper = generateExtractor(labelMapper)
+  content.forEach((record) => {
+    const item = mapper(record)
+    if ((item instanceof Array) || typeof item === 'array') {
+      item.forEach((i) => {
+        if (!(i.key in labels)) labels[i.key] = i.label
+      })
+    }
+    else {
+      if (!(item.key in labels)) labels[item.key] = item.label
+    }
+  })
+  return labels
 }
 
 
@@ -50,14 +69,20 @@ class DashboardStore {
     this.state.binds[name] = data;
   }
 
+
   registerData(data=[], options={}) {
     const {
       dataset = 'default',
-      labels = {}
+      labels = {},
+      labelMapper = null
     } = options;
 
     // crossfilterのインスタンス作成
     this._cf[dataset] = crossfilter(data);
+
+    if (labelMapper) {
+      this.setLabels(_collectLabelsByRecords(data, labelMapper), {dataset})
+    }
 
     this.setLabels(labels, {dataset})
   }
@@ -162,6 +187,19 @@ class DashboardStore {
     else if (labels[''] && labels[''][k] !== undefined)
       return labels[''][k];
     return k
+  }
+
+  mergeLabels(to, from) {
+    const {
+      dataset = 'default',
+      chartName = ''
+    } = from
+
+    if (!this._labels[dataset] || !this._labels[dataset][chartName]) return
+
+    const labels = this._labels[dataset][chartName]
+
+    this.setLabels(labels, to)
   }
 
   getKeyByLabel(label, options={}) {
