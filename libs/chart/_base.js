@@ -153,8 +153,7 @@ export default {
 
     // formatter
     linkFormatter: {
-      type: String,
-      default: 'default'
+      type: String
     },
 
     // size / layout
