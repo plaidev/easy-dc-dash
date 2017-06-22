@@ -36,11 +36,12 @@ function convert(d, options={}) {
 }
 
 
+
 export function loadCSV(csvFile, options={}) {
   const {labels} = options;
   const l = labels ? labels.split(','): [];
   return new Promise((resolve) => {
-    d3.csv('./dataset.csv', (d) => convert(d, options), (content) => {
+    d3.csv(csvFile, (d) => convert(d, options), (content) => {
       const _labels = {};
       if (labels) {
         let idx = 0;
