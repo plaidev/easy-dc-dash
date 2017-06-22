@@ -58,7 +58,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" @update:fullscreen="v => isFullscreen = v" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -343,6 +343,10 @@ export default {
     },
     colorSettings: function() {
       return Store.getTheme().colors(this.chartType, '')
+    },
+    captionHeight: function() {
+      if (!this.layoutSettings || !this.layoutSettings.caption) return;
+      return this.layoutSettings.caption.height
     },
     textSelector: function() {
       if(this.chartType === 'bubbleChart') return `#${this.id} .node text`
