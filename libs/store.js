@@ -50,6 +50,11 @@ class DashboardStore {
     this._dimensions = {
       default: {}
     };
+    this._themes = {
+      default: DefaultTheme
+    }
+
+    this._defaultTheme = 'default'
 
     this._labels = {
       default: {
@@ -247,8 +252,30 @@ class DashboardStore {
     return this._linkFormatters[name]
   }
 
-  getTheme() {
-    return DefaultTheme
+  registerTheme(themeName, Theme) {
+    this._themes[themeName] = Theme
+  }
+
+  getTheme(themeName) {
+    if (!themeName) themeName = this._defaultTheme
+
+    const Theme = this._themes[themeName]
+    const BaseTheme = Theme.extends ? this.getTheme(Theme.extends) : {}
+
+    return {
+      colors: function(...args) {
+        if (!Theme.colors) return BaseTheme.colors(...args)
+        return Theme.colors(BaseTheme.colors, ...args)
+      },
+      layout: function(...args) {
+        if (!Theme.layout) return BaseTheme.layout(...args)
+        return Theme.layout(BaseTheme.layout, ...args)
+      }
+    }
+  }
+
+  setDefaultTheme(theme) {
+    this._defaultTheme = theme
   }
 
   downloadCSV(filename, dimensionName='_all', options={}) {

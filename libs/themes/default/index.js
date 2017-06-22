@@ -1,7 +1,8 @@
 
 export default {
+  extends: null,
 
-  colors: function(chartType, name, options={}) {
+  colors: function(_super, chartType, name, options={}) {
     let ordinal, weekOrdinal, valueGradation;
 
     if (chartType == 'heatMap') {
@@ -15,7 +16,7 @@ export default {
     }
   },
 
-  layout: function(chartType, name, options={}) {
+  layout: function(_super, chartType, name, options={}) {
     let {
       width = 377,
       height = 233,

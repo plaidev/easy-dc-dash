@@ -157,6 +157,10 @@ export default {
     },
 
     // size / layout
+    theme: {
+      type: String,
+      default: 'default'
+    },
     layout: {
       type: String,
       default: 'auto'
@@ -308,7 +312,8 @@ export default {
       if (!this.containerInnerSize) return {}
       const {width, height} = this.containerInnerSize
       const legendable = this.useLegend
-      const setting = Store.getTheme().layout(this.chartType, this.layout, {width, height, legendable, fullscreen: this.isFullscreen})
+      const theme = Store.getTheme(this.theme)
+      const setting = theme.layout(this.chartType, this.layout, {width, height, legendable, fullscreen: this.isFullscreen})
       if (this.layoutDetails) {
         const custom = generateExtractor(this.layoutDetails)(setting)
         return assignDeep({}, setting, custom)
@@ -342,7 +347,8 @@ export default {
       return {width, height}
     },
     colorSettings: function() {
-      return Store.getTheme().colors(this.chartType, '')
+      const theme = Store.getTheme(this.theme)
+      return theme.colors(this.chartType, '')
     },
     captionHeight: function() {
       if (!this.layoutSettings || !this.layoutSettings.caption) return;

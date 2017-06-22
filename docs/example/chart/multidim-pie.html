@@ -40,6 +40,15 @@
       layout-details="{chartCenter: {y: d.chartCenter.y+20}, height: d.height+20}"
     ></multidim-pie>
 
+    <multidim-pie
+      title="theme customized"
+      dimension="d1"
+      reduce="v"
+      width="233"
+      height="233"
+      theme='custom'
+    ></multidim-pie>
+
     <script type="text/javascript">
       EasyDC.Store.registerData([
         {d1: 'a', d2: true, v: 1+11, label: 'auto label A'},
@@ -48,6 +57,17 @@
         {d1: 'b', d2: false, v: 8+3, label: 'auto label B'},
       ], {
         labelMapper: '{key: d.d1, label: d.label}'
+      })
+
+      EasyDC.Store.registerTheme('custom', {
+        extends: 'default',
+        colors: (_super, ...args) => _super(...args),
+        layout: (_super, ...args) => {
+          let layout = _super(...args)
+          layout.height -= 40
+          layout.chartCenter.y = layout.height/2
+          return layout
+        }
       })
 
       EasyDC.run()
