@@ -9,7 +9,7 @@
           </div>
           <h3 v-text="title" class="title"></h3>
         </div>
-        <div class="render-area">
+        <div class="render-area" :style="renderAreaStyle">
           <slot></slot>
         </div>
       </div>
@@ -30,6 +30,9 @@ export default {
     height: {
       default: 233
     },
+    captionHeight: {
+      default: 0
+    },
     fullscreen: {
       type: Boolean,
       default: false
@@ -39,6 +42,15 @@ export default {
     return {isFullscreen: false}
   },
   computed: {
+    renderAreaStyle: function() {
+      if (this.captionHeight) {
+        return {
+          'margin-top': this.captionHeight + 'px',
+          height: 'calc(100% - ' + this.captionHeight + 'px)'
+        }
+      }
+      return {}
+    },
     outerSizeStyle: function() {
       const style = {};
       if (this.width) style.width = this.width+'px';
