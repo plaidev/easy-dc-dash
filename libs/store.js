@@ -191,13 +191,13 @@ class DashboardStore {
 
   mergeLabels(to, from) {
     const {
-      dataset: fromDataset = 'default',
-      chartName: fromChartName = ''
+      dataset = 'default',
+      chartName = ''
     } = from
 
-    if (!this._labels[fromDataset] || !this._labels[fromChartName]) return
+    if (!this._labels[dataset] || !this._labels[dataset][chartName]) return
 
-    const labels = this._labels[fromDataset][fromChartName]
+    const labels = this._labels[dataset][chartName]
 
     this.setLabels(labels, to)
   }
