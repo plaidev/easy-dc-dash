@@ -120,7 +120,7 @@ export default {
     },
     hideXAxisLabel: {
       type: Boolean,
-      default: false
+      default: null
     },
     hideYAxisLabel: {
       type: Boolean,
@@ -296,6 +296,7 @@ export default {
       return dim.group().all()
     },
     reducerAll: function() {
+      if(!this.reducer || !this.reducer.all) return null
       return this.reducer.all();
     },
     dimensionScale: function () {
@@ -314,6 +315,12 @@ export default {
         return assignDeep({}, setting, custom)
       }
       return setting
+    },
+    isShowLabels: function() {
+      if(this.hideXAxisLabel != null) return this.hideXAxisLabel
+      let [scale, unit] = this.scale.split('.')
+      if(scale !== 'ordinal') return true
+      return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit
     },
     containerInnerSize: function() {
       if (!this.isMounted) return
@@ -461,6 +468,17 @@ export default {
         chart.margins(margins)
       }
 
+      if(!this.isShowLabels && chart.xAxis instanceof Function) {
+        chart.xAxis().tickValues([])
+      }
+      else if(chart.xAxis instanceof Function){
+        chart.xAxis().tickValues(null)
+      }
+
+      if(this.hideYAxisLabel && chart.yAxis instanceof Function) {
+        chart.yAxis().tickValues([])
+      }
+
       if (this.useDataPoints && chart.renderDataPoints) {
         chart.renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5})
       }
@@ -557,12 +575,6 @@ export default {
           })
           .join(', ')
       })
-    if(this.hideXAxisLabel && chart.xAxis instanceof Function) {
-      chart.xAxis().tickValues([])
-    }
-    if(this.hideYAxisLabel && chart.yAxis instanceof Function) {
-      chart.yAxis().tickValues([])
-    }
 
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
