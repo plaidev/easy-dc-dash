@@ -24546,450 +24546,6 @@ var TIME_INTERVALS = {
   second: secondInterval
 };
 
-var DefaultTheme = {
-
-  colors: function colors(chartType, name) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-    var ordinal = void 0,
-        weekOrdinal = void 0,
-        valueGradation = void 0;
-
-    if (chartType == 'heatMap') {
-      valueGradation = ["#e5e5e5", "green"];
-    }
-
-    return {
-      valueGradation: valueGradation,
-      ordinal: ordinal,
-      weekOrdinal: weekOrdinal
-    };
-  },
-
-  layout: function layout(chartType, name) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var _options$width = options.width,
-        width = _options$width === undefined ? 377 : _options$width,
-        _options$height = options.height,
-        height = _options$height === undefined ? 233 : _options$height,
-        _options$legendable = options.legendable,
-        legendable = _options$legendable === undefined ? true : _options$legendable,
-        _options$fullscreen = options.fullscreen,
-        fullscreen = _options$fullscreen === undefined ? false : _options$fullscreen;
-
-
-    var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
-    var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
-
-    if (name === 'auto') {
-      if (legendable && width / height > 2) {
-        name = 'wide';
-      } else if (Math.abs(width - height) < 10) {
-        name = 'square';
-      } else if (legendable && Math.abs(1.618 - width / height) < 0.2) {
-        name = 'square-and-legend';
-      } else {
-        name = 'overlay-legend';
-      }
-
-      if (width < 233 && name !== 'square') {
-        name = 'overlay-legend';
-      }
-    }
-
-    if (name === 'square-and-legend') {
-      return {
-        name: name,
-        width: width,
-        height: height * heightCoef,
-        margins: {
-          top: 40,
-          bottom: 30,
-          left: 40,
-          right: width - height
-        },
-        chartCenter: {
-          x: height / 2,
-          y: height * heightCoef / 2
-        },
-        legend: {
-          x: height + 20,
-          y: height * legendYCoef,
-          width: width - height - 20,
-          horizontal: false
-        },
-        axis: {
-          xLabel: { padding: 15 },
-          yLabel: { padding: 20 }
-        }
-      };
-    } else if (name === 'square') {
-      var length = Math.min(width, height * heightCoef);
-
-      return {
-        name: name,
-        width: length,
-        height: length,
-        margins: {
-          top: 40,
-          bottom: 30,
-          left: 40,
-          right: 40
-        },
-        chartCenter: {
-          x: length / 2,
-          y: length / 2
-        },
-        legend: null,
-        axis: {
-          xLabel: { padding: 15 },
-          yLabel: { padding: 20 }
-        }
-      };
-    } else if (name === 'overlay-legend') {
-      return {
-        name: name,
-        width: width,
-        height: height * heightCoef,
-        margins: {
-          top: 40,
-          bottom: 30,
-          left: 40,
-          right: 40
-        },
-        chartCenter: {
-          x: width / 2,
-          y: height * heightCoef / 2
-        },
-        legend: {
-          x: width - height,
-          y: height * legendYCoef,
-          width: width - height,
-          horizontal: false
-        },
-        axis: {
-          xLabel: { padding: 15 },
-          yLabel: { padding: 20 }
-        }
-      };
-    } else if (name === 'wide') {
-      var legendWidth = Math.min(height * heightCoef, 200);
-
-      var margins = {
-        top: 40,
-        bottom: 30,
-        left: 60,
-        right: legendWidth
-
-        // FIXME: このあたり、どのくらい計算的に出すか難しい...
-      };if (margins.top + margins.bottom > height / 2) {
-        margins.top = height / 6;
-        margins.bottom = height / 3;
-      }
-
-      return {
-        name: name,
-        width: width,
-        height: height * heightCoef,
-        margins: margins,
-        chartCenter: {
-          x: height / 2,
-          y: height * heightCoef / 2
-        },
-        legend: {
-          x: width - legendWidth + 40,
-          y: height * legendYCoef,
-          width: legendWidth - 40,
-          horizontal: false
-        },
-        axis: {
-          xLabel: { padding: 15 },
-          yLabel: { padding: 20 }
-        }
-      };
-    }
-
-    console.log('?? layout', name);
-
-    return {};
-  }
-};
-
-//-------------------------------------
-
-function _defaultRepresentation(v, d, key) {
-  if (v instanceof Array || typeof v == 'array') {
-    return v.map(function (item) {
-      if (item instanceof Date) return TIME_FORMATS.ymd(item);
-      return item;
-    }).join(', ');
-  }
-  if (v.per != undefined) return v.per;
-  return v;
-}
-
-var DashboardStore = function () {
-  function DashboardStore() {
-    classCallCheck(this, DashboardStore);
-
-    this.state = {
-      binds: {}
-    };
-
-    this._cf = {};
-    this._charts = {};
-    this._volumeBind = {};
-    this._dimensions = {
-      default: {}
-    };
-
-    this._labels = {
-      default: {
-        '': {} // チャート固有でない辞書
-      }
-    };
-
-    this._representations = {};
-
-    this._linkFormatters = {
-      default: function _default(v) {
-        return v;
-      }
-    };
-  }
-
-  createClass(DashboardStore, [{
-    key: 'setBindData',
-    value: function setBindData(name, data) {
-      this.state.binds[name] = data;
-    }
-  }, {
-    key: 'registerData',
-    value: function registerData() {
-      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset = options.dataset,
-          dataset = _options$dataset === undefined ? 'default' : _options$dataset,
-          _options$labels = options.labels,
-          labels = _options$labels === undefined ? {} : _options$labels;
-
-      // crossfilterのインスタンス作成
-
-      this._cf[dataset] = index$1(data);
-
-      this.setLabels(labels, { dataset: dataset });
-    }
-  }, {
-    key: 'registerDimension',
-    value: function registerDimension(name, method) {
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-      if (!name) return;
-
-      var _options$dataset2 = options.dataset,
-          dataset = _options$dataset2 === undefined ? 'default' : _options$dataset2;
-
-
-      if (!(dataset in this._dimensions)) {
-        this._dimensions[dataset] = {};
-      }
-
-      // TODO: dimension作成数のlimit管理
-      if (!(name in this._dimensions[dataset])) {
-        this._dimensions[dataset][name] = this._cf[dataset].dimension(method);
-      }
-      return this._dimensions[dataset][name];
-    }
-  }, {
-    key: 'unregisterDimension',
-    value: function unregisterDimension(name, _ref) {
-      // TODO: implement
-
-      var _ref$dataset = _ref.dataset,
-          dataset = _ref$dataset === undefined ? 'default' : _ref$dataset;
-    }
-  }, {
-    key: 'getCf',
-    value: function getCf() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var _options$dataset3 = options.dataset,
-          dataset = _options$dataset3 === undefined ? 'default' : _options$dataset3;
-
-      return this._cf[dataset];
-    }
-  }, {
-    key: 'getDimension',
-    value: function getDimension(name) {
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      if (!name) return;
-
-      var _options$dataset4 = options.dataset,
-          dataset = _options$dataset4 === undefined ? 'default' : _options$dataset4;
-
-      return this._dimensions[dataset][name];
-    }
-  }, {
-    key: 'getCfSize',
-    value: function getCfSize() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var _options$dataset5 = options.dataset,
-          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5;
-
-      return this._cf[dataset].size();
-    }
-  }, {
-    key: 'registerChart',
-    value: function registerChart(parent, name, chartType) {
-      var _this = this;
-
-      var binds = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-      var chart = new index$2[chartType](parent);
-
-      // volumeとして参照するchartがあれば登録
-      if (binds.volume) {
-        if (!this._volumeBind[binds.volume]) this._volumeBind[binds.volume] = [];
-        this._volumeBind[binds.volume].push(name);
-
-        if (this._charts[binds.volume]) {
-          chart.rangeChart(this._charts[binds.volume]);
-        }
-      }
-
-      // このchartをvolumeとして参照するchartがあれば、bind
-      if (this._volumeBind[name]) {
-        this._volumeBind[name].forEach(function (refChart) {
-          _this._charts[refChart].rangeChart(chart);
-        });
-      }
-
-      this._charts[name] = chart;
-
-      return chart;
-    }
-  }, {
-    key: 'unregisterChart',
-    value: function unregisterChart(name, chart) {
-      // TODO: implement
-      // this._charts[name] = chart;
-    }
-  }, {
-    key: 'setLabels',
-    value: function setLabels(labels) {
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset6 = options.dataset,
-          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
-          _options$chartName = options.chartName,
-          chartName = _options$chartName === undefined ? '' : _options$chartName;
-
-      if (!this._labels[dataset]) this._labels[dataset] = {};
-      if (!this._labels[dataset][chartName]) this._labels[dataset][chartName] = {};
-      Object.assign(this._labels[dataset][chartName], labels);
-    }
-  }, {
-    key: 'getLabel',
-    value: function getLabel(k) {
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset7 = options.dataset,
-          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7,
-          _options$chartName2 = options.chartName,
-          chartName = _options$chartName2 === undefined ? '' : _options$chartName2;
-
-      var labels = this._labels[dataset];
-      if (!labels) return k;
-      // チャート固有の辞書からの探索
-      if (labels[chartName] && labels[chartName][k] !== undefined) return labels[chartName][k];
-      // チャート固有でないの辞書からの探索
-      else if (labels[''] && labels[''][k] !== undefined) return labels[''][k];
-      return k;
-    }
-  }, {
-    key: 'getKeyByLabel',
-    value: function getKeyByLabel(label) {
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var _options$dataset8 = options.dataset,
-          dataset = _options$dataset8 === undefined ? 'default' : _options$dataset8,
-          _options$chartName3 = options.chartName,
-          chartName = _options$chartName3 === undefined ? '' : _options$chartName3;
-      // chart固有辞書からの探索
-
-      if (this._labels[dataset] && this._labels[dataset][chartName]) {
-        for (var k in this._labels[dataset][chartName]) {
-          if (this._labels[dataset][chartName][k] === label) return k;
-        }
-      }
-      // chart固有でない辞書からの探索
-      if (this._labels[dataset] && this._labels[dataset]['']) {
-        for (var _k in this._labels[dataset]['']) {
-          if (this._labels[dataset][''][_k] === label) return _k;
-        }
-      }
-      return null;
-    }
-  }, {
-    key: 'registerRepresentation',
-    value: function registerRepresentation(name, rep) {
-      this._representations[name] = rep;
-    }
-  }, {
-    key: 'getRepresentation',
-    value: function getRepresentation(name) {
-      if (!name) return _defaultRepresentation;
-      if (!(name in this._representations)) {
-        console.log('warn: representation name "' + name + '" is not registererd');
-        return _defaultRepresentation;
-      }
-      return this._representations[name];
-    }
-  }, {
-    key: 'registerLinkFormatter',
-    value: function registerLinkFormatter(name, format) {
-      this._linkFormatters[name] = format;
-    }
-  }, {
-    key: 'getLinkFormatter',
-    value: function getLinkFormatter(name) {
-      if (!name) return;
-      if (!(name in this._linkFormatters)) {
-        return console.log('warn: linkFormatter name "' + name + '" is not registererd');
-      }
-      return this._linkFormatters[name];
-    }
-  }, {
-    key: 'getTheme',
-    value: function getTheme() {
-      return DefaultTheme;
-    }
-  }, {
-    key: 'downloadCSV',
-    value: function downloadCSV$$1(filename) {
-      var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var _options$dataset9 = options.dataset,
-          dataset = _options$dataset9 === undefined ? 'default' : _options$dataset9,
-          _options$labels2 = options.labels,
-          labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
-
-
-      if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
-        var idx = 0;
-        this.registerDimension('_all', function (d) {
-          return idx++;
-        }, { dataset: dataset });
-      } else if (!this._dimensions[dataset][dimensionName]) {
-        console.log('dimension not registered');
-        return;
-      }
-
-      downloadCSV(this._dimensions[dataset][dimensionName].top(Infinity), filename, labels);
-    }
-  }]);
-  return DashboardStore;
-}();
-
-var Store = new DashboardStore();
-
 function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = Math.random() * 16 | 0,
@@ -25182,6 +24738,542 @@ function mergeCssModules(cssModule, childCssModule) {
 
   return cssModule;
 }
+
+var DefaultTheme = {
+  extends: null,
+
+  colors: function colors(_super, chartType, name) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    var ordinal = void 0,
+        weekOrdinal = void 0,
+        valueGradation = void 0;
+
+    if (chartType == 'heatMap') {
+      valueGradation = ["#e5e5e5", "green"];
+    }
+
+    return {
+      valueGradation: valueGradation,
+      ordinal: ordinal,
+      weekOrdinal: weekOrdinal
+    };
+  },
+
+  layout: function layout(_super, chartType, name) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    var _options$width = options.width,
+        width = _options$width === undefined ? 377 : _options$width,
+        _options$height = options.height,
+        height = _options$height === undefined ? 233 : _options$height,
+        _options$legendable = options.legendable,
+        legendable = _options$legendable === undefined ? true : _options$legendable,
+        _options$fullscreen = options.fullscreen,
+        fullscreen = _options$fullscreen === undefined ? false : _options$fullscreen;
+
+
+    var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
+    var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
+    var xAxisLabelLimit = fullscreen ? 30 : 10;
+    var captionHeight = 0;
+
+    height -= captionHeight;
+
+    if (name === 'auto') {
+      if (legendable && width / height > 2) {
+        name = 'wide';
+      } else if (Math.abs(width - height) < 10) {
+        name = 'square';
+      } else if (legendable && Math.abs(1.618 - width / height) < 0.2) {
+        name = 'square-and-legend';
+      } else {
+        name = 'overlay-legend';
+      }
+
+      if (width < 233 && name !== 'square') {
+        name = 'overlay-legend';
+      }
+    }
+
+    if (name === 'square-and-legend') {
+      return {
+        name: name,
+        width: width,
+        height: height * heightCoef,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: width - height
+        },
+        chartCenter: {
+          x: height / 2,
+          y: height * heightCoef / 2
+        },
+        legend: {
+          x: height + 20,
+          y: height * legendYCoef,
+          width: width - height - 20,
+          horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15, limit: xAxisLabelLimit },
+          yLabel: { padding: 20 }
+        },
+        caption: {
+          height: captionHeight
+        }
+      };
+    } else if (name === 'square') {
+      var length = Math.min(width, height * heightCoef);
+
+      return {
+        name: name,
+        width: length,
+        height: length,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: 40
+        },
+        chartCenter: {
+          x: length / 2,
+          y: length / 2
+        },
+        legend: null,
+        axis: {
+          xLabel: { padding: 15, limit: xAxisLabelLimit },
+          yLabel: { padding: 20 }
+        },
+        caption: {
+          height: captionHeight
+        }
+      };
+    } else if (name === 'overlay-legend') {
+      return {
+        name: name,
+        width: width,
+        height: height * heightCoef,
+        margins: {
+          top: 40,
+          bottom: 30,
+          left: 40,
+          right: 40
+        },
+        chartCenter: {
+          x: width / 2,
+          y: height * heightCoef / 2
+        },
+        legend: {
+          x: width - height,
+          y: height * legendYCoef,
+          width: width - height,
+          horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15, limit: xAxisLabelLimit },
+          yLabel: { padding: 20 }
+        },
+        caption: {
+          height: captionHeight
+        }
+      };
+    } else if (name === 'wide') {
+      var legendWidth = Math.min(height * heightCoef, 200);
+
+      var margins = {
+        top: 40,
+        bottom: 30,
+        left: 60,
+        right: legendWidth
+
+        // FIXME: このあたり、どのくらい計算的に出すか難しい...
+      };if (margins.top + margins.bottom > height / 2) {
+        margins.top = height / 6;
+        margins.bottom = height / 3;
+      }
+
+      return {
+        name: name,
+        width: width,
+        height: height * heightCoef,
+        margins: margins,
+        chartCenter: {
+          x: height / 2,
+          y: height * heightCoef / 2
+        },
+        legend: {
+          x: width - legendWidth + 40,
+          y: height * legendYCoef,
+          width: legendWidth - 40,
+          horizontal: false
+        },
+        axis: {
+          xLabel: { padding: 15, limit: xAxisLabelLimit },
+          yLabel: { padding: 20 }
+        },
+        caption: {
+          height: captionHeight
+        }
+      };
+    }
+
+    console.log('?? layout', name);
+
+    return {};
+  }
+};
+
+//-------------------------------------
+
+function _defaultRepresentation(v, d, key) {
+  if (v instanceof Array || typeof v == 'array') {
+    return v.map(function (item) {
+      if (item instanceof Date) return TIME_FORMATS.ymd(item);
+      return item;
+    }).join(', ');
+  }
+  if (v.per != undefined) return v.per;
+  return v;
+}
+
+function _collectLabelsByRecords(content, labelMapper) {
+  if (!labelMapper) return {};
+  var labels = {};
+  var mapper = generateExtractor(labelMapper);
+  content.forEach(function (record) {
+    var item = mapper(record);
+    if (item instanceof Array || typeof item === 'array') {
+      item.forEach(function (i) {
+        if (!(i.key in labels)) labels[i.key] = i.label;
+      });
+    } else {
+      if (!(item.key in labels)) labels[item.key] = item.label;
+    }
+  });
+  return labels;
+}
+
+var DashboardStore = function () {
+  function DashboardStore() {
+    classCallCheck(this, DashboardStore);
+
+    this.state = {
+      binds: {}
+    };
+
+    this._cf = {};
+    this._charts = {};
+    this._volumeBind = {};
+    this._dimensions = {
+      default: {}
+    };
+    this._themes = {
+      default: DefaultTheme
+    };
+
+    this._defaultTheme = 'default';
+
+    this._labels = {
+      default: {
+        '': {} // チャート固有でない辞書
+      }
+    };
+
+    this._representations = {};
+
+    this._linkFormatters = {
+      default: function _default(v) {
+        return v;
+      }
+    };
+  }
+
+  createClass(DashboardStore, [{
+    key: 'setBindData',
+    value: function setBindData(name, data) {
+      this.state.binds[name] = data;
+    }
+  }, {
+    key: 'registerData',
+    value: function registerData() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset = options.dataset,
+          dataset = _options$dataset === undefined ? 'default' : _options$dataset,
+          _options$labels = options.labels,
+          labels = _options$labels === undefined ? {} : _options$labels,
+          _options$labelMapper = options.labelMapper,
+          labelMapper = _options$labelMapper === undefined ? null : _options$labelMapper;
+
+      // crossfilterのインスタンス作成
+
+      this._cf[dataset] = index$1(data);
+
+      if (labelMapper) {
+        this.setLabels(_collectLabelsByRecords(data, labelMapper), { dataset: dataset });
+      }
+
+      this.setLabels(labels, { dataset: dataset });
+    }
+  }, {
+    key: 'registerDimension',
+    value: function registerDimension(name, method) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      if (!name) return;
+
+      var _options$dataset2 = options.dataset,
+          dataset = _options$dataset2 === undefined ? 'default' : _options$dataset2;
+
+
+      if (!(dataset in this._dimensions)) {
+        this._dimensions[dataset] = {};
+      }
+
+      // TODO: dimension作成数のlimit管理
+      if (!(name in this._dimensions[dataset])) {
+        this._dimensions[dataset][name] = this._cf[dataset].dimension(method);
+      }
+      return this._dimensions[dataset][name];
+    }
+  }, {
+    key: 'unregisterDimension',
+    value: function unregisterDimension(name, _ref) {
+      // TODO: implement
+
+      var _ref$dataset = _ref.dataset,
+          dataset = _ref$dataset === undefined ? 'default' : _ref$dataset;
+    }
+  }, {
+    key: 'getCf',
+    value: function getCf() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _options$dataset3 = options.dataset,
+          dataset = _options$dataset3 === undefined ? 'default' : _options$dataset3;
+
+      return this._cf[dataset];
+    }
+  }, {
+    key: 'getDimension',
+    value: function getDimension(name) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      if (!name) return;
+
+      var _options$dataset4 = options.dataset,
+          dataset = _options$dataset4 === undefined ? 'default' : _options$dataset4;
+
+      return this._dimensions[dataset][name];
+    }
+  }, {
+    key: 'getCfSize',
+    value: function getCfSize() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _options$dataset5 = options.dataset,
+          dataset = _options$dataset5 === undefined ? 'default' : _options$dataset5;
+
+      return this._cf[dataset].size();
+    }
+  }, {
+    key: 'registerChart',
+    value: function registerChart(parent, name, chartType) {
+      var _this = this;
+
+      var binds = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      var chart = new index$2[chartType](parent);
+
+      // volumeとして参照するchartがあれば登録
+      if (binds.volume) {
+        if (!this._volumeBind[binds.volume]) this._volumeBind[binds.volume] = [];
+        this._volumeBind[binds.volume].push(name);
+
+        if (this._charts[binds.volume]) {
+          chart.rangeChart(this._charts[binds.volume]);
+        }
+      }
+
+      // このchartをvolumeとして参照するchartがあれば、bind
+      if (this._volumeBind[name]) {
+        this._volumeBind[name].forEach(function (refChart) {
+          _this._charts[refChart].rangeChart(chart);
+        });
+      }
+
+      this._charts[name] = chart;
+
+      return chart;
+    }
+  }, {
+    key: 'unregisterChart',
+    value: function unregisterChart(name, chart) {
+      // TODO: implement
+      // this._charts[name] = chart;
+    }
+  }, {
+    key: 'setLabels',
+    value: function setLabels(labels) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset6 = options.dataset,
+          dataset = _options$dataset6 === undefined ? 'default' : _options$dataset6,
+          _options$chartName = options.chartName,
+          chartName = _options$chartName === undefined ? '' : _options$chartName;
+
+      if (!this._labels[dataset]) this._labels[dataset] = {};
+      if (!this._labels[dataset][chartName]) this._labels[dataset][chartName] = {};
+      Object.assign(this._labels[dataset][chartName], labels);
+    }
+  }, {
+    key: 'getLabel',
+    value: function getLabel(k) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset7 = options.dataset,
+          dataset = _options$dataset7 === undefined ? 'default' : _options$dataset7,
+          _options$chartName2 = options.chartName,
+          chartName = _options$chartName2 === undefined ? '' : _options$chartName2;
+
+      var labels = this._labels[dataset];
+      if (!labels) return k;
+      // チャート固有の辞書からの探索
+      if (labels[chartName] && labels[chartName][k] !== undefined) return labels[chartName][k];
+      // チャート固有でないの辞書からの探索
+      else if (labels[''] && labels[''][k] !== undefined) return labels[''][k];
+      return k;
+    }
+  }, {
+    key: 'mergeLabels',
+    value: function mergeLabels(to, from) {
+      var _from$dataset = from.dataset,
+          dataset = _from$dataset === undefined ? 'default' : _from$dataset,
+          _from$chartName = from.chartName,
+          chartName = _from$chartName === undefined ? '' : _from$chartName;
+
+
+      if (!this._labels[dataset] || !this._labels[dataset][chartName]) return;
+
+      var labels = this._labels[dataset][chartName];
+
+      this.setLabels(labels, to);
+    }
+  }, {
+    key: 'getKeyByLabel',
+    value: function getKeyByLabel(label) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$dataset8 = options.dataset,
+          dataset = _options$dataset8 === undefined ? 'default' : _options$dataset8,
+          _options$chartName3 = options.chartName,
+          chartName = _options$chartName3 === undefined ? '' : _options$chartName3;
+      // chart固有辞書からの探索
+
+      if (this._labels[dataset] && this._labels[dataset][chartName]) {
+        for (var k in this._labels[dataset][chartName]) {
+          if (this._labels[dataset][chartName][k] === label) return k;
+        }
+      }
+      // chart固有でない辞書からの探索
+      if (this._labels[dataset] && this._labels[dataset]['']) {
+        for (var _k in this._labels[dataset]['']) {
+          if (this._labels[dataset][''][_k] === label) return _k;
+        }
+      }
+      return null;
+    }
+  }, {
+    key: 'registerRepresentation',
+    value: function registerRepresentation(name, rep) {
+      this._representations[name] = rep;
+    }
+  }, {
+    key: 'getRepresentation',
+    value: function getRepresentation(name) {
+      if (!name) return _defaultRepresentation;
+      if (!(name in this._representations)) {
+        console.log('warn: representation name "' + name + '" is not registererd');
+        return _defaultRepresentation;
+      }
+      return this._representations[name];
+    }
+  }, {
+    key: 'registerLinkFormatter',
+    value: function registerLinkFormatter(name, format) {
+      this._linkFormatters[name] = format;
+    }
+  }, {
+    key: 'getLinkFormatter',
+    value: function getLinkFormatter(name) {
+      if (!name) return;
+      if (!(name in this._linkFormatters)) {
+        return console.log('warn: linkFormatter name "' + name + '" is not registererd');
+      }
+      return this._linkFormatters[name];
+    }
+  }, {
+    key: 'registerTheme',
+    value: function registerTheme(themeName, Theme) {
+      this._themes[themeName] = Theme;
+    }
+  }, {
+    key: 'getTheme',
+    value: function getTheme(themeName) {
+      if (!themeName) themeName = this._defaultTheme;
+
+      var Theme = this._themes[themeName];
+      var BaseTheme = Theme.extends ? this.getTheme(Theme.extends) : {};
+
+      return {
+        colors: function colors() {
+          for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          if (!Theme.colors) return BaseTheme.colors.apply(BaseTheme, args);
+          return Theme.colors.apply(Theme, [BaseTheme.colors].concat(args));
+        },
+        layout: function layout() {
+          for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+            args[_key2] = arguments[_key2];
+          }
+
+          if (!Theme.layout) return BaseTheme.layout.apply(BaseTheme, args);
+          return Theme.layout.apply(Theme, [BaseTheme.layout].concat(args));
+        }
+      };
+    }
+  }, {
+    key: 'setDefaultTheme',
+    value: function setDefaultTheme(theme) {
+      this._defaultTheme = theme;
+    }
+  }, {
+    key: 'downloadCSV',
+    value: function downloadCSV$$1(filename) {
+      var dimensionName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '_all';
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var _options$dataset9 = options.dataset,
+          dataset = _options$dataset9 === undefined ? 'default' : _options$dataset9,
+          _options$labels2 = options.labels,
+          labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
+
+
+      if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
+        var idx = 0;
+        this.registerDimension('_all', function (d) {
+          return idx++;
+        }, { dataset: dataset });
+      } else if (!this._dimensions[dataset][dimensionName]) {
+        console.log('dimension not registered');
+        return;
+      }
+
+      downloadCSV(this._dimensions[dataset][dimensionName].top(Infinity), filename, labels);
+    }
+  }]);
+  return DashboardStore;
+}();
+
+var Store = new DashboardStore();
 
 /*!
  * is-primitive <https://github.com/jonschlinkert/is-primitive>
@@ -25477,7 +25569,7 @@ var ResetButton = { render: function render() {
 })();
 
 var CardContainer = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area" }, [_vm._t("default")], 2)])])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
   }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box" },
   props: {
     title: {
@@ -25489,6 +25581,9 @@ var CardContainer = { render: function render() {
     height: {
       default: 233
     },
+    captionHeight: {
+      default: 0
+    },
     fullscreen: {
       type: Boolean,
       default: false
@@ -25498,6 +25593,15 @@ var CardContainer = { render: function render() {
     return { isFullscreen: false };
   },
   computed: {
+    renderAreaStyle: function renderAreaStyle() {
+      if (this.captionHeight) {
+        return {
+          'margin-top': this.captionHeight + 'px',
+          height: 'calc(100% - ' + this.captionHeight + 'px)'
+        };
+      }
+      return {};
+    },
     outerSizeStyle: function outerSizeStyle() {
       var style = {};
       if (this.width) style.width = this.width + 'px';
@@ -25670,7 +25774,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" @update:fullscreen="v => isFullscreen = v" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -25725,7 +25829,7 @@ var Base = {
     },
     hideXAxisLabel: {
       type: Boolean,
-      default: false
+      default: null
     },
     hideYAxisLabel: {
       type: Boolean,
@@ -25758,11 +25862,14 @@ var Base = {
 
     // formatter
     linkFormatter: {
-      type: String,
-      default: 'default'
+      type: String
     },
 
     // size / layout
+    theme: {
+      type: String,
+      default: 'default'
+    },
     layout: {
       type: String,
       default: 'auto'
@@ -25906,6 +26013,7 @@ var Base = {
       return dim.group().all();
     },
     reducerAll: function reducerAll() {
+      if (!this.reducer || !this.reducer.all) return null;
       return this.reducer.all();
     },
     dimensionScale: function dimensionScale() {
@@ -25921,12 +26029,24 @@ var Base = {
           height = _containerInnerSize.height;
 
       var legendable = this.useLegend;
-      var setting = Store.getTheme().layout(this.chartType, this.layout, { width: width, height: height, legendable: legendable, fullscreen: this.isFullscreen });
+      var theme = Store.getTheme(this.theme);
+      var setting = theme.layout(this.chartType, this.layout, { width: width, height: height, legendable: legendable, fullscreen: this.isFullscreen });
       if (this.layoutDetails) {
         var custom = generateExtractor(this.layoutDetails)(setting);
         return index$5({}, setting, custom);
       }
       return setting;
+    },
+    isShowLabels: function isShowLabels() {
+      if (this.hideXAxisLabel != null) return this.hideXAxisLabel;
+
+      var _scale$split = this.scale.split('.'),
+          _scale$split2 = slicedToArray(_scale$split, 2),
+          scale = _scale$split2[0],
+          unit = _scale$split2[1];
+
+      if (scale !== 'ordinal') return true;
+      return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit;
     },
     containerInnerSize: function containerInnerSize() {
       if (!this.isMounted) return;
@@ -25949,7 +26069,12 @@ var Base = {
       return { width: width, height: height };
     },
     colorSettings: function colorSettings() {
-      return Store.getTheme().colors(this.chartType, '');
+      var theme = Store.getTheme(this.theme);
+      return theme.colors(this.chartType, '');
+    },
+    captionHeight: function captionHeight() {
+      if (!this.layoutSettings || !this.layoutSettings.caption) return;
+      return this.layoutSettings.caption.height;
     },
     textSelector: function textSelector() {
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .node text';else if (this.chartType === 'heatMap') return '#' + this.id + ' g.cols.axis text';else return '#' + this.id + ' g.x text';
@@ -25987,10 +26112,10 @@ var Base = {
       // 互換性のための一時的なメソッド
       if (!this.scale) return null;
 
-      var _scale$split = this.scale.split('.'),
-          _scale$split2 = slicedToArray(_scale$split, 2),
-          scale = _scale$split2[0],
-          unit = _scale$split2[1];
+      var _scale$split3 = this.scale.split('.'),
+          _scale$split4 = slicedToArray(_scale$split3, 2),
+          scale = _scale$split4[0],
+          unit = _scale$split4[1];
 
       if (scale == 'time' && !unit) unit = 'day';
       if (scale == 'time' && unit in TIME_INTERVALS) {
@@ -26093,6 +26218,16 @@ var Base = {
         chart.margins(margins);
       }
 
+      if (!this.isShowLabels && chart.xAxis instanceof Function) {
+        chart.xAxis().tickValues([]);
+      } else if (chart.xAxis instanceof Function) {
+        chart.xAxis().tickValues(null);
+      }
+
+      if (this.hideYAxisLabel && chart.yAxis instanceof Function) {
+        chart.yAxis().tickValues([]);
+      }
+
       if (this.useDataPoints && chart.renderDataPoints) {
         chart.renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5 });
       }
@@ -26177,12 +26312,6 @@ var Base = {
         return _this5.getLabel(index$2.printers.filter(filter));
       }).join(', ');
     });
-    if (this.hideXAxisLabel && chart.xAxis instanceof Function) {
-      chart.xAxis().tickValues([]);
-    }
-    if (this.hideYAxisLabel && chart.yAxis instanceof Function) {
-      chart.yAxis().tickValues([]);
-    }
 
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
@@ -26196,10 +26325,10 @@ var Base = {
 
     // deisgn hack
     if (this.chartType === 'barChart') {
-      var _scale$split3 = this.scale.split('.'),
-          _scale$split4 = slicedToArray(_scale$split3, 2),
-          scale = _scale$split4[0],
-          unit = _scale$split4[1];
+      var _scale$split5 = this.scale.split('.'),
+          _scale$split6 = slicedToArray(_scale$split5, 2),
+          scale = _scale$split6[0],
+          unit = _scale$split6[1];
 
       if (scale === 'time') {
         if (!unit) unit = 'day';
@@ -36132,107 +36261,6 @@ var OrdinalBar = {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = "";style.type = 'text/css';if (style.styleSheet) {
-      style.styleSheet.cssText = css;
-    } else {
-      style.appendChild(document.createTextNode(css));
-    }head.appendChild(style);
-  }
-})();
-
-var StackedBar = {
-  extends: Base,
-
-  props: {
-    chartType: {
-      type: String,
-      default: 'barChart'
-    },
-    renderHorizontalGridLines: {
-      type: Boolean,
-      default: true
-    },
-    removeEmptyRows: {
-      type: Boolean,
-      default: true
-    },
-    elasticX: {
-      type: Boolean,
-      default: true
-    },
-    elasticY: {
-      type: Boolean,
-      default: true
-    }
-  },
-  computed: {
-    combinedGroup: function combinedGroup() {
-      var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
-      var _reducer = this.reducerExtractor;
-      var groups = [];
-
-      var _loop = function _loop(i) {
-        groups.push(dim.group().reduceSum(function (d) {
-          return _reducer(d)[i];
-        }));
-      };
-
-      for (var i = 0; i < this.reduceKeys.length; i++) {
-        _loop(i);
-      }
-      return combineGroups(groups);
-    },
-    reducer: function reducer() {
-      return null; // disable default reducer
-    },
-    xScale: function xScale() {
-      return Base.computed.xScale.apply(this) || d3$1.scale.ordinal();
-    },
-    reduceKeys: function reduceKeys() {
-      return Object.keys(this.reducerExtractor({}));
-    }
-  },
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var _format = this.dimensionScale.format;
-      var fill = d3$1.event.target.getAttribute('fill');
-      var data = {
-        key: _format ? _format(d.data.key) : d.data.key,
-        val: d.data.value.reduce(function (a, b) {
-          return a + b;
-        })
-      };
-      this.$refs.tooltip.show(data, fill);
-    }
-  },
-  mounted: function mounted() {
-    var _this = this;
-
-    var chart = this.chart;
-
-    chart.group(this.combinedGroup, this.getLabel(0), function (d) {
-      return d.value[0];
-    }).xUnits(index$2.units.ordinal).brushOn(false).clipPadding(10).elasticX(this.elasticX).elasticY(this.elasticY).renderHorizontalGridLines(this.renderHorizontalGridLines);
-    // stack
-
-    var _loop2 = function _loop2(i) {
-      chart.stack(_this.combinedGroup, _this.getLabel(i), function (d) {
-        return d.value[i];
-      }).hidableStacks(true);
-    };
-
-    for (var i = 1; i < this.reduceKeys.length; i++) {
-      _loop2(i);
-    }
-    this.applyLegend({ reverseOrder: true });
-    return chart.render();
-  }
-};
-
-(function () {
-  if (document) {
-    var head = document.head || document.getElementsByTagName('head')[0],
-        style = document.createElement('style'),
         css = ".filter-stacked-bar__chart-root rect.bar.stack-deselected { opacity: .8; fill-opacity: .5; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
@@ -37877,7 +37905,6 @@ var components = {
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'ordinal-bar': OrdinalBar,
-  'stacked-bar': StackedBar,
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
@@ -37909,7 +37936,6 @@ var Chart = {
   DateVolumeChart: DateVolumeChart,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
-  StackedBar: StackedBar,
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
@@ -37970,7 +37996,7 @@ function loadCSV(csvFile) {
 
   var l = labels ? labels.split(',') : [];
   return new Promise(function (resolve) {
-    d3$1.csv('./dataset.csv', function (d) {
+    d3$1.csv(csvFile, function (d) {
       return convert(d, options);
     }, function (content) {
       var _labels = {};
@@ -38034,6 +38060,7 @@ function autoLoad() {
     var csv = el.getAttribute('csv');
 
     var labels = el.getAttribute('labels');
+    var labelMapper = el.getAttribute('label-mapper');
     var intFields = el.getAttribute('int-fields');
     var floatFields = el.getAttribute('float-fields');
     var dateFields = el.getAttribute('date-fields');
@@ -38043,6 +38070,7 @@ function autoLoad() {
 
     var options = (_options = {
       labels: labels,
+      labelMapper: labelMapper,
       intFields: intFields ? intFields.split(',') : undefined,
       floatFields: floatFields ? floatFields.split(',') : undefined,
       dateFields: dateFields ? dateFields.split(',') : undefined
@@ -38054,13 +38082,13 @@ function autoLoad() {
       p = loadMode(mode, options).then(function (_ref) {
         var content = _ref.content,
             labels = _ref.labels;
-        return Store.registerData(content, { dataset: dataset, labels: labels });
+        return Store.registerData(content, { dataset: dataset, labels: labels, labelMapper: labelMapper });
       });
     } else if (csv) {
       p = loadCSV(csv, options).then(function (_ref2) {
         var content = _ref2.content,
             labels = _ref2.labels;
-        return Store.registerData(content, { dataset: dataset, labels: labels });
+        return Store.registerData(content, { dataset: dataset, labels: labels, labelMapper: labelMapper });
       });
     } else {
       p = Promise.resolve();
