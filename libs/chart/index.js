@@ -11,7 +11,6 @@ import ListRow from './list-row.vue'
 import RateLine from './rate-line.vue'
 import StackedLines from './stacked-lines.vue'
 import OrdinalBar from './ordinal-bar.vue'
-import StackedBar from './stacked-bar.vue'
 import FilterStackedBar from './filter-stacked-bar.vue'
 import GeoJP from './geo-jp.vue'
 import DataTable from './data-table.vue'
@@ -34,7 +33,6 @@ const components = {
   'rate-line': RateLine,
   'stacked-lines': StackedLines,
   'ordinal-bar': OrdinalBar,
-  'stacked-bar': StackedBar,
   'filter-stacked-bar': FilterStackedBar,
   'geo-jp': GeoJP,
   'data-table': DataTable,
@@ -66,7 +64,6 @@ export default {
   DateVolumeChart: DateVolumeChart,
   SegmentPie: SegmentPie,
   OrdinalBar: OrdinalBar,
-  StackedBar: StackedBar,
   FilterStackedBar: FilterStackedBar,
   GeoJP: GeoJP,
   DataTable: DataTable,
