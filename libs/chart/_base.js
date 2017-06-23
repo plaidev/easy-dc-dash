@@ -118,13 +118,19 @@ export default {
       type: Boolean,
       default: false
     },
-    hideXAxisLabel: {
+      // if chart has not xAxis & yAxis
+    showLabel: {
+      type: Boolean,
+      default: true
+    },
+    // else
+    showXAxisLabel: {
       type: Boolean,
       default: null
     },
-    hideYAxisLabel: {
+    showYAxisLabel: {
       type: Boolean,
-      default: false
+      default: true
     },
     rotateXAxisLabel: {
       type: Boolean,
@@ -315,8 +321,8 @@ export default {
       }
       return setting
     },
-    isShowLabels: function() {
-      if(this.hideXAxisLabel != null) return this.hideXAxisLabel
+    isShowXAxisLabels: function() {
+      if(this.showXAxisLabel != null) return this.showXAxisLabel
       let [scale, unit] = this.scale.split('.')
       if(scale !== 'ordinal') return true
       return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit
@@ -471,14 +477,14 @@ export default {
         chart.margins(margins)
       }
 
-      if(!this.isShowLabels && chart.xAxis instanceof Function) {
+      if(!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
         chart.xAxis().tickValues([])
       }
       else if(chart.xAxis instanceof Function){
         chart.xAxis().tickValues(null)
       }
 
-      if(this.hideYAxisLabel && chart.yAxis instanceof Function) {
+      if(this.showYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([])
       }
 

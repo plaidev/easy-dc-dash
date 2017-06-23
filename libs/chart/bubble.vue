@@ -193,6 +193,10 @@ export default {
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
 
+    if(!this.showLabel) {
+      chart.label(d => null)
+    }
+
     if(this.timeScale) {
       chart.filterPrinter(filters => {
         const format = this.getTimeFormat(this.timeScale)
