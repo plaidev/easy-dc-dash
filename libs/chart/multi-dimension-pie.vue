@@ -51,6 +51,9 @@ export default {
     chart
       .othersLabel(this.othersLabel)
 
+    if(!this.showLabel) {
+      chart.label(d => null)
+    }
     // TODO: このあたりもlayoutとして調整するか？
     if(this.cap && this.cap > 0) chart.slicesCap(this.cap)
     return chart.render()

@@ -92,7 +92,7 @@ export default {
     const chart = this.chart;
     chart
       .othersLabel(this.othersLabel)
-      .label((d) => this.segmentLabel(d.key))
+    this.showLabel ? chart.label(d => this.segmentLabel(d.key)) : chart.label(d => null)
     if(this.cap && this.cap > 0) chart.slicesCap(this.cap)
     return chart.render()
   },
