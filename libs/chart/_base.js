@@ -98,7 +98,8 @@ export default {
       default: 'ordinal.ordinal'
     },
     extraScale: {
-      type: String
+      type: String,
+      default: 'ordinal.ordinal'
     },
     dateKey: {
       type: String
@@ -350,6 +351,9 @@ export default {
       const theme = Store.getTheme(this.theme)
       return theme.colors(this.chartType, '')
     },
+    colors: function() {
+      return this.colorSettings.ordinal
+    },
     captionHeight: function() {
       if (!this.layoutSettings || !this.layoutSettings.caption) return;
       return this.layoutSettings.caption.height
@@ -493,6 +497,9 @@ export default {
       }
 
       if (this.useLegend) this.applyLegend();
+
+      if (this.colors && chart.colors) chart.colors(this.colors)
+
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill');

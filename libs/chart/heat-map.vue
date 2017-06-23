@@ -40,10 +40,31 @@ export default {
         .map(a => a.key[1])
         .filter((x,i,self) => self.indexOf(x) === i)
     },
-    valueColors: function () {
+    colors: function () {
+      let domain = d3.extent(this.reducer.all().map((d) => d.value))
+      let range
+      const [min, max] = domain
+      const [m, z, p] = this.colorSettings.linear;
+
+      if (min < 0 && max > 0) {
+        domain = [min, 0, max]
+        range = [m, z, p]
+      }
+      else if (min >= 0 && max > 0) {
+        domain = [0, min, max]
+        range = [z, z, p]
+      }
+      else if (min < 0 && max <= 0) {
+        domain = [min, max, 0]
+        range = [m, z, z]
+      }
+      else {
+        range = [z, z]
+      }
+
       return d3.scale.linear()
-        .domain(d3.extent(this.reducer.all().map((d) => d.value)))
-        .range(this.colorSettings.valueGradation);
+        .domain(domain)
+        .range(range);
     }
   },
   methods: {
@@ -72,7 +93,6 @@ export default {
       .yBorderRadius(this.borderRadius)
       .colsLabel((d) => this.hideXAxisLabel ? null : this.getLabel(d))
       .rowsLabel((d) => this.hideYAxisLabel ? null : this.getLabel(d))
-      .colors(this.valueColors)
 
     if(this.dateKey) {
       chart.filterPrinter(filters => {

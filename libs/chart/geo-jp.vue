@@ -29,6 +29,15 @@ export default {
       default: true
     }
   },
+  computed: {
+    colors: function() {
+      const [m, z, p] = this.colorSettings.linear
+      return d3.scale.linear()
+        .domain([0, 10])
+        .interpolate(d3.interpolateHcl)
+        .range([z, p])
+    }
+  },
   methods: {
     showTooltip(d) {
       const fill = d3.event.target.getAttribute('fill')
@@ -66,11 +75,6 @@ export default {
         .domain([1, max])
         .range([0, 10])
         .clamp(true)
-      )
-      .colors(d3.scale.linear()
-        .domain([0, 10])
-        .interpolate(d3.interpolateHcl)
-        .range(['#f7fcfd', '#00441b'])
       )
     return chart
   }
