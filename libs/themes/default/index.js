@@ -3,14 +3,16 @@ export default {
   extends: null,
 
   colors: function(_super, chartType, name, options={}) {
-    let ordinal, weekOrdinal, valueGradation;
+    let time, ordinal, weekOrdinal, linear;
+
+    linear = ['red', '#f7fcfd', '#00441b']
 
     if (chartType == 'heatMap') {
-      valueGradation = ["#e5e5e5", "green"]
+      linear = ['red', "#e5e5e5", "green"]
     }
 
     return {
-      valueGradation,
+      linear,
       ordinal,
       weekOrdinal,
     }

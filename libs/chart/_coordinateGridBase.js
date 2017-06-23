@@ -41,9 +41,13 @@ export default {
       default: true
     },
   },
+  computed: {
+    colors: function() {
+      return this.colorSettings.ordinal
+    }
+  },
   methods: {
     applyAxisStyles: function() {
-      this.chart.colors(d3.scale.category20b())
       if (chart.xAxisLabel && this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding)
       if (chart.yAxisLabel && this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding)
     }
