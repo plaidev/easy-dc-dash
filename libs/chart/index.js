@@ -23,6 +23,7 @@ import resetAllButton from './reset-all-button.vue'
 import csvDownloadButton from './csv-download-button.vue'
 
 const components = {
+  'bar': coordinateGridBase,
   'number-display': NumberDisplay,
   'date-volume-chart': DateVolumeChart,
   'segment-pie': SegmentPie,

@@ -1,7 +1,7 @@
 import Store from './libs/store'
 import Chart from './libs/chart'
 import {init, run} from './libs/autorun'
-
+import Vue from 'vue/dist/vue.js'
 
 init()
 
@@ -11,6 +11,7 @@ if (typeof window !== 'undefined' && window.Vue) {
 }
 
 export default {
+  Vue: Vue,
   Chart: Chart,
   Store: Store,
   install: Chart.install,
