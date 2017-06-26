@@ -24745,16 +24745,23 @@ var DefaultTheme = {
   colors: function colors(_super, chartType, name) {
     var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-    var ordinal = void 0,
+    var time = void 0,
+        ordinal = void 0,
         weekOrdinal = void 0,
-        valueGradation = void 0;
+        linear = void 0;
+
+    linear = ['red', '#f7fcfd', '#00441b'];
 
     if (chartType == 'heatMap') {
-      valueGradation = ["#e5e5e5", "green"];
+      linear = ['red', "#e5e5e5", "green"];
+    }
+
+    if (name == 'week') {
+      weekOrdinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'];
     }
 
     return {
-      valueGradation: valueGradation,
+      linear: linear,
       ordinal: ordinal,
       weekOrdinal: weekOrdinal
     };
@@ -25807,7 +25814,8 @@ var Base = {
       default: 'ordinal.ordinal'
     },
     extraScale: {
-      type: String
+      type: String,
+      default: 'ordinal.ordinal'
     },
     dateKey: {
       type: String
@@ -25827,13 +25835,19 @@ var Base = {
       type: Boolean,
       default: false
     },
-    hideXAxisLabel: {
+    // if chart has not xAxis & yAxis
+    showLabel: {
+      type: Boolean,
+      default: true
+    },
+    // else
+    showXAxisLabel: {
       type: Boolean,
       default: null
     },
-    hideYAxisLabel: {
+    showYAxisLabel: {
       type: Boolean,
-      default: false
+      default: true
     },
     rotateXAxisLabel: {
       type: Boolean,
@@ -26037,8 +26051,8 @@ var Base = {
       }
       return setting;
     },
-    isShowLabels: function isShowLabels() {
-      if (this.hideXAxisLabel != null) return this.hideXAxisLabel;
+    isShowXAxisLabels: function isShowXAxisLabels() {
+      if (this.showXAxisLabel != null) return this.showXAxisLabel;
 
       var _scale$split = this.scale.split('.'),
           _scale$split2 = slicedToArray(_scale$split, 2),
@@ -26071,6 +26085,9 @@ var Base = {
     colorSettings: function colorSettings() {
       var theme = Store.getTheme(this.theme);
       return theme.colors(this.chartType, '');
+    },
+    colors: function colors() {
+      return this.colorSettings.ordinal;
     },
     captionHeight: function captionHeight() {
       if (!this.layoutSettings || !this.layoutSettings.caption) return;
@@ -26218,13 +26235,13 @@ var Base = {
         chart.margins(margins);
       }
 
-      if (!this.isShowLabels && chart.xAxis instanceof Function) {
+      if (!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
         chart.xAxis().tickValues([]);
       } else if (chart.xAxis instanceof Function) {
         chart.xAxis().tickValues(null);
       }
 
-      if (this.hideYAxisLabel && chart.yAxis instanceof Function) {
+      if (this.showYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([]);
       }
 
@@ -26233,6 +26250,8 @@ var Base = {
       }
 
       if (this.useLegend) this.applyLegend();
+
+      if (this.colors && chart.colors) chart.colors(this.colors);
     },
     showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -26256,18 +26275,28 @@ var Base = {
         link = filterValue;
       }
       this.$refs.chartLink.show(chart, link);
+    },
+    render: function render() {
+      var _this5 = this;
+
+      if (this._rendering) return;
+      this._rendering = true;
+      this.$nextTick(function () {
+        _this5._rendering = false;
+        _this5.chart.render();
+      });
     }
   },
 
   watch: {
     layoutSettings: function layoutSettings() {
       this.applyStyles();
-      this.chart.render();
+      this.render();
     }
   },
 
   mounted: function mounted() {
-    var _this5 = this;
+    var _this6 = this;
 
     // layoutが確定する
     this.isMounted = true;
@@ -26301,21 +26330,21 @@ var Base = {
     }
 
     chart.renderLabel(this.renderLabel).renderTitle(this.renderTitle).transitionDuration(this.transitionDuration).label(function (d) {
-      return _this5.getLabel(d.key);
+      return _this6.getLabel(d.key);
     }).filterPrinter(function (filters) {
       return filters.map(function (filter) {
         if (typeof filter == 'array' || filter instanceof Array) {
           return filter.map(function (f, i) {
-            return _this5.getLabel(index$2.printers.filter(f));
+            return _this6.getLabel(index$2.printers.filter(f));
           }).join('-');
         }
-        return _this5.getLabel(index$2.printers.filter(filter));
+        return _this6.getLabel(index$2.printers.filter(filter));
       }).join(', ');
     });
 
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
-        chart.selectAll(_this5.tooltipSelector).on("mouseover", _this5.showTooltip).on("mousemove", _this5.moveTooltip).on("mouseout", _this5.removeTooltip);
+        chart.selectAll(_this6.tooltipSelector).on("mouseover", _this6.showTooltip).on("mousemove", _this6.moveTooltip).on("mouseout", _this6.removeTooltip);
       });
     }
     if (this.linkFormatter) {
@@ -26337,18 +26366,20 @@ var Base = {
     }
 
     chart.on('pretransition', function () {
-      if (!_this5.dateKey && !_this5.timeScale) {
-        chart.selectAll(_this5.textSelector).text(function (_d) {
+      if (!_this6.dateKey && !_this6.timeScale) {
+        chart.selectAll(_this6.textSelector).text(function (_d) {
           var d = _d.key || _d;
           return d.length > 15 ? d.substr(0, 15) + '...' : d;
         });
       }
 
       // TODO: layout system
-      if (!_this5.hideXAxisLabel && _this5.rotateXAxisLabel) {
-        chart.selectAll('#' + _this5.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
+      if (!_this6.hideXAxisLabel && _this6.rotateXAxisLabel) {
+        chart.selectAll('#' + _this6.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
     });
+
+    this.render();
 
     this.chart = chart;
 
@@ -26397,9 +26428,13 @@ var coordinateGridBase = {
       default: true
     }
   },
+  computed: {
+    colors: function colors() {
+      return this.colorSettings.ordinal;
+    }
+  },
   methods: {
     applyAxisStyles: function applyAxisStyles() {
-      this.chart.colors(d3$1.scale.category20b());
       if (chart.xAxisLabel && this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding);
       if (chart.yAxisLabel && this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding);
     }
@@ -35341,6 +35376,7 @@ function compose(Left, Right) {
           }
         },
         methods: {
+          render: function render() {},
           getReduceKey: function getReduceKey(idx) {
             var s = _getReduceKeySuper(Right);
             if (!s) return 'left';
@@ -35369,6 +35405,7 @@ function compose(Left, Right) {
           }
         },
         methods: {
+          render: function render() {},
           getReduceKey: function getReduceKey(idx) {
             var s = _getReduceKeySuper(Right);
             if (!s) return 'right';
@@ -35407,7 +35444,7 @@ function compose(Left, Right) {
       // legendの利用有無も含めて再検討必要
       this.applyLegend({ indexLabel: true });
 
-      return composite.render();
+      return composite;
     },
 
     destroyed: function destroyed() {
@@ -35568,7 +35605,7 @@ var NumberDisplay = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
     chart.formatNumber(d3$1.format(this.numberFormat)).html(this.templates);
-    return chart.render();
+    return chart;
   }
 };
 
@@ -35633,7 +35670,7 @@ var DateVolumeChart = {
 
     chart.yAxis().ticks(0);
 
-    return chart.render();
+    return chart;
   }
 };
 
@@ -35726,7 +35763,8 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
 
   watch: {
     layoutSettings: function layoutSettings() {
-      this.chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).render();
+      this.chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y);
+      this.render();
     }
   },
 
@@ -35734,11 +35772,14 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
     var _this2 = this;
 
     var chart = this.chart;
-    chart.othersLabel(this.othersLabel).label(function (d) {
+    chart.othersLabel(this.othersLabel);
+    this.showLabel ? chart.label(function (d) {
       return _this2.segmentLabel(d.key);
+    }) : chart.label(function (d) {
+      return null;
     });
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
-    return chart.render();
+    return chart;
   },
 
   destroyed: function destroyed() {
@@ -35792,7 +35833,8 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
 
   watch: {
     layoutSettings: function layoutSettings() {
-      this.chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y).render();
+      this.chart.cx(this.layoutSettings.chartCenter.x).cy(this.layoutSettings.chartCenter.y);
+      this.render();
     }
   },
 
@@ -35800,9 +35842,14 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
     var chart = this.chart;
     chart.othersLabel(this.othersLabel);
 
+    if (!this.showLabel) {
+      chart.label(function (d) {
+        return null;
+      });
+    }
     // TODO: このあたりもlayoutとして調整するか？
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
-    return chart.render();
+    return chart;
   },
 
   destroyed: function destroyed() {
@@ -35894,6 +35941,13 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
     },
     dimensionRange: function dimensionRange() {
       return [0, 6];
+    },
+    colorSettings: function colorSettings() {
+      var theme = Store.getTheme(this.theme);
+      return theme.colors(this.chartType, 'week');
+    },
+    colors: function colors() {
+      return null;
     }
   },
 
@@ -35911,8 +35965,8 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']).elasticX(true);
-    return chart.render();
+    chart.ordinalColors(this.colorSettings.weekOrdinal).elasticX(true);
+    return chart;
   }
 };
 
@@ -35986,7 +36040,7 @@ var WeeklySeries = {
       return _this.getLabel(d);
     });
 
-    return chart.render();
+    return chart;
   }
 };
 
@@ -36067,7 +36121,7 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
       });
     });
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
-    return chart.render();
+    return chart;
   }
 };
 
@@ -36096,7 +36150,7 @@ var RateLine = {
     }
   },
   mounted: function mounted() {
-    return this.chart.y(d3$1.scale.linear().domain([0, 1])).elasticY(false).hidableStacks(true).render();
+    return this.chart.y(d3$1.scale.linear().domain([0, 1])).elasticY(false).hidableStacks(true);
   }
 };
 
@@ -36182,7 +36236,7 @@ var StackedLines = {
     // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
     // this called from dc/line-chart.js and utils/reverseLegendOrder()
     // if(this.useLegend) this.applyLegend({reverseOrder: true})
-    return chart.render();
+    return chart;
   }
 };
 
@@ -36253,7 +36307,7 @@ var OrdinalBar = {
     var chart = this.chart;
 
     chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY);
-    return chart.render();
+    return chart;
   }
 };
 
@@ -36383,7 +36437,7 @@ var FilterStackedBar = { cssModules: { "chartRoot": "filter-stacked-bar__chart-r
     });
 
     this.applyLegend({ reverseOrder: true });
-    return chart.render();
+    return chart;
   }
 };
 
@@ -36852,6 +36906,16 @@ var GeoJP = { cssModules: { "chartRoot": "geo-jp__chart-root", "chart-root": "ge
       default: true
     }
   },
+  computed: {
+    colors: function colors() {
+      var _colorSettings$linear = slicedToArray(this.colorSettings.linear, 3),
+          m = _colorSettings$linear[0],
+          z = _colorSettings$linear[1],
+          p = _colorSettings$linear[2];
+
+      return d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range([z, p]);
+    }
+  },
   methods: {
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -36869,6 +36933,8 @@ var GeoJP = { cssModules: { "chartRoot": "geo-jp__chart-root", "chart-root": "ge
     }
   },
   mounted: function mounted() {
+    var _this = this;
+
     var chart = this.chart;
     var max = this.reducer.top(1)[0].value;
     var path = '../../../libs/json/';
@@ -36878,10 +36944,11 @@ var GeoJP = { cssModules: { "chartRoot": "geo-jp__chart-root", "chart-root": "ge
       var geo_features = feature(japan, japan.objects.japan).features;
       chart.overlayGeoJson(geo_features, "pref", function (d) {
         return ('0' + d.properties.id).slice(-2);
-      }).render();
+      });
+      _this.render();
     });
 
-    chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.geoScale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true)).colors(d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range(['#f7fcfd', '#00441b']));
+    chart.projection(d3$1.geo.mercator().center([136, 35.5]).scale(this.geoScale).translate([this.width / 2, this.height / 2])).colorAccessor(d3$1.scale.log().domain([1, max]).range([0, 10]).clamp(true));
     return chart;
   }
 };
@@ -37150,7 +37217,8 @@ var DataTable = { render: function render() {
         return null;
       }).size(Infinity).sortBy(function (d) {
         return _valueAccessor(d, _this2.sortKey);
-      }).order(d3$1[this.sortOrder]).render();
+      }).order(d3$1[this.sortOrder]);
+      this.render();
     },
     getSchema: function getSchema() {
       var _this3 = this;
@@ -37225,7 +37293,7 @@ var DataTable = { render: function render() {
       ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
     });
     this.updateTable();
-    return chart.render();
+    return chart;
   }
 };
 
@@ -37276,10 +37344,36 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
         return self.indexOf(x) === i;
       });
     },
-    valueColors: function valueColors() {
-      return d3$1.scale.linear().domain(d3$1.extent(this.reducer.all().map(function (d) {
+    colors: function colors() {
+      var domain = d3$1.extent(this.reducer.all().map(function (d) {
         return d.value;
-      }))).range(this.colorSettings.valueGradation);
+      }));
+      var range = void 0;
+
+      var _domain = domain,
+          _domain2 = slicedToArray(_domain, 2),
+          min = _domain2[0],
+          max = _domain2[1];
+
+      var _colorSettings$linear = slicedToArray(this.colorSettings.linear, 3),
+          m = _colorSettings$linear[0],
+          z = _colorSettings$linear[1],
+          p = _colorSettings$linear[2];
+
+      if (min < 0 && max > 0) {
+        domain = [min, 0, max];
+        range = [m, z, p];
+      } else if (min >= 0 && max > 0) {
+        domain = [0, min, max];
+        range = [z, z, p];
+      } else if (min < 0 && max <= 0) {
+        domain = [min, max, 0];
+        range = [m, z, z];
+      } else {
+        range = [z, z];
+      }
+
+      return d3$1.scale.linear().domain(domain).range(range);
     }
   },
   methods: {
@@ -37311,7 +37405,7 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
       return _this.hideXAxisLabel ? null : _this.getLabel(d);
     }).rowsLabel(function (d) {
       return _this.hideYAxisLabel ? null : _this.getLabel(d);
-    }).colors(this.valueColors);
+    });
 
     if (this.dateKey) {
       chart.filterPrinter(function (filters) {
@@ -37356,7 +37450,7 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
         });
       });
     }
-    return chart.render();
+    return chart;
   }
 };
 
@@ -37479,7 +37573,7 @@ var Series = {
       return d.key[1];
     });
 
-    return chart.render();
+    return chart;
   }
 };
 
@@ -37675,6 +37769,12 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
       return _this3.extractValue(d.value[_this3.radiusLabel]);
     }))).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding);
 
+    if (!this.showLabel) {
+      chart.label(function (d) {
+        return null;
+      });
+    }
+
     if (this.timeScale) {
       chart.filterPrinter(function (filters) {
         var format = _this3.getTimeFormat(_this3.timeScale);
@@ -37683,7 +37783,7 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
         });
       });
     }
-    return chart.render();
+    return chart;
   }
 };
 
@@ -37813,6 +37913,7 @@ var MultiLines = {
               useLegend: false
             },
             methods: {
+              render: function render() {},
               getReduceKey: function getReduceKey(i) {
                 var s = _getReduceKeySuper$1(BaseChart);
                 if (!s) return String(idx);
@@ -37843,7 +37944,7 @@ var MultiLines = {
     // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
     // this called from dc/line-chart.js and utils/reverseLegendOrder()
     // if(this.useLegend) this.applyLegend({reverseOrder: true})
-    return chart.render();
+    return chart;
   }
 };
 
