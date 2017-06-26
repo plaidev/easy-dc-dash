@@ -497,8 +497,11 @@ export default {
         chart.xAxis().tickValues(null)
       }
 
-      if(this.showYAxisLabel && chart.yAxis instanceof Function) {
+      if(!this.showYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([])
+      }
+      else if(chart.yAxis instanceof Function){
+        chart.yAxis().tickValues(null)
       }
 
       if (this.useDataPoints && chart.renderDataPoints) {
