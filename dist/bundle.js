@@ -24871,7 +24871,7 @@ var DefaultTheme = {
           x: width / 2,
           y: height * heightCoef / 2
         },
-        legend: {
+        legend: !legendable ? null : {
           x: width - height,
           y: height * legendYCoef,
           width: width - height,
@@ -25566,7 +25566,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: white; position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__inner-container { position: relative; margin: -2px; display: flex; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 10px; right: 10px; } .card__title { width: calc(100% - 2em); opacity: 0.6; font-size: 24px; } .card__icon-box { position: absolute; right: 0px; top: 3px; height: 1.5em; width: 2em; display: flex; flex-direction: row-reverse; align-items: center; color: gray; } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: white; position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__inner-container { position: relative; margin: -2px; display: flex; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 10px; right: 10px; } .card__title { width: calc(100% - 2em); opacity: 0.6; font-size: 24px; } .card__icon-box { position: absolute; right: 0px; top: 3px; height: 1.5em; width: 2em; display: flex; flex-direction: row-reverse; align-items: center; color: gray; } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25576,7 +25576,7 @@ var ResetButton = { render: function render() {
 
 var CardContainer = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
-  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box" },
+  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
   props: {
     title: {
       type: String
@@ -25591,6 +25591,10 @@ var CardContainer = { render: function render() {
       default: 0
     },
     fullscreen: {
+      type: Boolean,
+      default: false
+    },
+    hideLegend: {
       type: Boolean,
       default: false
     }
@@ -25626,10 +25630,14 @@ var CardContainer = { render: function render() {
       return style;
     },
     screenModeClass: function screenModeClass() {
+      classes = [];
       if (this.isFullscreen) {
-        return this.$options.cssModules['fullscreen'];
+        classes.push(this.$options.cssModules['fullscreen']);
       }
-      return '';
+      if (this.hideLegend) {
+        classes.push(this.$options.cssModules['hide-legend']);
+      }
+      return classes.join(' ');
     },
     fullscreenIconClass: function fullscreenIconClass() {
       return this.isFullscreen ? 'fa-window-minimize' : 'fa-window-maximize';
@@ -25780,7 +25788,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -26063,7 +26071,6 @@ var Base = {
     },
     containerInnerSize: function containerInnerSize() {
       if (!this.isMounted) return;
-
       var width = void 0,
           height = void 0;
       if (typeof this.parent === 'string' || this.parent instanceof String) {
@@ -26145,6 +26152,10 @@ var Base = {
           unit = _ref2[1];
 
       if (scale == 'time' || this.dateKey || this.timeScale) return true;
+      return false;
+    },
+    hideLegend: function hideLegend() {
+      if (this.isMounted && !this.layoutSettings.legend) return true;
       return false;
     }
   },
@@ -26240,15 +26251,17 @@ var Base = {
         chart.xAxis().tickValues(null);
       }
 
-      if (this.showYAxisLabel && chart.yAxis instanceof Function) {
+      if (!this.showYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([]);
+      } else if (chart.yAxis instanceof Function) {
+        chart.yAxis().tickValues(null);
       }
 
       if (this.useDataPoints && chart.renderDataPoints) {
         chart.renderDataPoints({ fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5 });
       }
 
-      if (this.useLegend) this.applyLegend();
+      this.applyLegend();
 
       if (this.colors && chart.colors) chart.colors(this.colors);
     },
@@ -35356,6 +35369,21 @@ function compose(Left, Right) {
         return cssModule;
       }
     },
+    methods: {
+      applyLegend: function applyLegend() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var _options$reverseOrder = options.reverseOrder,
+            reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
+
+        // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
+        // legendは配列として受け取り、番号で割り当てる
+        // lines系なら問題ない。
+        // TODO: bubbleチャート系だとうまくいかないかもしれない。
+        // legendの利用有無も含めて再検討必要
+
+        Base.methods.applyLegend.apply(this, [{ indexLabel: true, reverseOrder: reverseOrder }]);
+      }
+    },
     mounted: function mounted() {
       var _this = this;
 
@@ -35435,13 +35463,6 @@ function compose(Left, Right) {
       composite.dimension(dim).compose([Left.mounted.apply(leftInstance), Right.mounted.apply(rightInstance).useRightYAxis(true)])
       //.rightY(scale.linear().domain([0, 1]))
       .shareColors(true);
-
-      // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
-      // legendは配列として受け取り、番号で割り当てる
-      // lines系なら問題ない。
-      // TODO: bubbleチャート系だとうまくいかないかもしれない。
-      // legendの利用有無も含めて再検討必要
-      this.applyLegend({ indexLabel: true });
 
       return composite;
     },
@@ -37869,6 +37890,15 @@ var MultiLines = {
       return null; // disable default reducer
     }
   },
+  methods: {
+    applyLegend: function applyLegend() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _options$reverseOrder = options.reverseOrder,
+          reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
+
+      Base.methods.applyLegend.apply(this, [{ indexLabel: true, reverseOrder: reverseOrder }]);
+    }
+  },
   mounted: function mounted() {
     var _this = this;
 
@@ -37936,8 +37966,6 @@ var MultiLines = {
     }
 
     chart.dimension(dim).shareColors(true).compose(lines);
-
-    this.applyLegend({ indexLabel: true });
 
     // FIXME:
     // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
