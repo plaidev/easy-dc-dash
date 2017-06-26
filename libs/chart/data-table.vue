@@ -271,7 +271,7 @@ export default {
         .size(Infinity)
         .sortBy((d) => _valueAccessor(d, this.sortKey))
         .order(d3[this.sortOrder])
-        .render()
+      this.render()
     },
     getSchema: function() {
       const schema = {}
@@ -348,7 +348,7 @@ export default {
             .style('margin-left', '3px')
       })
     this.updateTable()
-    return chart.render();
+    return chart
   }
 }
 </script>

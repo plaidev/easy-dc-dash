@@ -75,7 +75,7 @@ export default {
             .text(d => d.key.length > 20 ? d.key.substring(0,20)+'...' : d.key)
       })
     if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
-    return chart.render();
+    return chart
   }
 }
 

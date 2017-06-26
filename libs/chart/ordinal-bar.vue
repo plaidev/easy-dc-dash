@@ -68,7 +68,7 @@ export default {
       .xUnits(dc.units.ordinal)
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
-    return chart.render();
+    return chart
   }
 }
 

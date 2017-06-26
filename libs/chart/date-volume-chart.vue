@@ -63,7 +63,7 @@ export default {
     chart
       .yAxis().ticks(0)
 
-    return chart.render()
+    return chart
   }
 }
 </script>

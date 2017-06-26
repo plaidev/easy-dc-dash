@@ -64,7 +64,7 @@ export default {
     chart
       .xAxis().tickFormat((d) => this.getLabel(d))
 
-    return chart.render();
+    return chart
   }
 }
 

@@ -23,7 +23,6 @@ export default {
       .y(d3.scale.linear().domain([0, 1]))
       .elasticY(false)
       .hidableStacks(true)
-      .render()
   }
 }
 

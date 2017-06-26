@@ -154,7 +154,7 @@ export default {
     chart
       .formatNumber(d3.format(this.numberFormat))
       .html(this.templates)
-    return chart.render();
+    return chart
   }
 }
 </script>

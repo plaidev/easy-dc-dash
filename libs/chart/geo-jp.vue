@@ -62,7 +62,7 @@ export default {
       const geo_features = feature(japan, japan.objects.japan).features;
       chart
         .overlayGeoJson(geo_features, "pref", (d) => ('0'+d.properties.id).slice(-2))
-        .render()
+      this.render()
     })
 
     chart

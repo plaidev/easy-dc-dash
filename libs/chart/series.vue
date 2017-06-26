@@ -101,7 +101,7 @@ export default {
       .seriesAccessor((d) => d.key[0])
       .keyAccessor((d) => d.key[1])
 
-    return chart.render();
+    return chart
   }
 }
 

@@ -54,6 +54,7 @@ export function compose(Left, Right) {
           }
         },
         methods: {
+          render: function(){},
           getReduceKey: function(idx) {
             const s = _getReduceKeySuper(Right);
             if (!s) return 'left'
@@ -82,6 +83,7 @@ export function compose(Left, Right) {
           },
         },
         methods: {
+          render: function(){},
           getReduceKey: function(idx) {
             const s = _getReduceKeySuper(Right);
             if (!s) return 'right'
@@ -127,7 +129,7 @@ export function compose(Left, Right) {
       // legendの利用有無も含めて再検討必要
       this.applyLegend({indexLabel: true})
 
-      return composite.render();
+      return composite
     },
 
     destroyed: function() {

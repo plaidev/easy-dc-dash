@@ -128,7 +128,7 @@ export default {
     })
 
     this.applyLegend({reverseOrder:true})
-    return chart.render();
+    return chart
   }
 }
 </script>

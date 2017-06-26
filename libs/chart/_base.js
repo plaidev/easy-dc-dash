@@ -530,13 +530,21 @@ export default {
         link = filterValue
       }
       this.$refs.chartLink.show(chart, link)
+    },
+    render: function() {
+      if (this._rendering) return
+      this._rendering = true
+      this.$nextTick(() => {
+        this._rendering = false
+        this.chart.render()
+      })
     }
   },
 
   watch: {
     layoutSettings: function() {
       this.applyStyles()
-      this.chart.render()
+      this.render()
     }
   },
 
@@ -638,6 +646,8 @@ export default {
           .attr('transform', 'translate(-10,5) rotate(330)')
       }
     })
+
+    this.render()
 
     this.chart = chart;
 

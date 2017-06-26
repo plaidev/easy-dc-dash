@@ -72,7 +72,7 @@ export default {
       // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
       // this called from dc/line-chart.js and utils/reverseLegendOrder()
     // if(this.useLegend) this.applyLegend({reverseOrder: true})
-    return chart.render()
+    return chart
   }
 }
 

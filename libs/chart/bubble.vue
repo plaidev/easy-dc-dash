@@ -203,7 +203,7 @@ export default {
         return filters.map(f => format(f));
       });
     }
-    return chart.render();
+    return chart
   }
 }
 

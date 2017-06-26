@@ -42,7 +42,7 @@ export default {
       this.chart
         .cx(this.layoutSettings.chartCenter.x)
         .cy(this.layoutSettings.chartCenter.y)
-        .render()
+      this.render()
     }
   },
 
@@ -56,7 +56,7 @@ export default {
     }
     // TODO: このあたりもlayoutとして調整するか？
     if(this.cap && this.cap > 0) chart.slicesCap(this.cap)
-    return chart.render()
+    return chart
   },
 
   destroyed: function() {
