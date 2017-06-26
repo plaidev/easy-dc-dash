@@ -130,7 +130,7 @@ export default {
           x: width / 2,
           y: height * heightCoef / 2
         },
-        legend: {
+        legend: (!legendable) ? null : {
           x: width - height,
           y: height * legendYCoef,
           width: width - height,
