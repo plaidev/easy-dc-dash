@@ -36248,7 +36248,7 @@ var StackedLines = {
 
     var lineNum = _reducer(dim.top(1)[0] || {}).length;
 
-    chart.brushOn(false).group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), this.generateValueAccessor(0)).renderArea(true);
+    chart.group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), this.generateValueAccessor(0)).renderArea(true);
     for (var i = 1; i < lineNum; i++) {
       chart.stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), this.generateValueAccessor(i)).hidableStacks(true);
     }
@@ -38023,6 +38023,7 @@ var csvDownloadButton = { render: function render() {
 };
 
 var components = {
+  'bar': coordinateGridBase,
   'number-display': NumberDisplay,
   'date-volume-chart': DateVolumeChart,
   'segment-pie': SegmentPie,
@@ -38268,6 +38269,7 @@ if (typeof window !== 'undefined' && window.Vue) {
 }
 
 var index = {
+  Vue: vue,
   Chart: Chart,
   Store: Store,
   install: Chart.install,
