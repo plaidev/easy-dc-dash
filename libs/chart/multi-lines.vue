@@ -44,6 +44,14 @@ export default {
       return null; // disable default reducer
     }
   },
+  methods: {
+    applyLegend: function(options={}) {
+      const {
+        reverseOrder = false
+      } = options;
+      Base.methods.applyLegend.apply(this, [{indexLabel: true, reverseOrder}])
+    }
+  },
   mounted: function() {
     const chart = this.chart;
     const dim = this.grouping
@@ -110,8 +118,6 @@ export default {
       .dimension(dim)
       .shareColors(true)
       .compose(lines)
-
-    this.applyLegend({indexLabel: true})
 
     // FIXME:
       // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.

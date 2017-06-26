@@ -36,6 +36,20 @@ export function compose(Left, Right) {
         return cssModule
       }
     },
+    methods: {
+      applyLegend: function(options={}) {
+        const {
+          reverseOrder = false
+        } = options;
+
+        // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
+        // legendは配列として受け取り、番号で割り当てる
+        // lines系なら問題ない。
+        // TODO: bubbleチャート系だとうまくいかないかもしれない。
+        // legendの利用有無も含めて再検討必要
+        Base.methods.applyLegend.apply(this, [{indexLabel: true, reverseOrder}])
+      }
+    },
     mounted: function() {
 
       // TODO: refactoring.
@@ -121,13 +135,6 @@ export function compose(Left, Right) {
         ])
         //.rightY(scale.linear().domain([0, 1]))
         .shareColors(true)
-
-      // Compositeでまとめてlegendをつけるので、データ名について一貫した名前付けが必要
-      // legendは配列として受け取り、番号で割り当てる
-      // lines系なら問題ない。
-      // TODO: bubbleチャート系だとうまくいかないかもしれない。
-      // legendの利用有無も含めて再検討必要
-      this.applyLegend({indexLabel: true})
 
       return composite
     },

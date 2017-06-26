@@ -58,7 +58,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :hide-legend="hideLegend" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -334,8 +334,7 @@ export default {
       return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit
     },
     containerInnerSize: function() {
-      if (!this.isMounted) return
-
+      if (!this.isMounted) return;
       let width, height;
       if (typeof this.parent === 'string' || this.parent instanceof String) {
         const el = this.$el.querySelector(this.parent).parentNode
@@ -408,6 +407,10 @@ export default {
     isTimeChart: function() {
       const [scale, unit] = this.scale ? this.scale.split('.') : []
       if(scale == 'time' || this.dateKey || this.timeScale) return true
+      return false
+    },
+    hideLegend: function() {
+      if (this.isMounted && !this.layoutSettings.legend) return true
       return false
     }
   },
@@ -494,15 +497,18 @@ export default {
         chart.xAxis().tickValues(null)
       }
 
-      if(this.showYAxisLabel && chart.yAxis instanceof Function) {
+      if(!this.showYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([])
+      }
+      else if(chart.yAxis instanceof Function){
+        chart.yAxis().tickValues(null)
       }
 
       if (this.useDataPoints && chart.renderDataPoints) {
         chart.renderDataPoints({fillOpacity: 0.6, strokeOpacity: 0.6, radius: 5})
       }
 
-      if (this.useLegend) this.applyLegend();
+      this.applyLegend();
 
       if (this.colors && chart.colors) chart.colors(this.colors)
 

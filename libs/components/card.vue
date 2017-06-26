@@ -36,6 +36,10 @@ export default {
     fullscreen: {
       type: Boolean,
       default: false
+    },
+    hideLegend: {
+      type: Boolean,
+      default: false
     }
   },
   data: function() {
@@ -70,10 +74,14 @@ export default {
       return style
     },
     screenModeClass: function() {
+      classes = []
       if (this.isFullscreen) {
-        return this.$options.cssModules['fullscreen']
+        classes.push(this.$options.cssModules['fullscreen'])
       }
-      return ''
+      if (this.hideLegend) {
+        classes.push(this.$options.cssModules['hide-legend'])
+      }
+      return classes.join(' ')
     },
     fullscreenIconClass: function() {
       return this.isFullscreen? 'fa-window-minimize': 'fa-window-maximize'
@@ -190,6 +198,10 @@ export default {
   padding: 1px;
   border: solid 1px gray;
   border-radius: 3px;
+}
+
+.hide-legend .dc-legend {
+  display: none;
 }
 
 </style>
