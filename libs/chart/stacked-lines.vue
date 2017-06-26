@@ -60,7 +60,6 @@ export default {
     const lineNum = _reducer(dim.top(1)[0] || {}).length;
 
     chart
-      .brushOn(false)
       .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), this.generateValueAccessor(0))
       .renderArea(true)
     for (let i=1; i<lineNum; i++) {
