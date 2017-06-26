@@ -85,6 +85,13 @@ export default {
     },
     dimensionRange: function() {
       return [0, 6]
+    },
+    colorSettings: function() {
+      const theme = Store.getTheme(this.theme)
+      return theme.colors(this.chartType, 'week')
+    },
+    colors: function() {
+      return null;
     }
   },
 
@@ -103,7 +110,7 @@ export default {
     const chart = this.chart;
 
     chart
-      .ordinalColors(['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'])
+      .ordinalColors(this.colorSettings.weekOrdinal)
       .elasticX(true)
     return chart
   }
