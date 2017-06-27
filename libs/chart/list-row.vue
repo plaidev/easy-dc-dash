@@ -52,10 +52,14 @@ export default {
     showTooltip: function(d) {
       const fill = d3.event.target.getAttribute('fill')
       const data = {
-        key: d.key,
+        key: this.getLabel(d.key),
         val: d.value
       }
       this.$refs.tooltip.show(data, fill)
+    },
+    keyTextPostProcess: function(k) {
+      let label = this.getLabel(k)
+      return d.key.length > 20 ? d.key.substring(0,20)+'...' : d.key
     }
   },
   mounted: function() {
@@ -72,7 +76,7 @@ export default {
       .ordering((d) => this.descending ? -d.value : d.value)
       .on('pretransition', () => {
           chart.selectAll('g.row text')
-            .text(d => d.key.length > 20 ? d.key.substring(0,20)+'...' : d.key)
+            .text((k) => this.keyTextPostProcess(k))
       })
     if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart
