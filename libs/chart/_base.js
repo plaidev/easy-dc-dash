@@ -64,7 +64,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :hide-legend="hideLegend" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -209,7 +209,11 @@ export default {
 
   data: function() {
     // umm.
-    return {isMounted: false, isFullscreen: false}
+    return {
+      isMounted: false,
+      isFullscreen: false,
+      containerInnerSize: null
+    }
   },
 
   computed: {
@@ -341,25 +345,6 @@ export default {
       if(scale !== 'ordinal') return true
       return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit
     },
-    containerInnerSize: function() {
-      if (!this.isMounted) return;
-      let width, height;
-      if (typeof this.parent === 'string' || this.parent instanceof String) {
-        const el = this.$el.querySelector(this.parent).parentNode
-        width = el.clientWidth
-        height = el.clientHeight
-      }
-      else {
-        width = this.parent.width()
-        height = this.parent.height()
-      }
-      if (!this.isFullscreen) {
-        if (this.width) width = parseFloat(this.width);
-        if (this.height) height = parseFloat(this.height);
-      }
-
-      return {width, height}
-    },
     colorSettings: function() {
       const theme = Store.getTheme(this.theme)
       return theme.colors(this.chartType, '')
@@ -424,6 +409,25 @@ export default {
   },
 
   methods: {
+    updateContainerInnerSize: function({isFullscreen}) {
+      this.isFullscreen = isFullscreen
+      // not mounted
+      if (!this.isMounted) return;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        const el = this.$el.querySelector(`#${this.id}`).parentNode
+        this.containerInnerSize = {
+          width: el.clientWidth,
+          height: el.clientHeight
+        }
+      }
+      else {
+        // this.parent is compositeChart instance
+        this.containerInnerSize = {
+          width: this.parent.width(),
+          height: this.parent.height()
+        }
+      }
+    },
     removeFilterAndRedrawChart: function() {
       this.chart.filterAll();
       dc.redrawAll();
@@ -520,6 +524,7 @@ export default {
 
       if (this.colors && chart.colors) chart.colors(this.colors)
 
+      this.render()
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill');
@@ -558,7 +563,6 @@ export default {
   watch: {
     layoutSettings: function() {
       this.applyStyles()
-      this.render()
     }
   },
 
