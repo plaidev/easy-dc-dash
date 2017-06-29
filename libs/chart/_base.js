@@ -18,7 +18,7 @@ function generateScales(scaleCode) {
   if (scale == 'time' && !unit) unit = 'day'
   if (scale == 'ordinal' && !unit) unit = 'ordinal'
 
-  let _scale, _interval, _unit, _format;
+  let _scale, _interval, _unit, _format, _domain;
 
   // scale
   if (scale == 'time') _scale = d3.time.scale;
@@ -47,8 +47,14 @@ function generateScales(scaleCode) {
     else _format = TIME_FORMATS[unit]
   }
 
+  if (_scale) {
+    if (unit !== 'ordinal') _domain = _scale().domain
+    else _domain = _scale
+  }
+  else _domain = null
+
   return {
-    domain: _scale ? _scale().domain: null,
+    domain: _domain,
     interval: _interval,
     unit: _unit,
     format: _format
@@ -299,6 +305,8 @@ export default {
       return getter(dim.top(1)[0]);
     },
     dimensionRange: function() {
+      let [scale, unit] = this.scale.split('.');
+      if (unit === 'ordinal') return;
       return [this.min, this.max]
     },
     dimAll: function() {
