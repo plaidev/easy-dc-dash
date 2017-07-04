@@ -54,7 +54,7 @@ export default {
     updateContainerInnerSize: function(data) {
       Base.methods.updateContainerInnerSize.apply(this, [data])
       this.$nextTick(() => {
-        for (var k in _instances) {
+        for (let k in _instances) {
           _instances[k].updateContainerInnerSize(data)
           _instances[k].$props.layout = this.layoutSettings.name
         }
