@@ -57,8 +57,8 @@ export default {
       }
       this.$refs.tooltip.show(data, fill)
     },
-    keyTextPostProcess: function(k) {
-      let label = this.getLabel(k)
+    keyTextPostProcess: function(key) {
+      let label = this.getLabel(key)
       return label.length > 20 ? label.substring(0,20)+'...' : label
     }
   },
@@ -76,7 +76,7 @@ export default {
       .ordering((d) => this.descending ? -d.value : d.value)
       .on('pretransition', () => {
           chart.selectAll('g.row text')
-            .text((k) => this.keyTextPostProcess(k))
+            .text((d) => this.keyTextPostProcess(d.key))
       })
     if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart

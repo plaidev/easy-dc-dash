@@ -36161,8 +36161,8 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
       };
       this.$refs.tooltip.show(data, fill);
     },
-    keyTextPostProcess: function keyTextPostProcess(k) {
-      var label = this.getLabel(k);
+    keyTextPostProcess: function keyTextPostProcess(key) {
+      var label = this.getLabel(key);
       return label.length > 20 ? label.substring(0, 20) + '...' : label;
     }
   },
@@ -36174,8 +36174,8 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).othersLabel(this.othersLabel).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
       return _this.descending ? -d.value : d.value;
     }).on('pretransition', function () {
-      chart.selectAll('g.row text').text(function (k) {
-        return _this.keyTextPostProcess(k);
+      chart.selectAll('g.row text').text(function (d) {
+        return _this.keyTextPostProcess(d.key);
       });
     });
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
