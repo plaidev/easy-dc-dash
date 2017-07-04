@@ -18,7 +18,7 @@ function generateScales(scaleCode) {
   if (scale == 'time' && !unit) unit = 'day'
   if (scale == 'ordinal' && !unit) unit = 'ordinal'
 
-  let _scale, _interval, _unit, _format;
+  let _scale, _interval, _unit, _format, _domain;
 
   // scale
   if (scale == 'time') _scale = d3.time.scale;
@@ -47,8 +47,14 @@ function generateScales(scaleCode) {
     else _format = TIME_FORMATS[unit]
   }
 
+  if (_scale) {
+    if (unit !== 'ordinal') _domain = _scale().domain
+    else _domain = _scale
+  }
+  else _domain = null
+
   return {
-    domain: _scale ? _scale().domain: null,
+    domain: _domain,
     interval: _interval,
     unit: _unit,
     format: _format
@@ -58,7 +64,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :hide-legend="hideLegend" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -203,7 +209,11 @@ export default {
 
   data: function() {
     // umm.
-    return {isMounted: false, isFullscreen: false}
+    return {
+      isMounted: false,
+      isFullscreen: false,
+      containerInnerSize: null
+    }
   },
 
   computed: {
@@ -299,6 +309,8 @@ export default {
       return getter(dim.top(1)[0]);
     },
     dimensionRange: function() {
+      let [scale, unit] = this.scale.split('.');
+      if (unit === 'ordinal') return;
       return [this.min, this.max]
     },
     dimAll: function() {
@@ -332,25 +344,6 @@ export default {
       let [scale, unit] = this.scale.split('.')
       if(scale !== 'ordinal') return true
       return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit
-    },
-    containerInnerSize: function() {
-      if (!this.isMounted) return;
-      let width, height;
-      if (typeof this.parent === 'string' || this.parent instanceof String) {
-        const el = this.$el.querySelector(this.parent).parentNode
-        width = el.clientWidth
-        height = el.clientHeight
-      }
-      else {
-        width = this.parent.width()
-        height = this.parent.height()
-      }
-      if (!this.isFullscreen) {
-        if (this.width) width = parseFloat(this.width);
-        if (this.height) height = parseFloat(this.height);
-      }
-
-      return {width, height}
     },
     colorSettings: function() {
       const theme = Store.getTheme(this.theme)
@@ -416,6 +409,25 @@ export default {
   },
 
   methods: {
+    updateContainerInnerSize: function({isFullscreen}) {
+      this.isFullscreen = isFullscreen
+      // not mounted
+      if (!this.isMounted) return;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        const el = this.$el.querySelector(`#${this.id}`).parentNode
+        this.containerInnerSize = {
+          width: el.clientWidth,
+          height: el.clientHeight
+        }
+      }
+      else {
+        // this.parent is compositeChart instance
+        this.containerInnerSize = {
+          width: this.parent.width(),
+          height: this.parent.height()
+        }
+      }
+    },
     removeFilterAndRedrawChart: function() {
       this.chart.filterAll();
       dc.redrawAll();
@@ -512,6 +524,7 @@ export default {
 
       if (this.colors && chart.colors) chart.colors(this.colors)
 
+      this.render()
     },
     showTooltip: function(d, i) {
       const fill = d3.event.target.getAttribute('fill');
@@ -550,7 +563,6 @@ export default {
   watch: {
     layoutSettings: function() {
       this.applyStyles()
-      this.render()
     }
   },
 

@@ -15,6 +15,8 @@ function _getReduceKeySuper(Component) {
 
 export function compose(Left, Right) {
 
+  _instances = []
+
   const ComponentObject = {
     extends: coordinateGridBase,
 
@@ -48,6 +50,18 @@ export function compose(Left, Right) {
         // TODO: bubbleチャート系だとうまくいかないかもしれない。
         // legendの利用有無も含めて再検討必要
         Base.methods.applyLegend.apply(this, [{indexLabel: true, reverseOrder}])
+      },
+      updateContainerInnerSize: function(data) {
+        Base.methods.updateContainerInnerSize.apply(this, [data])
+        this.$nextTick(() => {
+          for (var k in _instances) {
+            _instances[k].updateContainerInnerSize(data)
+            _instances[k].$props.layout = this.layoutSettings.name
+          }
+          this.$nextTick(() => {
+            this.render()
+          })
+        })
       }
     },
     mounted: function() {
@@ -79,7 +93,7 @@ export function compose(Left, Right) {
           dimension: this.dimension,
           scale: this.scale,
           dateKey: this.dateKey,
-          legend: false
+          useLegend: false
         }
       })
 
@@ -111,6 +125,9 @@ export function compose(Left, Right) {
           useLegend: false
         }
       })
+
+      _instances.push(leftInstance)
+      _instances.push(rightInstance)
 
       // umm.
       Base.mounted.apply(leftInstance)

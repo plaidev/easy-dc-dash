@@ -71,6 +71,9 @@ export default {
         if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
       }
+      this.$nextTick(() => {
+        this.$emit('resized', {isFullscreen: this.isFullscreen})
+      })
       return style
     },
     screenModeClass: function() {
@@ -93,14 +96,8 @@ export default {
     }
   },
   methods: {
-    reset: function() {
-      this.$emit('reset')
-    },
     toggleFullscreen: function() {
       this.isFullscreen = !this.isFullscreen
-      setTimeout(() => {
-        this.$emit('update:fullscreen', this.isFullscreen)
-      }, 0)
     }
   }
 }

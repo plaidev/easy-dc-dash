@@ -50,6 +50,18 @@ export default {
         reverseOrder = false
       } = options;
       Base.methods.applyLegend.apply(this, [{indexLabel: true, reverseOrder}])
+    },
+    updateContainerInnerSize: function(data) {
+      Base.methods.updateContainerInnerSize.apply(this, [data])
+      this.$nextTick(() => {
+        for (var k in _instances) {
+          _instances[k].updateContainerInnerSize(data)
+          _instances[k].$props.layout = this.layoutSettings.name
+        }
+        this.$nextTick(() => {
+          this.render()
+        })
+      })
     }
   },
   mounted: function() {
@@ -59,6 +71,7 @@ export default {
 
     const lineNum = _reducer({}).length;
 
+    this._instances = []
     const lines = []
 
     for (let i=0; i<lineNum; i++) {
@@ -110,6 +123,7 @@ export default {
         if (BaseChart === AreaLine) StackedLines.mounted.apply(chartInstance)
         if (chartInstance.mounted) chartInstance.mounted()
 
+        _instances.push(chartInstance)
         lines.push(_chart)
       }
     }
