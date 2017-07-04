@@ -36162,7 +36162,7 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     },
     keyTextPostProcess: function keyTextPostProcess(k) {
       var label = this.getLabel(k);
-      return d.key.length > 20 ? d.key.substring(0, 20) + '...' : d.key;
+      return label.length > 20 ? label.substring(0, 20) + '...' : label;
     }
   },
   mounted: function mounted() {
