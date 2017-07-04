@@ -25620,6 +25620,8 @@ var CardContainer = { render: function render() {
       return style;
     },
     sizeStyle: function sizeStyle() {
+      var _this = this;
+
       var style = {};
       if (this.isFullscreen) {
         style.width = 90 + 'vw';
@@ -25628,6 +25630,9 @@ var CardContainer = { render: function render() {
         if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
       }
+      this.$nextTick(function () {
+        _this.$emit('resized', { isFullscreen: _this.isFullscreen });
+      });
       return style;
     },
     screenModeClass: function screenModeClass() {
@@ -25650,16 +25655,8 @@ var CardContainer = { render: function render() {
     }
   },
   methods: {
-    reset: function reset() {
-      this.$emit('reset');
-    },
     toggleFullscreen: function toggleFullscreen() {
-      var _this = this;
-
       this.isFullscreen = !this.isFullscreen;
-      setTimeout(function () {
-        _this.$emit('update:fullscreen', _this.isFullscreen);
-      }, 0);
     }
   }
 };
@@ -25756,7 +25753,8 @@ function generateScales(scaleCode) {
   var _scale = void 0,
       _interval = void 0,
       _unit = void 0,
-      _format = void 0;
+      _format = void 0,
+      _domain = void 0;
 
   // scale
   if (scale == 'time') _scale = d3$1.time.scale;else _scale = d3$1.scale[scale];
@@ -25779,8 +25777,12 @@ function generateScales(scaleCode) {
     if (unit == 'month') _format = TIME_FORMATS.ym;else if (unit == 'day') _format = TIME_FORMATS.ymd;else if (unit == 'hour') _format = TIME_FORMATS.ymdh;else if (unit == 'minute') _format = TIME_FORMATS.ymdhm;else if (unit == 'second') _format = TIME_FORMATS.ymdhms;else _format = TIME_FORMATS[unit];
   }
 
+  if (_scale) {
+    if (unit !== 'ordinal') _domain = _scale().domain;else _domain = _scale;
+  } else _domain = null;
+
   return {
-    domain: _scale ? _scale().domain : null,
+    domain: _domain,
     interval: _interval,
     unit: _unit,
     format: _format
@@ -25789,7 +25791,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @update:fullscreen="v => isFullscreen = v" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -25926,7 +25928,11 @@ var Base = {
 
   data: function data() {
     // umm.
-    return { isMounted: false, isFullscreen: false };
+    return {
+      isMounted: false,
+      isFullscreen: false,
+      containerInnerSize: null
+    };
   },
 
   computed: {
@@ -26028,6 +26034,12 @@ var Base = {
       return getter(dim.top(1)[0]);
     },
     dimensionRange: function dimensionRange() {
+      var _scale$split = this.scale.split('.'),
+          _scale$split2 = slicedToArray(_scale$split, 2),
+          scale = _scale$split2[0],
+          unit = _scale$split2[1];
+
+      if (unit === 'ordinal') return;
       return [this.min, this.max];
     },
     dimAll: function dimAll() {
@@ -26062,32 +26074,13 @@ var Base = {
     isShowXAxisLabels: function isShowXAxisLabels() {
       if (this.showXAxisLabel != null) return this.showXAxisLabel;
 
-      var _scale$split = this.scale.split('.'),
-          _scale$split2 = slicedToArray(_scale$split, 2),
-          scale = _scale$split2[0],
-          unit = _scale$split2[1];
+      var _scale$split3 = this.scale.split('.'),
+          _scale$split4 = slicedToArray(_scale$split3, 2),
+          scale = _scale$split4[0],
+          unit = _scale$split4[1];
 
       if (scale !== 'ordinal') return true;
       return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit;
-    },
-    containerInnerSize: function containerInnerSize() {
-      if (!this.isMounted) return;
-      var width = void 0,
-          height = void 0;
-      if (typeof this.parent === 'string' || this.parent instanceof String) {
-        var el = this.$el.querySelector(this.parent).parentNode;
-        width = el.clientWidth;
-        height = el.clientHeight;
-      } else {
-        width = this.parent.width();
-        height = this.parent.height();
-      }
-      if (!this.isFullscreen) {
-        if (this.width) width = parseFloat(this.width);
-        if (this.height) height = parseFloat(this.height);
-      }
-
-      return { width: width, height: height };
     },
     colorSettings: function colorSettings() {
       var theme = Store.getTheme(this.theme);
@@ -26136,10 +26129,10 @@ var Base = {
       // 互換性のための一時的なメソッド
       if (!this.scale) return null;
 
-      var _scale$split3 = this.scale.split('.'),
-          _scale$split4 = slicedToArray(_scale$split3, 2),
-          scale = _scale$split4[0],
-          unit = _scale$split4[1];
+      var _scale$split5 = this.scale.split('.'),
+          _scale$split6 = slicedToArray(_scale$split5, 2),
+          scale = _scale$split6[0],
+          unit = _scale$split6[1];
 
       if (scale == 'time' && !unit) unit = 'day';
       if (scale == 'time' && unit in TIME_INTERVALS) {
@@ -26162,6 +26155,26 @@ var Base = {
   },
 
   methods: {
+    updateContainerInnerSize: function updateContainerInnerSize(_ref3) {
+      var isFullscreen = _ref3.isFullscreen;
+
+      this.isFullscreen = isFullscreen;
+      // not mounted
+      if (!this.isMounted) return;
+      if (typeof this.parent === 'string' || this.parent instanceof String) {
+        var el = this.$el.querySelector('#' + this.id).parentNode;
+        this.containerInnerSize = {
+          width: el.clientWidth,
+          height: el.clientHeight
+        };
+      } else {
+        // this.parent is compositeChart instance
+        this.containerInnerSize = {
+          width: this.parent.width(),
+          height: this.parent.height()
+        };
+      }
+    },
     removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
       this.chart.filterAll();
       index$2.redrawAll();
@@ -26200,21 +26213,21 @@ var Base = {
         return key.length > 10 ? key.substring(0, 10) + '...' : key;
       });
 
-      var _ref3 = legendOptions || {},
-          _ref3$x = _ref3.x,
-          x = _ref3$x === undefined ? 0 : _ref3$x,
-          _ref3$y = _ref3.y,
-          y = _ref3$y === undefined ? 0 : _ref3$y,
-          _ref3$width = _ref3.width,
-          width = _ref3$width === undefined ? 200 : _ref3$width,
-          _ref3$horizontal = _ref3.horizontal,
-          horizontal = _ref3$horizontal === undefined ? true : _ref3$horizontal,
-          _ref3$itemWidth = _ref3.itemWidth,
-          itemWidth = _ref3$itemWidth === undefined ? 70 : _ref3$itemWidth,
-          _ref3$itemHeight = _ref3.itemHeight,
-          itemHeight = _ref3$itemHeight === undefined ? 12 : _ref3$itemHeight,
-          _ref3$gap = _ref3.gap,
-          gap = _ref3$gap === undefined ? 5 : _ref3$gap;
+      var _ref4 = legendOptions || {},
+          _ref4$x = _ref4.x,
+          x = _ref4$x === undefined ? 0 : _ref4$x,
+          _ref4$y = _ref4.y,
+          y = _ref4$y === undefined ? 0 : _ref4$y,
+          _ref4$width = _ref4.width,
+          width = _ref4$width === undefined ? 200 : _ref4$width,
+          _ref4$horizontal = _ref4.horizontal,
+          horizontal = _ref4$horizontal === undefined ? true : _ref4$horizontal,
+          _ref4$itemWidth = _ref4.itemWidth,
+          itemWidth = _ref4$itemWidth === undefined ? 70 : _ref4$itemWidth,
+          _ref4$itemHeight = _ref4.itemHeight,
+          itemHeight = _ref4$itemHeight === undefined ? 12 : _ref4$itemHeight,
+          _ref4$gap = _ref4.gap,
+          gap = _ref4$gap === undefined ? 5 : _ref4$gap;
 
       this.legend.x(x).y(y).legendWidth(width).horizontal(horizontal).itemWidth(itemWidth).itemHeight(itemHeight).gap(gap);
 
@@ -26265,6 +26278,8 @@ var Base = {
       this.applyLegend();
 
       if (this.colors && chart.colors) chart.colors(this.colors);
+
+      this.render();
     },
     showTooltip: function showTooltip(d, i) {
       var fill = d3$1.event.target.getAttribute('fill');
@@ -26304,7 +26319,6 @@ var Base = {
   watch: {
     layoutSettings: function layoutSettings() {
       this.applyStyles();
-      this.render();
     }
   },
 
@@ -26367,10 +26381,10 @@ var Base = {
 
     // deisgn hack
     if (this.chartType === 'barChart') {
-      var _scale$split5 = this.scale.split('.'),
-          _scale$split6 = slicedToArray(_scale$split5, 2),
-          scale = _scale$split6[0],
-          unit = _scale$split6[1];
+      var _scale$split7 = this.scale.split('.'),
+          _scale$split8 = slicedToArray(_scale$split7, 2),
+          scale = _scale$split8[0],
+          unit = _scale$split8[1];
 
       if (scale === 'time') {
         if (!unit) unit = 'day';
@@ -35349,6 +35363,8 @@ function _getReduceKeySuper(Component) {
 
 function compose(Left, Right) {
 
+  _instances = [];
+
   var ComponentObject = {
     extends: coordinateGridBase,
 
@@ -35383,10 +35399,24 @@ function compose(Left, Right) {
         // legendの利用有無も含めて再検討必要
 
         Base.methods.applyLegend.apply(this, [{ indexLabel: true, reverseOrder: reverseOrder }]);
+      },
+      updateContainerInnerSize: function updateContainerInnerSize(data) {
+        var _this = this;
+
+        Base.methods.updateContainerInnerSize.apply(this, [data]);
+        this.$nextTick(function () {
+          for (var k in _instances) {
+            _instances[k].updateContainerInnerSize(data);
+            _instances[k].$props.layout = _this.layoutSettings.name;
+          }
+          _this.$nextTick(function () {
+            _this.render();
+          });
+        });
       }
     },
     mounted: function mounted() {
-      var _this = this;
+      var _this2 = this;
 
       // TODO: refactoring.
 
@@ -35394,11 +35424,11 @@ function compose(Left, Right) {
         extends: Left,
         computed: {
           parent: function parent() {
-            return _this.chart;
+            return _this2.chart;
           },
           reducerExtractor: function reducerExtractor() {
             return function (d) {
-              var _reducer = generateExtractor(_this.reduce);
+              var _reducer = generateExtractor(_this2.reduce);
               return _reducer(d)[0];
             };
           }
@@ -35415,7 +35445,7 @@ function compose(Left, Right) {
           dimension: this.dimension,
           scale: this.scale,
           dateKey: this.dateKey,
-          legend: false
+          useLegend: false
         }
       });
 
@@ -35423,11 +35453,11 @@ function compose(Left, Right) {
         extends: Right,
         computed: {
           parent: function parent() {
-            return _this.chart;
+            return _this2.chart;
           },
           reducerExtractor: function reducerExtractor() {
             return function (d) {
-              var _reducer = generateExtractor(_this.reduce);
+              var _reducer = generateExtractor(_this2.reduce);
               return _reducer(d)[1];
             };
           }
@@ -35447,6 +35477,9 @@ function compose(Left, Right) {
           useLegend: false
         }
       });
+
+      _instances.push(leftInstance);
+      _instances.push(rightInstance);
 
       // umm.
       Base.mounted.apply(leftInstance);
@@ -36123,10 +36156,14 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     showTooltip: function showTooltip(d) {
       var fill = d3$1.event.target.getAttribute('fill');
       var data = {
-        key: d.key,
+        key: this.getLabel(d.key),
         val: d.value
       };
       this.$refs.tooltip.show(data, fill);
+    },
+    keyTextPostProcess: function keyTextPostProcess(k) {
+      var label = this.getLabel(k);
+      return d.key.length > 20 ? d.key.substring(0, 20) + '...' : d.key;
     }
   },
   mounted: function mounted() {
@@ -36137,8 +36174,8 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     chart.x(d3$1.scale[this.scale]()).gap(this.gap).elasticX(true).othersLabel(this.othersLabel).labelOffsetX(this.labelOffsetX).labelOffsetY(this.labeloffsetY).ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e']).ordering(function (d) {
       return _this.descending ? -d.value : d.value;
     }).on('pretransition', function () {
-      chart.selectAll('g.row text').text(function (d) {
-        return d.key.length > 20 ? d.key.substring(0, 20) + '...' : d.key;
+      chart.selectAll('g.row text').text(function (k) {
+        return _this.keyTextPostProcess(k);
       });
     });
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
@@ -37898,10 +37935,24 @@ var MultiLines = {
           reverseOrder = _options$reverseOrder === undefined ? false : _options$reverseOrder;
 
       Base.methods.applyLegend.apply(this, [{ indexLabel: true, reverseOrder: reverseOrder }]);
+    },
+    updateContainerInnerSize: function updateContainerInnerSize(data) {
+      var _this = this;
+
+      Base.methods.updateContainerInnerSize.apply(this, [data]);
+      this.$nextTick(function () {
+        for (var k in _instances) {
+          _instances[k].updateContainerInnerSize(data);
+          _instances[k].$props.layout = _this.layoutSettings.name;
+        }
+        _this.$nextTick(function () {
+          _this.render();
+        });
+      });
     }
   },
   mounted: function mounted() {
-    var _this = this;
+    var _this2 = this;
 
     var chart = this.chart;
     var dim = this.grouping;
@@ -37909,6 +37960,7 @@ var MultiLines = {
 
     var lineNum = _reducer({}).length;
 
+    this._instances = [];
     var lines = [];
 
     for (var i = 0; i < lineNum; i++) {
@@ -37936,10 +37988,10 @@ var MultiLines = {
               }
             },
             propsData: {
-              dimension: _this.dimension,
-              dateKey: _this.dateKey,
+              dimension: _this2.dimension,
+              dateKey: _this2.dateKey,
               chartType: 'lineChart',
-              scale: _this.scale,
+              scale: _this2.scale,
               useLegend: false
             },
             methods: {
@@ -37953,7 +38005,7 @@ var MultiLines = {
           });
 
           // ummmmmm.
-          if (BaseChart.cssModules) _this.childCssModules.push(BaseChart.cssModules);
+          if (BaseChart.cssModules) _this2.childCssModules.push(BaseChart.cssModules);
 
           // ummmm.
           var _chart = Base.mounted.apply(chartInstance);
@@ -37961,6 +38013,7 @@ var MultiLines = {
           if (BaseChart === AreaLine) StackedLines.mounted.apply(chartInstance);
           if (chartInstance.mounted) chartInstance.mounted();
 
+          _instances.push(chartInstance);
           lines.push(_chart);
         })();
       }
