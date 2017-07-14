@@ -1,11 +1,3 @@
-<template>
-  <div :class="$style['chart-root']">
-    <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
-      <span v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
-    </div>
-  </div>
-</template>
-
 <script lang='js'>
 
 import d3 from 'd3'
@@ -29,21 +21,6 @@ export default {
     height: {
       type: Number,
       default: 120
-    },
-    themeColor: {
-      type: String,
-      default:'#2AAB9F'
-    },
-    fillBoxColor: {
-      type: Boolean,
-      default: true
-    },
-    fontSize: {
-      type: Number,
-      default: 48
-    },
-    title: {
-      type: String
     },
     numberFormat: {
       type: String,
@@ -161,21 +138,15 @@ export default {
 
 <style lang="less" module>
 .chart-root :global {
-  .nd-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 5px;
-    border: 2px solid;
-    background: #FFF;
-    color: #FFF;
-  }
-  .nd-box .number-display {
+  .number-display {
+    font-size: 2em;
     font-weight: bold;
+    opacity: .8;
   }
-  .nd-box .number-unit {
-    font-size: 0.4em;
+  .number-unit {
+    font-size: 1em;
+    font-weight: bold;
+    opacity: .8;
   }
 }
-</style>
+ </style>

@@ -4,10 +4,12 @@
     <div class="card-container">
       <div class="inner-container" :style="sizeStyle">
         <div class="container-header">
+          <div class="title">
+            <span v-text="title"></span>
+          </div>
           <div class="icon-box">
             <i class="fa" :class="fullscreenIconClass" @click="toggleFullscreen"></i>
           </div>
-          <h3 v-text="title" class="title"></h3>
         </div>
         <div class="render-area" :style="renderAreaStyle">
           <slot></slot>
@@ -105,15 +107,10 @@ export default {
 
 <style module>
 
-.outer-container {
-  position: relative;
-}
-
 .backdrop {
 }
 
 .fullscreen .backdrop {
-  position: fixed;
   z-index: 99;
   top: 0;
   left: 0;
@@ -123,17 +120,19 @@ export default {
 }
 
 .card-container {
+  width: 100%;
+  height: 100%;
   background-color: white;
-  position: absolute;
   top: 2px;
   bottom: 2px;
   left: 2px;
   right: 2px;
   transition: all 200ms 0s ease;
+  border-radius: 2px;
+  box-shadow: 1px 1px 5px 1px rgba(0,0,0,.1);
 }
 
 .fullscreen .card-container {
-  position: fixed;
   top: 5vh;
   left: 5vw;
   right: 5vw;
@@ -142,10 +141,8 @@ export default {
 }
 
 .inner-container {
-  position: relative;
-  margin: -2px;
-
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -162,28 +159,30 @@ export default {
 }
 
 .container-header {
-  position: absolute;
   top: 0;
-  left: 10px;
-  right: 10px;
+  width: 100%;
+  border-bottom: 0.5px solid #ccc;
+  opacity: .6;
+  display: flex;
+  flex-direction: row;
+  align-items: space-around;
 }
 
 .title {
   width: calc(100% - 2em);
-  opacity: 0.6;
+  margin: 0 auto;
+  padding: 10px 0px 10px 20px;
+}
+.title span {
   font-size: 24px;
 }
 
 .icon-box {
-  position: absolute;
-  right: 0px;
-  top: 3px;
-  height: 1.5em;
-  width: 2em;
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
+  font-size: 1.5em;
+  margin: auto;
+  padding-right: 10px;
   color: gray;
+  opacity: 1;
 }
 
 .icon-box i {
