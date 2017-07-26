@@ -25560,7 +25560,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .card__backdrop { } /* fullscreen */ .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.8); } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__card-container { background-color: #FFF; border-radius: 2px; box-shadow: 0px 1px 2px 0px rgba(0,0,0,.08); transition: all .2s 0 ease; } .card__inner-container { display: flex; flex-direction: column; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { top: 0; width: 100%; border-bottom: 0.5px solid #ccc; opacity: .6; display: flex; flex-direction: row; align-items: space-around; } .card__title { width: calc(100% - 2em); margin: 0 auto; padding: 12px 24px; } .card__title span { font-size: 1em; } .card__icon-box { font-size: 1em; margin: auto; padding-right: 8px; color: gray; opacity: 1; } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px;*/ transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 12px; display: flex; flex-direction: row-reverse; align-items: center; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25569,8 +25569,8 @@ var ResetButton = { render: function render() {
 })();
 
 var CardContainer = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__title" }, [_c('span', { domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })])]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
-  }, staticRenderFns: [], cssModules: { "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
+  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
   props: {
     title: {
       type: String
@@ -25614,6 +25614,7 @@ var CardContainer = { render: function render() {
       var style = {};
       if (this.applyResponsive) {
         style.width = 100 + '%';
+        style.height = this.height + 'px';
       } else {
         if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
@@ -25629,6 +25630,7 @@ var CardContainer = { render: function render() {
         style.height = 90 + 'vh';
       } else if (this.applyResponsive) {
         style.width = 100 + '%';
+        style.height = this.height + 'px';
       } else {
         if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
@@ -25668,7 +25670,7 @@ var CardContainer = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-tooltip__krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box { height: 100%; width: 30px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box .krt-dc-tooltip__circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__key { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-tooltip__krt-dc-tooltip { pointer-events: none; color: #475A57; font-size: 12px; line-height: 1.2; border: 1px solid rgba(0,0,0,.08); background: #FFF; box-shadow: 2px 4px 8px 0 rgba(0,0,0,.24); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 4px 12px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box { height: 100%; width: 30px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box .krt-dc-tooltip__circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__key { color: #9B9B9B; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__val, .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__rate, { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25677,12 +25679,12 @@ var CardContainer = { render: function render() {
 })();
 
 var KrtDcTooltip = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip__krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "krt-dc-tooltip__circle-box" }, [_c('div', { staticClass: "krt-dc-tooltip__circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "krt-dc-tooltip__chart-data" }, [_c('div', { staticClass: "krt-dc-tooltip__key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip__krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "krt-dc-tooltip__circle-box" }, [_c('div', { staticClass: "krt-dc-tooltip__circle", style: { backgroundColor: '#FFF', border: '4px solid', borderColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "krt-dc-tooltip__chart-data" }, [_c('div', { staticClass: "krt-dc-tooltip__key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
       return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
-    })], 2), _c('div', { staticClass: "val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
+    })], 2), _c('div', { staticClass: "krt-dc-tooltip__val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
       return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
-    })], 2), _c('div', { staticClass: "rate" }, [_vm.data.rate !== undefined && _vm.data.rate !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.rate) + "%")])]) : _vm._e()])])]) : _vm._e();
-  }, staticRenderFns: [], cssModules: { "krt-dc-tooltip": "krt-dc-tooltip__krt-dc-tooltip", "circle-box": "krt-dc-tooltip__circle-box", "circle": "krt-dc-tooltip__circle", "chart-data": "krt-dc-tooltip__chart-data", "key": "krt-dc-tooltip__key" },
+    })], 2), _c('div', { staticClass: "krt-dc-tooltip__rate" }, [_vm.data.rate !== undefined && _vm.data.rate !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.rate) + "%")])]) : _vm._e()])])]) : _vm._e();
+  }, staticRenderFns: [], cssModules: { "krt-dc-tooltip": "krt-dc-tooltip__krt-dc-tooltip", "circle-box": "krt-dc-tooltip__circle-box", "circle": "krt-dc-tooltip__circle", "chart-data": "krt-dc-tooltip__chart-data", "key": "krt-dc-tooltip__key", "val": "krt-dc-tooltip__val", "rate": "krt-dc-tooltip__rate" },
   name: 'KrtDcTooltip',
   data: function data() {
     return {
@@ -25794,7 +25796,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -26167,8 +26169,8 @@ var Base = {
       if (typeof this.parent === 'string' || this.parent instanceof String) {
         var el = this.$el.querySelector('#' + this.id).parentNode;
         this.containerInnerSize = {
-          width: el.innerHeihgt,
-          height: el.innerWidth
+          width: el.clientWidth,
+          height: el.clientHeight
         };
       } else {
         // this.parent is compositeChart instance
@@ -35517,7 +35519,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".number-display__chart-root .card__render-area { justify-content: flex-start; } .number-display__chart-root .number-display { display: block; margin: 12px 24px; } .number-display__chart-root .number-threshold, .number-display__chart-root .number-unit { font-size: 40px; font-weight: bold; opacity: .8; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".number-display__chart-root .card__render-area { justify-content: flex-start; } .number-display__chart-root .krt-dc-number-display { color: #354341; display: flex; align-items: center; justify-content: center; flex-direction: column; } .number-display__chart-root .title { border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 12px 24px; width: 100%; } .number-display__chart-root .number-display { display: block; padding: 12px 24px; width: 100%; } .number-display__chart-root .number-threshold, .number-display__chart-root .number-unit { font-weight: bold; } .number-display__chart-root .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35525,7 +35527,9 @@ function compose(Left, Right) {
   }
 })();
 
-var NumberDisplay = { cssModules: { "chartRoot": "number-display__chart-root", "chart-root": "number-display__chart-root" },
+var NumberDisplay = { render: function render() {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { class: _vm.$style['chart-root'] }, [_c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "title", style: { fontSize: _vm.fontSize / 2.5 + 'px' }, domProps: { "textContent": _vm._s(this.title || this.reduce) } })])]);
+  }, staticRenderFns: [], cssModules: { "chartRoot": "number-display__chart-root", "chart-root": "number-display__chart-root" },
   extends: Base,
   props: {
     dimension: {
@@ -35542,6 +35546,21 @@ var NumberDisplay = { cssModules: { "chartRoot": "number-display__chart-root", "
     height: {
       type: Number,
       default: 120
+    },
+    themeColor: {
+      type: String,
+      default: '#2AAB9F'
+    },
+    fillBoxColor: {
+      type: Boolean,
+      default: true
+    },
+    fontSize: {
+      type: Number,
+      default: 48
+    },
+    title: {
+      type: String
     },
     numberFormat: {
       type: String,
@@ -35562,6 +35581,10 @@ var NumberDisplay = { cssModules: { "chartRoot": "number-display__chart-root", "
     unitPostfix: {
       type: String,
       default: ''
+    },
+    isResponsive: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -35618,6 +35641,10 @@ var NumberDisplay = { cssModules: { "chartRoot": "number-display__chart-root", "
         styles.color = this.themeColor;
         styles.borderColor = this.themeColor;
         styles.background = undefined;
+      }
+      if (this.isResponsive) {
+        styles.width = this.width + '%';
+        styles.height = this.height + '%';
       }
       return styles;
     },

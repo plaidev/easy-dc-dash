@@ -1,7 +1,7 @@
 <template>
   <div :class="$style['chart-root']">
     <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
-      <span v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
+      <span class="title" v-text="this.title || this.reduce" :style="{fontSize: (fontSize/2.5)+'px'}"></span>
     </div>
   </div>
 </template>
@@ -64,6 +64,10 @@ export default {
     unitPostfix: {
       type: String,
       default: ''
+    },
+    isResponsive: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -121,6 +125,10 @@ export default {
         styles.borderColor = this.themeColor
         styles.background = undefined
       }
+      if (this.isResponsive) {
+        styles.width = this.width+'%'
+        styles.height = this.height+'%'
+      }
       return styles
     },
     templates: function() {
@@ -164,13 +172,25 @@ export default {
   .card__render-area {
     justify-content: flex-start;
   }
+  .krt-dc-number-display {
+    color: #354341;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .title {
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    padding: 12px 24px;
+    width: 100%;
+  }
   .number-display {
     display: block;
-    margin: 12px 24px;
+    padding: 12px 24px;
+    width: 100%;
   }
   .number-threshold,
   .number-unit {
-    font-size: 40px;
     font-weight: bold;
   }
   .nd-box .number-unit {

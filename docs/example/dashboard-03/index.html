@@ -34,6 +34,11 @@
               title="平均PV数"
               reduce="pv"
               unit-postfix="回"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              :width="100"
+              :height="100"
+              :is-responsive='true'
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -41,6 +46,11 @@
               title="平均滞在時間"
               reduce="bounce_cnt"
               unit-postfix="秒"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              :width="100"
+              :height="100"
+              :is-responsive='true'
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -48,6 +58,11 @@
               title="平均CVR"
               reduce="cv_cnt"
               unit-postfix="％"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              :width="100"
+              :height="100"
+              :is-responsive='true'
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -55,6 +70,11 @@
               title="平均ゴール金額"
               reduce="session_cnt"
               unit-postfix="円"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              :width="100"
+              :height="100"
+              :is-responsive='true'
             ></number-display>
           </div>
         </section>
@@ -62,34 +82,102 @@
         <section class="row section-row">
           <div class="col-md-12">
             <ordinal-bar
-              title='ordinal-bar'
+              title='セグメント毎UU数'
               dimension='d.name'
               reduce='d.pv'
               x-axis-label='name'
               y-axis-label='pv'
-              :width="1024"
-              :height="320"
+              :height="300"
               link-formatter="segmentUsers"
+              layout-details="{margins: {top: 88, bottom: 48, left: 52, right: 24}}"
             ></ordinal-bar>
           </div>
         </section>
 
-        <section class="row sectio-row">
+        <section class="row section-row">
           <div class="col-md-6">
             <heat-map
+              title="RFM分析(recencyとfrequency)"
               dimension="[d.name,d.meta]"
               reduce="d.pv"
+              :height="300"
               :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
               :border-radius=0
+              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
             ></heat-map>
           </div>
           <div class="col-md-6">
             <heat-map
+              title="RFM分析(frequencyとmonetary)"
               dimension="[d.name,d.meta]"
               reduce="d.pv"
+              :height="300"
               :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
               :border-radius=0
+              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
             ></heat-map>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-6">
+            <segment-pie
+              title="リフトアップゴール比"
+              dimension='d.name'
+              segments="a,b,c,d,e,f"
+              reduce='d.pv'
+              :use-legend='false'
+              :cap=3
+              :height=300
+              others-label='その他'
+              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
+            ></segment-pie>
+          </div>
+          <div class="col-md-6">
+            <segment-pie
+              title="マイナスのリフトアップゴール比"
+              dimension='d.name'
+              segments="a,b,c,d,e,f"
+              reduce='d.pv'
+              :use-legend='false'
+              :cap=3
+              :height=300
+              others-label='その他'
+              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
+            ></segment-pie>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-12">
+            <bubble
+              title="再訪率とゴールのリフトアップ"
+              date-key='d.session_end_date'
+              dimension='ymd'
+              reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+              :height=400
+              radius-format='%'
+              :max-bubble-relative-size=0.1
+              layout-details="{margins: {top: 88, bottom: 48, left: 52, right: 24}}"
+              :is-resposive='true'
+            ></bubble>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-12">
+            <data-table
+              title='table'
+              dimension="d.name"
+              columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+              sort-by="name"
+              order="descending"
+              :representations="{link: 'linkFormat'}"
+              :height=400
+              :use-table-paging='true'
+              :offset=0
+              :rows-per-page=5
+            ></data-table>
           </div>
         </section>
 

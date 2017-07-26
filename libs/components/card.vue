@@ -63,6 +63,7 @@ export default {
       const style = {};
       if (this.applyResponsive) {
         style.width = 100+'%';
+        style.height = this.height+'px'
       } else {
         if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
@@ -76,6 +77,7 @@ export default {
         style.height = 90+'vh';
       } else if (this.applyResponsive) {
         style.width = 100+'%';
+        style.height = this.height+'px'
       } else {
         if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
@@ -132,12 +134,12 @@ export default {
 }
 
 .card-container {
-  background-color: white;
-  position: absolute;
+  background-color: #FFF;
+  /*position: absolute;
   top: 2px;
   bottom: 2px;
   left: 2px;
-  right: 2px;
+  right: 2px;*/
   transition: all 200ms 0s ease;
 }
 
@@ -152,7 +154,6 @@ export default {
 
 .inner-container {
   position: relative;
-  margin: -2px;
 
   display: flex;
   align-items: center;
@@ -173,26 +174,28 @@ export default {
 .container-header {
   position: absolute;
   top: 0;
-  left: 10px;
-  right: 10px;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 
 .title {
+  color: #475A57;
+  font-size: 1em;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding-left: 24px;
   width: calc(100% - 2em);
-  opacity: 0.6;
-  font-size: 24px;
 }
 
 .icon-box {
   position: absolute;
-  right: 0px;
-  top: 3px;
-  height: 1.5em;
-  width: 2em;
+  right: 8px;
+  top: 12px;
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
-  color: gray;
+  color: rgba(0,0,0,.16);
 }
 
 .icon-box i {
