@@ -65,7 +65,7 @@ export default {
 
   template: `
     <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
-      <div class="krt-dc-component" :id="id">
+      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
         <chart-link ref='chartLink'></chart-link>
@@ -416,8 +416,8 @@ export default {
       if (typeof this.parent === 'string' || this.parent instanceof String) {
         const el = this.$el.querySelector(`#${this.id}`).parentNode
         this.containerInnerSize = {
-          width: el.innerHeihgt,
-          height: el.innerWidth
+          width: el.clientWidth,
+          height: el.clientHeight
         }
       }
       else {

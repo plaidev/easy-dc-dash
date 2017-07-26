@@ -4,12 +4,10 @@
     <div class="card-container">
       <div class="inner-container" :style="sizeStyle">
         <div class="container-header">
-          <div class="title">
-            <span v-text="title"></span>
-          </div>
           <div class="icon-box">
             <i class="fa" :class="fullscreenIconClass" @click="toggleFullscreen"></i>
           </div>
+          <h3 v-text="title" class="title"></h3>
         </div>
         <div class="render-area" :style="renderAreaStyle">
           <slot></slot>
@@ -115,10 +113,14 @@ export default {
 </script>
 
 <style module>
+
+.outer-container {
+  position: relative;
+}
+
 .backdrop {
 }
 
-/* fullscreen */
 .fullscreen .backdrop {
   position: fixed;
   z-index: 99;
@@ -126,26 +128,36 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8); }
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.card-container {
+  background-color: white;
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  transition: all 200ms 0s ease;
+}
+
 .fullscreen .card-container {
   position: fixed;
   top: 5vh;
   left: 5vw;
   right: 5vw;
   bottom: 5vh;
-  z-index: 100; }
-
-.card-container {
-  background-color: #FFF;
-  border-radius: 2px;
-  box-shadow: 0px 1px 2px 0px rgba(0,0,0,.08);
-  transition: all .2s 0 ease; }
+  z-index: 100;
+}
 
 .inner-container {
+  position: relative;
+  margin: -2px;
+
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center; }
+  justify-content: center;
+}
 
 .render-area {
   width: 100%;
@@ -154,41 +166,48 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center; }
+  justify-content: center;
+
+}
 
 .container-header {
+  position: absolute;
   top: 0;
-  width: 100%;
-  border-bottom: 0.5px solid #ccc;
-  opacity: .6;
-  display: flex;
-  flex-direction: row;
-  align-items: space-around; }
+  left: 10px;
+  right: 10px;
+}
 
 .title {
   width: calc(100% - 2em);
-  margin: 0 auto;
-  padding: 12px 24px; }
-.title span {
-  font-size: 1em; }
+  opacity: 0.6;
+  font-size: 24px;
+}
 
 .icon-box {
-  font-size: 1em;
-  margin: auto;
-  padding-right: 8px;
+  position: absolute;
+  right: 0px;
+  top: 3px;
+  height: 1.5em;
+  width: 2em;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
   color: gray;
-  opacity: 1; }
+}
 
 .icon-box i {
-  padding: 2px; }
+  padding: 2px;
+}
 
 .icon-box i:hover {
   color: black;
   padding: 1px;
   border: solid 1px gray;
-  border-radius: 3px; }
+  border-radius: 3px;
+}
 
 .hide-legend .dc-legend {
-  display: none; }
+  display: none;
+}
 
 </style>
