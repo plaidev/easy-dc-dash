@@ -106,9 +106,9 @@ export default {
         templates.one += `<span class="number-unit">${this.unitPrefix}</span>`
         templates.some += `<span class="number-unit">${this.unitPrefix}</span>`
       }
-      templates.none += `<span class="number-display">0</span>`,
-      templates.one += `<span class="number-display">%number</span>`,
-      templates.some += `<span class="number-display">%number</span>`
+      templates.none += `<span class="number-threshold">0</span>`,
+      templates.one += `<span class="number-threshold">%number</span>`,
+      templates.some += `<span class="number-threshold">%number</span>`
 
       const unitPostfixes = this._unitPostFix.split(',');
       if (unitPostfixes.length === 1) {
@@ -138,13 +138,16 @@ export default {
 
 <style lang="less" module>
 .chart-root :global {
-  .number-display {
-    font-size: 2em;
-    font-weight: bold;
-    opacity: .8;
+  .card__render-area {
+    justify-content: flex-start;
   }
+  .number-display {
+    display: block;
+    margin: 12px 24px;
+  }
+  .number-threshold,
   .number-unit {
-    font-size: 1em;
+    font-size: 40px;
     font-weight: bold;
     opacity: .8;
   }
