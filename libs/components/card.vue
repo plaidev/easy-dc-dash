@@ -37,9 +37,9 @@ export default {
       type: Boolean,
       default: false
     },
-    applyResponsive: {
+    isResponsive: {
       type: Boolean,
-      default: true
+      default: false
     },
     hideLegend: {
       type: Boolean,
@@ -61,9 +61,11 @@ export default {
     },
     outerSizeStyle: function() {
       const style = {};
-      if (this.applyResponsive) {
+      if (this.isResponsive) {
         style.width = 100+'%';
-        style.height = this.height+'px'
+        if (this.height > 0 ) {
+          style.height = this.height+'px'
+        }
       } else {
         if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
@@ -75,9 +77,11 @@ export default {
       if (this.isFullscreen) {
         style.width = 90+'vw';
         style.height = 90+'vh';
-      } else if (this.applyResponsive) {
+      } else if (this.isResponsive) {
         style.width = 100+'%';
-        style.height = this.height+'px'
+        if (this.height > 0 ) {
+          style.height = this.height+'px'
+        }
       } else {
         if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';

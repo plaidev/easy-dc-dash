@@ -4,11 +4,12 @@
 import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase'
 import Store from '../store'
 import {removeEmptyBins} from '../utils'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -37,7 +38,15 @@ export default {
     },
     useLegend: {
       default: false
-    }
+    },
+    chartColor: {
+      type: String,
+      default: ''
+    },
+    isResponsive: {
+      type: Boolean,
+      default: false
+    },
   },
   computed: {
     reducer: function() {
@@ -45,6 +54,9 @@ export default {
       const reducer = this.reducerExtractor;
       const group = dim.group().reduceSum(reducer)
       return this.removeEmptyRows ? removeEmptyBins(group) : group
+    },
+    colors: function() {
+      return this.chartColor ? this.chartColor : null
     }
   },
   methods: {
@@ -60,7 +72,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-
     chart
       .barPadding(this.barPadding)
       .outerPadding(this.outerPadding)
@@ -68,6 +79,7 @@ export default {
       .xUnits(dc.units.ordinal)
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
+      .renderVerticalGridLines(false)
     return chart
   }
 }

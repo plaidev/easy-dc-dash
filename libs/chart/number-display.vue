@@ -64,10 +64,6 @@ export default {
     unitPostfix: {
       type: String,
       default: ''
-    },
-    isResponsive: {
-      type: Boolean,
-      default: false
     }
   },
   computed: {

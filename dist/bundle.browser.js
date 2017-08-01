@@ -24758,6 +24758,22 @@ var DefaultTheme = {
       weekOrdinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'];
     }
 
+    if (name == 'analogous') {
+      ordinal = ['#2AAB9F', '#2EB9DC', '#2E85DC', '#2E50DC', '#3F2EDC', '#732EDC', '#AC21E8', '#DC2EDC', '#DC2EA7', '#DC2E73', '#DC2E3F', '#DC502E', '#DC852E', '#E8C021', '#D4E821', '#98E821', '#62DC2E', '#34D534', '#23CD56', '#29C782'];
+    }
+
+    if (name == 'approximate') {
+      ordinal = ['#2AAB9F', '#009688', '#66BB6A', '#4CAF50', '#9CCC65', '#8BC34A', '#D4E157', '#CDDC39', '#26C6DA', '#00BCD4'];
+    }
+
+    if (name == 'tint') {
+      ordinal = ['#2AAB9F', '#3ACFC0', '#63D9CD', '#8CE3DA', '#B5EDE7'];
+    }
+
+    if (name == 'tint_complement') {
+      ordinal = ['#BD0022', '#F0002C', '#FF244C', '#FF5776', '#FF8A9F'];
+    }
+
     return {
       linear: linear,
       ordinal: ordinal,
@@ -25589,9 +25605,9 @@ var CardContainer = { render: function render() {
       type: Boolean,
       default: false
     },
-    applyResponsive: {
+    isResponsive: {
       type: Boolean,
-      default: true
+      default: false
     },
     hideLegend: {
       type: Boolean,
@@ -25613,9 +25629,11 @@ var CardContainer = { render: function render() {
     },
     outerSizeStyle: function outerSizeStyle() {
       var style = {};
-      if (this.applyResponsive) {
+      if (this.isResponsive) {
         style.width = 100 + '%';
-        style.height = this.height + 'px';
+        if (this.height > 0) {
+          style.height = this.height + 'px';
+        }
       } else {
         if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
@@ -25629,9 +25647,11 @@ var CardContainer = { render: function render() {
       if (this.isFullscreen) {
         style.width = 90 + 'vw';
         style.height = 90 + 'vh';
-      } else if (this.applyResponsive) {
+      } else if (this.isResponsive) {
         style.width = 100 + '%';
-        style.height = this.height + 'px';
+        if (this.height > 0) {
+          style.height = this.height + 'px';
+        }
       } else {
         if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
@@ -25716,7 +25736,7 @@ var KrtDcTooltip = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .chart-link__krt-dc-chart-link { color: #000; font-size: 12px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: absolute; padding: 4px 6px; z-index: 2; right: 0; bottom: 0; display: flex; flex-direction: row; align-items: center; align-content: center; } .chart-link__krt-dc-chart-link .chart-link__link-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chart-link__krt-dc-chart-link .chart-link__link-icon { padding-left: 5px; font-size: 14px; vertical-align: text-bottom; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .chart-link__krt-dc-chart-link { color: #000; font-size: 14px; background: #FFF; box-shadow: 2px 4px 8px rgba(0,0,0,.24); position: absolute; padding: 6px 8px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .chart-link__krt-dc-chart-link .chart-link__link-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chart-link__krt-dc-chart-link .chart-link__link-icon { padding-left: 5px; font-size: 14px; vertical-align: text-bottom; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25725,18 +25745,24 @@ var KrtDcTooltip = { render: function render() {
 })();
 
 var ChartLink = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.link ? _c('div', { staticClass: "chart-link__krt-dc-chart-link" }, [_c('span', [_c('a', { staticClass: "chart-link__link-text", attrs: { "href": _vm.link, "target": "_blank" }, domProps: { "textContent": _vm._s(_vm.link) } })]), _vm._v(" "), _c('span', [_c('a', { attrs: { "href": _vm.link, "target": "_blank" } }, [_c('i', { staticClass: "fa fa-external-link chart-link__link-icon", attrs: { "aria-hidden": "true" } })])])]) : _vm._e();
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.link ? _c('div', { staticClass: "chart-link__krt-dc-chart-link", style: { left: _vm.left + 'px', top: _vm.top + 'px' } }, [_c('span', [_c('a', { staticClass: "chart-link__link-text", attrs: { "href": _vm.link, "target": "_blank" }, domProps: { "textContent": _vm._s(_vm.link) } })]), _vm._v(" "), _c('span', [_c('a', { attrs: { "href": _vm.link, "target": "_blank" } }, [_c('i', { staticClass: "fa fa-external-link chart-link__link-icon", attrs: { "aria-hidden": "true" } })])])]) : _vm._e();
   }, staticRenderFns: [], cssModules: { "krt-dc-chart-link": "chart-link__krt-dc-chart-link", "link-text": "chart-link__link-text", "link-icon": "chart-link__link-icon" },
   name: 'KrtDcChartLink',
   data: function data() {
     return {
-      link: null
+      link: null,
+      top: 0,
+      left: 0
     };
   },
 
   methods: {
     show: function show(c, link) {
       if (c.filters().length === 0) return this.remove();
+      var el = this.$el;
+      var viewOffset = el.parentElement.getBoundingClientRect();
+      this.left = d3.event.clientX - viewOffset.left;
+      this.top = d3.event.clientY - viewOffset.top - 40;
       this.link = link;
     },
     remove: function remove() {
@@ -25797,7 +25823,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :is-responsive="isResponsive" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -26152,6 +26178,10 @@ var Base = {
           unit = _ref2[1];
 
       if (scale == 'time' || this.dateKey || this.timeScale) return true;
+      return false;
+    },
+    isResponsive: function isResponsive() {
+      if (this) return true;
       return false;
     },
     hideLegend: function hideLegend() {
@@ -35582,10 +35612,6 @@ var NumberDisplay = { render: function render() {
     unitPostfix: {
       type: String,
       default: ''
-    },
-    isResponsive: {
-      type: Boolean,
-      default: false
     }
   },
   computed: {
@@ -35873,6 +35899,10 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
     chartType: {
       type: String,
       default: 'pieChart'
+    },
+    colorScale: {
+      type: String,
+      default: 'tint'
     }
   },
 
@@ -35896,6 +35926,13 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
           rate: rate
         };
       };
+    },
+    colorSettings: function colorSettings() {
+      var theme = Store.getTheme(this.theme);
+      return theme.colors(this.chartType, this.colorScale);
+    },
+    colors: function colors() {
+      return null;
     }
   },
 
@@ -35908,7 +35945,7 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
 
   mounted: function mounted() {
     var chart = this.chart;
-    chart.othersLabel(this.othersLabel);
+    chart.ordinalColors(this.colorSettings.ordinal).othersLabel(this.othersLabel);
 
     if (!this.showLabel) {
       chart.label(function (d) {
@@ -36325,7 +36362,7 @@ var StackedLines = {
 })();
 
 var OrdinalBar = {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -36354,6 +36391,14 @@ var OrdinalBar = {
     },
     useLegend: {
       default: false
+    },
+    chartColor: {
+      type: String,
+      default: ''
+    },
+    isResponsive: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -36362,6 +36407,9 @@ var OrdinalBar = {
       var reducer = this.reducerExtractor;
       var group = dim.group().reduceSum(reducer);
       return this.removeEmptyRows ? removeEmptyBins(group) : group;
+    },
+    colors: function colors() {
+      return this.chartColor ? this.chartColor : null;
     }
   },
   methods: {
@@ -36377,8 +36425,7 @@ var OrdinalBar = {
   },
   mounted: function mounted() {
     var chart = this.chart;
-
-    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY);
+    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY).renderVerticalGridLines(false);
     return chart;
   }
 };
@@ -37008,7 +37055,7 @@ var _computed;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; height: calc(75%); width: 94%; padding-top: 25px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; width: 100%; } .data-table__chart-root th.dc-table-head { cursor: pointer; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; width: 94%; padding-top: 42px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; white-space: nowrap; width: 100%; } .data-table__chart-root .table-paging { display: flex; align-items: center; flex-direction: row-reverse; margin: 32px auto; width: 100%; } .data-table__chart-root .table-record-row { position: absolute; } .data-table__chart-root .table-btns { margin: 0 auto; } .data-table__chart-root .table-paging .btn-secondary { border-color: #45AB9F; color: #45AB9F; font-size: 12px; font-weight: bold; margin-left: 8px; } .data-table__chart-root .table-paging .btn-secondary.disabled, .data-table__chart-root .table-paging .btn-secondary:disabled { border-color: #ccc; color: #ccc; } .data-table__chart-root .table-paging .btn-secondary:hover { background-color: #45AB9F; color: #FFF; } .data-table__chart-root th.dc-table-head { cursor: pointer; } .data-table__chart-root th.dc-table-head.asc, .data-table__chart-root th.dc-table-head.desc { color: #2AAB9F; } .data-table__chart-root th.dc-table-head.asc .fa-sort:before { content: '\\F0DE'; } .data-table__chart-root th.dc-table-head.desc .fa-sort:before { content: '\\F0DD'; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -37067,13 +37114,13 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { class: _vm.$style['chart-root'], attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title }, on: { "update:fullscreen": function updateFullscreen(v) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { class: _vm.$style['chart-root'], attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title, "is-responsive": _vm.isResponsive }, on: { "update:fullscreen": function updateFullscreen(v) {
           return _vm.isFullscreen = v;
-        } } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+        } } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_c('div', { staticClass: "table-btns" }, [_c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
-        } } }, [_vm._v("Next")])]) : _vm._e(), _c('div', { staticClass: "table-container" }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
+        } } }, [_vm._v("Next")])]), _c('div', { staticClass: "table-record-row" }, [_c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")])])]) : _vm._e(), _c('div', { staticClass: "table-container" }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
           _vm.onclick($event);
         } } })])])]);
   }, staticRenderFns: [], cssModules: { "chartRoot": "data-table__chart-root", "chart-root": "data-table__chart-root" },
@@ -37136,7 +37183,8 @@ var DataTable = { render: function render() {
       filteredDataSize: 0,
       filteredSize: 0,
       sortKey: this.sortBy,
-      sortOrder: this.order
+      sortOrder: this.order,
+      selectedColumnName: ''
     };
   },
 
@@ -37258,6 +37306,7 @@ var DataTable = { render: function render() {
           }
         }
       }
+      this.selectedColumnName = el.textContent;
     },
     reorder: function reorder() {
       var _this2 = this;
@@ -37339,7 +37388,18 @@ var DataTable = { render: function render() {
       _this5.filteredDataSize = dim.groupAll().value();
       _this5.filteredSize = _this5.grouping.size();
       var ths = d3$1.selectAll('#' + _this5.id + ' th.dc-table-head');
-      ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
+      var sortOrder = _this5.sortOrder;
+      var selectedColumnName = _this5.selectedColumnName;
+      ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '8px').each(function () {
+        if (this.parentElement.textContent === selectedColumnName) {
+          if (sortOrder === 'descending') {
+            this.parentElement.classList.add('desc');
+          }
+          if (sortOrder === 'ascending') {
+            this.parentElement.classList.add('asc');
+          }
+        }
+      });
     });
     this.updateTable();
     return chart;
@@ -37701,6 +37761,9 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     default: '20%'
   }), defineProperty(_props, 'useLegend', {
     default: false
+  }), defineProperty(_props, 'colorScale', {
+    type: String,
+    default: 'analogous'
   }), _props),
   computed: {
     firstRow: function firstRow() {
@@ -37762,6 +37825,13 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
         p._count = 0;
         return p;
       });
+    },
+    colorSettings: function colorSettings() {
+      var theme = Store.getTheme(this.theme);
+      return theme.colors(this.chartType, this.colorScale);
+    },
+    colors: function colors() {
+      return null;
     }
   },
   methods: {
@@ -37802,7 +37872,7 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     var _this3 = this;
 
     var chart = this.chart;
-    chart.colors(d3$1.scale.category10()).elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
+    chart.ordinalColors(this.colorSettings.ordinal).elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
     // .label((p) => this.formatKey(p.key))
     .keyAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.xAxisLabel]);

@@ -38,7 +38,7 @@
               :font-size="40"
               :width="100"
               :height="100"
-              :is-responsive='true'
+              :is-responsive=true
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -50,7 +50,7 @@
               :font-size="40"
               :width="100"
               :height="100"
-              :is-responsive='true'
+              :is-responsive=true
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -62,7 +62,7 @@
               :font-size="40"
               :width="100"
               :height="100"
-              :is-responsive='true'
+              :is-responsive=true
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -74,7 +74,7 @@
               :font-size="40"
               :width="100"
               :height="100"
-              :is-responsive='true'
+              :is-responsive=true
             ></number-display>
           </div>
         </section>
@@ -87,9 +87,10 @@
               reduce='d.pv'
               x-axis-label='name'
               y-axis-label='pv'
-              :height="300"
+              :height="320"
               link-formatter="segmentUsers"
               layout-details="{margins: {top: 88, bottom: 48, left: 52, right: 24}}"
+              chart-color="#2AAB9F"
             ></ordinal-bar>
           </div>
         </section>
@@ -100,7 +101,7 @@
               title="RFM分析(recencyとfrequency)"
               dimension="[d.name,d.meta]"
               reduce="d.pv"
-              :height="300"
+              :height="320"
               :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
               :border-radius=0
               layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
@@ -111,7 +112,7 @@
               title="RFM分析(frequencyとmonetary)"
               dimension="[d.name,d.meta]"
               reduce="d.pv"
-              :height="300"
+              :height="320"
               :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
               :border-radius=0
               layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
@@ -121,7 +122,7 @@
 
         <section class="row section-row">
           <div class="col-md-6">
-            <segment-pie
+            <multidim-pie
               title="リフトアップゴール比"
               dimension='d.name'
               segments="a,b,c,d,e,f"
@@ -130,11 +131,10 @@
               :cap=3
               :height=300
               others-label='その他'
-              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
-            ></segment-pie>
+            ></multidim-pie>
           </div>
           <div class="col-md-6">
-            <segment-pie
+            <multidim-pie
               title="マイナスのリフトアップゴール比"
               dimension='d.name'
               segments="a,b,c,d,e,f"
@@ -143,8 +143,8 @@
               :cap=3
               :height=300
               others-label='その他'
-              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
-            ></segment-pie>
+              color-scale='tint_complement'
+            ></multidim-pie>
           </div>
         </section>
 
@@ -160,6 +160,8 @@
               :max-bubble-relative-size=0.1
               layout-details="{margins: {top: 88, bottom: 48, left: 52, right: 24}}"
               :is-resposive='true'
+              color-scale='approximate'
+              :render-text=false
             ></bubble>
           </div>
         </section>
@@ -173,7 +175,7 @@
               sort-by="name"
               order="descending"
               :representations="{link: 'linkFormat'}"
-              :height=400
+              :height=0
               :use-table-paging='true'
               :offset=0
               :rows-per-page=5

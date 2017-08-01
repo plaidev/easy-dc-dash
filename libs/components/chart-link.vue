@@ -1,5 +1,5 @@
 <template>
-  <div class="krt-dc-chart-link" v-if="link">
+  <div class="krt-dc-chart-link" v-if="link" :style="{left:left + 'px', top:top + 'px'}">
     <span><a class='link-text' :href='link' target='_blank' v-text='link'></a></span>
     <span>
       <a :href='link' target='_blank'>
@@ -15,12 +15,18 @@ export default {
   name: 'KrtDcChartLink',
   data () {
     return {
-      link: null
+      link: null,
+      top: 0,
+      left: 0
     }
   },
   methods: {
     show: function(c, link) {
       if(c.filters().length === 0) return this.remove()
+      const el = this.$el
+      const viewOffset = el.parentElement.getBoundingClientRect()
+      this.left = d3.event.clientX - viewOffset.left
+      this.top = d3.event.clientY - viewOffset.top - 40
       this.link = link;
     },
     remove: function() {
@@ -33,15 +39,12 @@ export default {
 <style module>
   .krt-dc-chart-link {
     color: #000;
-    font-size: 12px;
-    border: 1px solid #aaa;
-    background: rgba(255,255,255,.8);
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    font-size: 14px;
+    background: #FFF;
+    box-shadow: 2px 4px 8px rgba(0,0,0,.24);
     position: absolute;
-    padding: 4px 6px;
+    padding: 6px 8px;
     z-index: 2;
-    right: 0;
-    bottom: 0;
     display: flex;
     flex-direction: row;
     align-items: center;

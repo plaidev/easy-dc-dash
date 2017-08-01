@@ -69,6 +69,10 @@ export default {
     },
     useLegend: {
       default: false
+    },
+    colorScale: {
+      type: String,
+      default: 'analogous'
     }
   },
   computed: {
@@ -135,6 +139,13 @@ export default {
           return p
         }
       )
+    },
+    colorSettings: function() {
+      const theme = Store.getTheme(this.theme)
+      return theme.colors(this.chartType, this.colorScale)
+    },
+    colors: function() {
+      return null;
     }
   },
   methods: {
@@ -177,7 +188,7 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .colors(d3.scale.category10())
+      .ordinalColors(this.colorSettings.ordinal)
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .elasticRadius(this.elasticRadius)

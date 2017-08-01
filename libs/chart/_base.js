@@ -64,7 +64,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :is-responsive="isResponsive" :hide-legend="hideLegend" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -400,6 +400,10 @@ export default {
     isTimeChart: function() {
       const [scale, unit] = this.scale ? this.scale.split('.') : []
       if(scale == 'time' || this.dateKey || this.timeScale) return true
+      return false
+    },
+    isResponsive: function() {
+      if (this) return true
       return false
     },
     hideLegend: function() {
