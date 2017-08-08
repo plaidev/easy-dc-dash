@@ -11,6 +11,10 @@ export default {
     chartType: {
       type: String,
       default: 'pieChart'
+    },
+    color: {
+      type: String,
+      default: 'tint'
     }
   },
 

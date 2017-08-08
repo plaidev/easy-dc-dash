@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <script type="text/javascript" src="../../../dist/bundle.browser.js"></script>
+    <link rel="stylesheet" type="text/css" href="./bundle.css" />
+    <script type="text/javascript" src="https://jp.vuejs.org/js/vue.js"></script>
+  </head>
+
+  <body style="background-color: #F4F4F4">
+
+    <easy-dc-dataset
+      csv='./dataset.csv'
+      date-fields="session_end_date"
+      int-fields="pv,bounce_cnt,session_cnt"
+      date-format="%Y-%m-%dT%H:%M:%S.%LZ"
+      labels="セグメント,PV,UU,セッション数,セッション毎平均PV数,セッション毎平均時間,離脱数,コンバーション数,最終PV時間"
+    ></easy-dc-dataset>
+
+    <div id="krt-dc-dashboard">
+      <div class="container">
+
+        <section class="row section-row is-16">
+          <div class="col-md-12">
+            <div class="buttons">
+              <csv-download-button></csv-download-button>
+            </div>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-3">
+            <number-display
+              title="平均PV数"
+              reduce="pv"
+              unit-postfix="回"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              width="auto"
+              :height="120"
+            ></number-display>
+          </div>
+          <div class="col-md-3">
+            <number-display
+              title="平均滞在時間"
+              reduce="bounce_cnt"
+              unit-postfix="秒"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              width="auto"
+              :height="120"
+            ></number-display>
+          </div>
+          <div class="col-md-3">
+            <number-display
+              title="平均CVR"
+              reduce="cv_cnt"
+              unit-postfix="％"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              width="auto"
+              :height="120"
+            ></number-display>
+          </div>
+          <div class="col-md-3">
+            <number-display
+              title="平均ゴール金額"
+              reduce="session_cnt"
+              unit-postfix="円"
+              theme-color="#FFFFFF"
+              :font-size="40"
+              width="auto"
+              :height="120"
+            ></number-display>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-12">
+            <ordinal-bar
+              title='セグメント毎UU数'
+              dimension='d.name'
+              reduce='d.pv'
+              x-axis-label='name'
+              y-axis-label='pv'
+              width='auto'
+              :height="320"
+              link-formatter="segmentUsers"
+              color="#2AAB9F"
+            ></ordinal-bar>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-6">
+            <heat-map
+              title="RFM分析(recencyとfrequency)"
+              dimension="[d.name,d.meta]"
+              reduce="d.pv"
+              width='auto'
+              :height="320"
+              :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
+              :border-radius=0
+            ></heat-map>
+          </div>
+          <div class="col-md-6">
+            <heat-map
+              title="RFM分析(frequencyとmonetary)"
+              dimension="[d.name,d.meta]"
+              reduce="d.pv"
+              width='auto'
+              :height="320"
+              :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
+              :border-radius=0
+            ></heat-map>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-6">
+            <multidim-pie
+              title="リフトアップゴール比"
+              dimension='d.name'
+              segments="a,b,c,d,e,f"
+              reduce='d.pv'
+              :use-legend='false'
+              :cap=3
+              width='auto'
+              :height=300
+              others-label='その他'
+            ></multidim-pie>
+          </div>
+          <div class="col-md-6">
+            <multidim-pie
+              title="マイナスのリフトアップゴール比"
+              dimension='d.name'
+              segments="a,b,c,d,e,f"
+              reduce='d.pv'
+              :use-legend='false'
+              :cap=3
+              width='auto'
+              :height=300
+              others-label='その他'
+              color='tint_complement'
+            ></multidim-pie>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-12">
+            <bubble
+              title="再訪率とゴールのリフトアップ"
+              date-key='d.session_end_date'
+              dimension='ymd'
+              reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+              width='auto'
+              :height=400
+              radius-format='%'
+              :max-bubble-relative-size=0.1
+              color='approximate'
+              :render-text=false
+            ></bubble>
+          </div>
+        </section>
+
+        <section class="row section-row">
+          <div class="col-md-12">
+            <data-table
+              title='table'
+              dimension="d.name"
+              columns="{name: d.name, pv: d.pv, link: d.link, bounce_cnt: d.bounce_cnt, bounce_rate: {count: d.session_cnt, value: d.bounce_cnt}}"
+              sort-by="name"
+              order="descending"
+              :representations="{link: 'linkFormat'}"
+              width='auto'
+              :height=0
+              :use-table-paging='true'
+              :offset=0
+              :rows-per-page=5
+            ></data-table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+    EasyDC.Store.setLabels({
+      bounce_rate: '離脱率',
+
+      // repeat segment labels
+      "5890222d3601a6183b69f15a": '初回来訪',
+      "5890222d3601a6183b69f15c": '来訪2回',
+      "5890222d3601a6183b69f15e": '来訪3回',
+      "5890222d3601a6183b69f160": '来訪4回以上'
+    })
+
+
+    //-------------------
+    // メイン
+
+    const deviceSegments = {
+      "5890222d3601a6183b69f151": 'SP',
+      "5890222d3601a6183b69f14f": 'PC'
+    }
+
+    const bindData = {
+      deviceSegments: Object.keys(deviceSegments),
+      deviceSegmentLabels: deviceSegments,
+      referrerSegments: {
+        "5890222d3601a6183b69f153": 'search',
+        "58902caa7048639a5ba53b17": 'newspicks',
+        "58902d517048639a5ba53b26": 'facebook',
+        "58902e8c7048639a5ba53b3a": 'twitter'
+      }
+    }
+
+    for (let k in bindData) {
+      EasyDC.Store.setBindData(k, bindData[k])
+    }
+
+    EasyDC.Store.registerRepresentation('linkFormat', (v, d, k) => {
+      return v.split(', ').map((v) => {
+        return `<a href="${v}" target="_blank">${v}</a>`
+      }).join(', ')
+    })
+
+
+    EasyDC.run(true)
+
+    </script>
+
+  </body>
+</html>

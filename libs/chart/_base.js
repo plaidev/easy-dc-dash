@@ -185,6 +185,9 @@ export default {
     layoutDetails: {
       type: String
     },
+    color: {
+      type: String
+    },
 
     // chart specific labels
     labels: {
@@ -347,7 +350,7 @@ export default {
     },
     colorSettings: function() {
       const theme = Store.getTheme(this.theme)
-      return theme.colors(this.chartType, '')
+      return theme.colors(this.chartType, this.color)
     },
     colors: function() {
       return this.colorSettings.ordinal
@@ -522,7 +525,12 @@ export default {
 
       this.applyLegend();
 
-      if (this.colors && chart.colors) chart.colors(this.colors)
+      if (chart.ordinalColors && this.colorSettings.ordinal) {
+        chart.ordinalColors(this.colorSettings.ordinal)
+      }
+      else if (chart.colors && this.colors) {
+        chart.colors(this.colors)
+      }
 
       this.render()
     },
@@ -541,6 +549,10 @@ export default {
     },
     showChartLink: function(chart, filterValue) {
       let link;
+      if (!this.chart.filters().includes(filterValue)) {
+        this.$refs.chartLink.remove()
+        return
+      }
       if(this.linkFormatter) {
         const formatter = Store.getLinkFormatter(this.linkFormatter)
         link = formatter === undefined ? filterValue : formatter(filterValue)

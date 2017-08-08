@@ -24744,9 +24744,7 @@ var DefaultTheme = {
   colors: function colors(_super, chartType, name) {
     var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-    var time = void 0,
-        ordinal = void 0,
-        weekOrdinal = void 0,
+    var ordinal = void 0,
         linear = void 0;
 
     linear = ['red', '#f7fcfd', '#00441b'];
@@ -24756,13 +24754,32 @@ var DefaultTheme = {
     }
 
     if (name == 'week') {
-      weekOrdinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'];
+      ordinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'];
+    }
+
+    if (name == 'analogous') {
+      ordinal = ['#2AAB9F', '#2EB9DC', '#2E85DC', '#2E50DC', '#3F2EDC', '#732EDC', '#AC21E8', '#DC2EDC', '#DC2EA7', '#DC2E73', '#DC2E3F', '#DC502E', '#DC852E', '#E8C021', '#D4E821', '#98E821', '#62DC2E', '#34D534', '#23CD56', '#29C782'];
+    }
+
+    if (name == 'approximate') {
+      ordinal = ['#2AAB9F', '#009688', '#66BB6A', '#4CAF50', '#9CCC65', '#8BC34A', '#D4E157', '#CDDC39', '#26C6DA', '#00BCD4'];
+    }
+
+    if (name == 'tint') {
+      ordinal = ['#2AAB9F', '#3ACFC0', '#63D9CD', '#8CE3DA', '#B5EDE7'];
+    }
+
+    if (name == 'tint_complement') {
+      ordinal = ['#BD0022', '#F0002C', '#FF244C', '#FF5776', '#FF8A9F'];
+    }
+
+    if (name && name.startsWith('#')) {
+      ordinal = [name];
     }
 
     return {
       linear: linear,
-      ordinal: ordinal,
-      weekOrdinal: weekOrdinal
+      ordinal: ordinal
     };
   },
 
@@ -24781,7 +24798,7 @@ var DefaultTheme = {
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
     var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
     var xAxisLabelLimit = fullscreen ? 30 : 10;
-    var captionHeight = 0;
+    var captionHeight = 42;
 
     height -= captionHeight;
 
@@ -25540,7 +25557,7 @@ var index$5 = assign;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 0; top: 0; padding-right: 5px; padding-bottom: 5px; margin-right: 1.8em; color: gray; } .reset[data-v-3fb031d6] { vertical-align: middle; margin-left: 2px; cursor: pointer; } .reset i[data-v-3fb031d6] { vertical-align: middle; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 0; top: 0; padding-right: 5px; padding-bottom: 5px; margin-right: 1.8em; color: gray; } .reset[data-v-3fb031d6] { vertical-align: middle; margin-left: 2px; cursor: pointer; } span.reset[data-v-3fb031d6] { visibility: hidden; } .reset i[data-v-3fb031d6] { vertical-align: middle; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25566,7 +25583,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: white; position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__inner-container { position: relative; margin: -2px; display: flex; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 10px; right: 10px; } .card__title { width: calc(100% - 2em); opacity: 0.6; font-size: 24px; } .card__icon-box { position: absolute; right: 0px; top: 3px; height: 1.5em; width: 2em; display: flex; flex-direction: row-reverse; align-items: center; color: gray; } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute;*/ width: 100%; height: 100%; transition: all 200ms 0s ease; } .card__card-container.card__self-margned { margin: 2px; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; width: auto; height: auto; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__card-container.card__self-margined .card__inner-container { margin: -2px; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 12px; display: flex; flex-direction: row-reverse; align-items: center; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25576,7 +25593,7 @@ var ResetButton = { render: function render() {
 
 var CardContainer = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
-  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
+  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "self-margned": "card__self-margned", "inner-container": "card__inner-container", "self-margined": "card__self-margined", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
   props: {
     title: {
       type: String
@@ -25614,7 +25631,11 @@ var CardContainer = { render: function render() {
     },
     outerSizeStyle: function outerSizeStyle() {
       var style = {};
-      if (this.width) style.width = this.width + 'px';
+      if (this.width === 'auto') {
+        style.width = '100%';
+      } else if (this.width) {
+        style.width = this.width + 'px';
+      }
       if (this.height) style.height = this.height + 'px';
       return style;
     },
@@ -25626,7 +25647,9 @@ var CardContainer = { render: function render() {
         style.width = 90 + 'vw';
         style.height = 90 + 'vh';
       } else {
-        if (this.width) style.width = this.width + 'px';
+        if (this.width === 'auto') {
+          style.width = '100%';
+        } else if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
       }
       this.$nextTick(function () {
@@ -25664,7 +25687,7 @@ var CardContainer = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .krt-dc-tooltip__krt-dc-tooltip { pointer-events: none; color: #000; font-size: 18px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 8px 10px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box { height: 100%; width: 30px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box .krt-dc-tooltip__circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__key { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .krt-dc-tooltip__krt-dc-tooltip { pointer-events: none; color: #475A57; font-size: 12px; line-height: 1.2; border: 1px solid rgba(0,0,0,.08); background: #FFF; box-shadow: 2px 4px 8px 0 rgba(0,0,0,.24); position: fixed; margin: 0 0 0 -32px; border-radius: 5px; padding: 4px 12px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box { height: 100%; width: 30px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__circle-box .krt-dc-tooltip__circle { border-radius: 50%; height: 16px; width: 16px; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data { display: flex; flex-direction: column; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__key { color: #9B9B9B; } .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__val, .krt-dc-tooltip__krt-dc-tooltip .krt-dc-tooltip__chart-data .krt-dc-tooltip__rate, { font-weight: bold; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25673,12 +25696,12 @@ var CardContainer = { render: function render() {
 })();
 
 var KrtDcTooltip = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip__krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "krt-dc-tooltip__circle-box" }, [_c('div', { staticClass: "krt-dc-tooltip__circle", style: { backgroundColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "krt-dc-tooltip__chart-data" }, [_c('div', { staticClass: "krt-dc-tooltip__key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.data ? _c('div', { staticClass: "krt-dc-tooltip__krt-dc-tooltip" }, [_vm.color ? _c('div', { staticClass: "krt-dc-tooltip__circle-box" }, [_c('div', { staticClass: "krt-dc-tooltip__circle", style: { backgroundColor: '#FFF', border: '4px solid', borderColor: _vm.color } })]) : _vm._e(), _c('div', { staticClass: "krt-dc-tooltip__chart-data" }, [_c('div', { staticClass: "krt-dc-tooltip__key" }, [_vm.data.key ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.key))])]) : _vm._e(), _vm._l(_vm.data.keys, function (v, k) {
       return _vm.data.keys ? _c('div', [_c('span', [_vm._v(_vm._s(k) + " : " + _vm._s(v))])]) : _vm._e();
-    })], 2), _c('div', { staticClass: "val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
+    })], 2), _c('div', { staticClass: "krt-dc-tooltip__val" }, [_vm.data.val !== undefined && _vm.data.val !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.val))])]) : _vm._e(), _vm._l(_vm.data.vals, function (v, k) {
       return _vm.data.vals ? _c('div', [_c('span', [_vm._v(_vm._s(k) + ": " + _vm._s(v))])]) : _vm._e();
-    })], 2), _c('div', { staticClass: "rate" }, [_vm.data.rate !== undefined && _vm.data.rate !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.rate) + "%")])]) : _vm._e()])])]) : _vm._e();
-  }, staticRenderFns: [], cssModules: { "krt-dc-tooltip": "krt-dc-tooltip__krt-dc-tooltip", "circle-box": "krt-dc-tooltip__circle-box", "circle": "krt-dc-tooltip__circle", "chart-data": "krt-dc-tooltip__chart-data", "key": "krt-dc-tooltip__key" },
+    })], 2), _c('div', { staticClass: "krt-dc-tooltip__rate" }, [_vm.data.rate !== undefined && _vm.data.rate !== null ? _c('div', [_c('span', [_vm._v(_vm._s(_vm.data.rate) + "%")])]) : _vm._e()])])]) : _vm._e();
+  }, staticRenderFns: [], cssModules: { "krt-dc-tooltip": "krt-dc-tooltip__krt-dc-tooltip", "circle-box": "krt-dc-tooltip__circle-box", "circle": "krt-dc-tooltip__circle", "chart-data": "krt-dc-tooltip__chart-data", "key": "krt-dc-tooltip__key", "val": "krt-dc-tooltip__val", "rate": "krt-dc-tooltip__rate" },
   name: 'KrtDcTooltip',
   data: function data() {
     return {
@@ -25709,7 +25732,7 @@ var KrtDcTooltip = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .chart-link__krt-dc-chart-link { color: #000; font-size: 12px; border: 1px solid #aaa; background: rgba(255,255,255,.8); box-shadow: 0 2px 4px rgba(0,0,0,.1); position: absolute; padding: 4px 6px; z-index: 2; right: 0; bottom: 0; display: flex; flex-direction: row; align-items: center; align-content: center; } .chart-link__krt-dc-chart-link .chart-link__link-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chart-link__krt-dc-chart-link .chart-link__link-icon { padding-left: 5px; font-size: 14px; vertical-align: text-bottom; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .chart-link__krt-dc-chart-link { color: #000; font-size: 14px; background: #FFF; box-shadow: 2px 4px 8px rgba(0,0,0,.24); position: absolute; padding: 6px 8px; z-index: 2; display: flex; flex-direction: row; align-items: center; align-content: center; } .chart-link__krt-dc-chart-link .chart-link__link-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chart-link__krt-dc-chart-link .chart-link__link-icon { padding-left: 5px; font-size: 14px; vertical-align: text-bottom; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25718,18 +25741,24 @@ var KrtDcTooltip = { render: function render() {
 })();
 
 var ChartLink = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.link ? _c('div', { staticClass: "chart-link__krt-dc-chart-link" }, [_c('span', [_c('a', { staticClass: "chart-link__link-text", attrs: { "href": _vm.link, "target": "_blank" }, domProps: { "textContent": _vm._s(_vm.link) } })]), _vm._v(" "), _c('span', [_c('a', { attrs: { "href": _vm.link, "target": "_blank" } }, [_c('i', { staticClass: "fa fa-external-link chart-link__link-icon", attrs: { "aria-hidden": "true" } })])])]) : _vm._e();
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _vm.link ? _c('div', { staticClass: "chart-link__krt-dc-chart-link", style: { left: _vm.left + 'px', top: _vm.top + 'px' } }, [_c('span', [_c('a', { staticClass: "chart-link__link-text", attrs: { "href": _vm.link, "target": "_blank" }, domProps: { "textContent": _vm._s(_vm.link) } })]), _vm._v(" "), _c('span', [_c('a', { attrs: { "href": _vm.link, "target": "_blank" } }, [_c('i', { staticClass: "fa fa-external-link chart-link__link-icon", attrs: { "aria-hidden": "true" } })])])]) : _vm._e();
   }, staticRenderFns: [], cssModules: { "krt-dc-chart-link": "chart-link__krt-dc-chart-link", "link-text": "chart-link__link-text", "link-icon": "chart-link__link-icon" },
   name: 'KrtDcChartLink',
   data: function data() {
     return {
-      link: null
+      link: null,
+      top: 0,
+      left: 0
     };
   },
 
   methods: {
     show: function show(c, link) {
       if (c.filters().length === 0) return this.remove();
+      var el = this.$el;
+      var viewOffset = el.parentElement.getBoundingClientRect();
+      this.left = d3.event.clientX - viewOffset.left;
+      this.top = d3.event.clientY - viewOffset.top - 40;
       this.link = link;
     },
     remove: function remove() {
@@ -25900,6 +25929,9 @@ var Base = {
     width: {},
     height: {},
     layoutDetails: {
+      type: String
+    },
+    color: {
       type: String
     },
 
@@ -26083,7 +26115,7 @@ var Base = {
     },
     colorSettings: function colorSettings() {
       var theme = Store.getTheme(this.theme);
-      return theme.colors(this.chartType, '');
+      return theme.colors(this.chartType, this.color);
     },
     colors: function colors() {
       return this.colorSettings.ordinal;
@@ -26276,7 +26308,11 @@ var Base = {
 
       this.applyLegend();
 
-      if (this.colors && chart.colors) chart.colors(this.colors);
+      if (chart.ordinalColors && this.colorSettings.ordinal) {
+        chart.ordinalColors(this.colorSettings.ordinal);
+      } else if (chart.colors && this.colors) {
+        chart.colors(this.colors);
+      }
 
       this.render();
     },
@@ -26295,6 +26331,10 @@ var Base = {
     },
     showChartLink: function showChartLink(chart, filterValue) {
       var link = void 0;
+      if (!this.chart.filters().includes(filterValue)) {
+        this.$refs.chartLink.remove();
+        return;
+      }
       if (this.linkFormatter) {
         var formatter = Store.getLinkFormatter(this.linkFormatter);
         link = formatter === undefined ? filterValue : formatter(filterValue);
@@ -35513,7 +35553,7 @@ function compose(Left, Right) {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".number-display__chart-root .nd-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 5px; border: 2px solid; background: #FFF; color: #FFF; } .number-display__chart-root .nd-box .number-display { font-weight: bold; } .number-display__chart-root .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".number-display__chart-root .card__render-area { justify-content: flex-start; } .number-display__chart-root .krt-dc-number-display { color: #354341; display: flex; align-items: center; justify-content: center; flex-direction: column; } .number-display__chart-root .title { border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 12px 24px; width: 100%; } .number-display__chart-root .number-display { display: block; padding: 12px 24px; width: 100%; } .number-display__chart-root .number-threshold, .number-display__chart-root .number-unit { font-weight: bold; } .number-display__chart-root .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35522,7 +35562,7 @@ function compose(Left, Right) {
 })();
 
 var NumberDisplay = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { class: _vm.$style['chart-root'] }, [_c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { style: { fontSize: _vm.fontSize / 4 + 'px' }, domProps: { "textContent": _vm._s(this.title || this.reduce) } })])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { class: _vm.$style['chart-root'] }, [_c('div', { staticClass: "krt-dc-number-display nd-box", style: _vm.boxStyles, attrs: { "id": _vm.id } }, [_c('span', { staticClass: "title", style: { fontSize: _vm.fontSize / 2.5 + 'px' }, domProps: { "textContent": _vm._s(this.title || this.reduce) } })])]);
   }, staticRenderFns: [], cssModules: { "chartRoot": "number-display__chart-root", "chart-root": "number-display__chart-root" },
   extends: Base,
   props: {
@@ -35534,7 +35574,6 @@ var NumberDisplay = { render: function render() {
       default: 'numberDisplay'
     },
     width: {
-      type: Number,
       default: 160
     },
     height: {
@@ -35627,6 +35666,9 @@ var NumberDisplay = { render: function render() {
         background: this.themeColor,
         fontSize: this.fontSize + 'px'
       };
+      if (this.width === 'auto') {
+        styles.width = '100%';
+      }
       if (!this.fillBoxColor) {
         styles.color = this.themeColor;
         styles.borderColor = this.themeColor;
@@ -35640,7 +35682,7 @@ var NumberDisplay = { render: function render() {
         templates.one += '<span class="number-unit">' + this.unitPrefix + '</span>';
         templates.some += '<span class="number-unit">' + this.unitPrefix + '</span>';
       }
-      templates.none += '<span class="number-display">0</span>', templates.one += '<span class="number-display">%number</span>', templates.some += '<span class="number-display">%number</span>';
+      templates.none += '<span class="number-threshold">0</span>', templates.one += '<span class="number-threshold">%number</span>', templates.some += '<span class="number-threshold">%number</span>';
 
       var unitPostfixes = this._unitPostFix.split(',');
       if (unitPostfixes.length === 1) {
@@ -35858,6 +35900,10 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
     chartType: {
       type: String,
       default: 'pieChart'
+    },
+    color: {
+      type: String,
+      default: 'tint'
     }
   },
 
@@ -36310,7 +36356,7 @@ var StackedLines = {
 })();
 
 var OrdinalBar = {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -36362,8 +36408,7 @@ var OrdinalBar = {
   },
   mounted: function mounted() {
     var chart = this.chart;
-
-    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY);
+    chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$2.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY).renderVerticalGridLines(false);
     return chart;
   }
 };
@@ -37016,7 +37061,7 @@ var _computed;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; height: calc(75%); width: 94%; padding-top: 25px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; width: 100%; } .data-table__chart-root th.dc-table-head { cursor: pointer; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; width: 94%; padding-top: 42px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; white-space: nowrap; width: 100%; } .data-table__chart-root .table-paging { display: flex; align-items: center; flex-direction: row-reverse; margin: 32px auto; width: 100%; } .data-table__chart-root .table-record-row { position: absolute; } .data-table__chart-root .table-btns { margin: 0 auto; } .data-table__chart-root .table-paging .btn-secondary { border-color: #45AB9F; color: #45AB9F; font-size: 12px; font-weight: bold; margin-left: 8px; } .data-table__chart-root .table-paging .btn-secondary.disabled, .data-table__chart-root .table-paging .btn-secondary:disabled { border-color: #ccc; color: #ccc; } .data-table__chart-root .table-paging .btn-secondary:hover { background-color: #45AB9F; color: #FFF; } .data-table__chart-root th.dc-table-head { cursor: pointer; } .data-table__chart-root th.dc-table-head.asc, .data-table__chart-root th.dc-table-head.desc { color: #2AAB9F; } .data-table__chart-root th.dc-table-head.asc .fa-sort:before { content: '\\F0DD'; } .data-table__chart-root th.dc-table-head.desc .fa-sort:before { content: '\\F0DE'; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -37077,11 +37122,11 @@ function _filteredGroup(group) {
 var DataTable = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { class: _vm.$style['chart-root'], attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title }, on: { "update:fullscreen": function updateFullscreen(v) {
           return _vm.isFullscreen = v;
-        } } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_vm._v("Showing "), _c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
+        } } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_c('div', { staticClass: "table-btns" }, [_c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
         } } }, [_vm._v("Prev")]), _vm._v(" "), _c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isLastPage }, on: { "click": function click($event) {
           _vm.nextPage();
-        } } }, [_vm._v("Next")])]) : _vm._e(), _c('div', { staticClass: "table-container" }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
+        } } }, [_vm._v("Next")])]), _c('div', { staticClass: "table-record-row" }, [_c('span', [_vm._v(_vm._s(this.beginRow))]), _vm._v("-"), _c('span', [_vm._v(_vm._s(this.endRow))]), _vm._v(" "), _c('span', [_vm._v("/ total " + _vm._s(this.filteredSize) + " rows")])])]) : _vm._e(), _c('div', { staticClass: "table-container" }, [_c('table', { staticClass: "krt-dc-data-table table table-hover", attrs: { "id": _vm.id }, on: { "click": function click($event) {
           _vm.onclick($event);
         } } })])])]);
   }, staticRenderFns: [], cssModules: { "chartRoot": "data-table__chart-root", "chart-root": "data-table__chart-root" },
@@ -37104,7 +37149,6 @@ var DataTable = { render: function render() {
     },
     // chart style
     width: {
-      type: Number,
       default: 1000
     },
     height: {
@@ -37144,7 +37188,8 @@ var DataTable = { render: function render() {
       filteredDataSize: 0,
       filteredSize: 0,
       sortKey: this.sortBy,
-      sortOrder: this.order
+      sortOrder: this.order,
+      selectedColumnName: ''
     };
   },
 
@@ -37266,6 +37311,7 @@ var DataTable = { render: function render() {
           }
         }
       }
+      this.selectedColumnName = el.textContent;
     },
     reorder: function reorder() {
       var _this2 = this;
@@ -37347,7 +37393,18 @@ var DataTable = { render: function render() {
       _this5.filteredDataSize = dim.groupAll().value();
       _this5.filteredSize = _this5.grouping.size();
       var ths = d3$1.selectAll('#' + _this5.id + ' th.dc-table-head');
-      ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '3px');
+      var sortOrder = _this5.sortOrder;
+      var selectedColumnName = _this5.selectedColumnName;
+      ths.append('i').attr('class', 'fa fa-sort').style('margin-left', '8px').each(function () {
+        if (this.parentElement.textContent === selectedColumnName) {
+          if (sortOrder === 'descending') {
+            this.parentElement.classList.add('desc');
+          }
+          if (sortOrder === 'ascending') {
+            this.parentElement.classList.add('asc');
+          }
+        }
+      });
     });
     this.updateTable();
     return chart;
@@ -37709,6 +37766,8 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     default: '20%'
   }), defineProperty(_props, 'useLegend', {
     default: false
+  }), defineProperty(_props, 'color', {
+    default: 'analogous'
   }), _props),
   computed: {
     firstRow: function firstRow() {
@@ -37810,7 +37869,7 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     var _this3 = this;
 
     var chart = this.chart;
-    chart.colors(d3$1.scale.category10()).elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
+    chart.elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
     // .label((p) => this.formatKey(p.key))
     .keyAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.xAxisLabel]);
@@ -38055,7 +38114,7 @@ var resetAllButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .download-csv-button a[data-v-f6d3e728]:not([href]):not([tabindex]) { color: #2AAB9F; cursor: pointer; font-weight: bold; } .download-csv-button .btn.btn-outline-primary[data-v-f6d3e728] { border-color: #2AAB9F; } .download-csv-button .btn.btn-outline-primary[data-v-f6d3e728]:hover { color: #2AAB9F; border-color: #2AAB9F; background-color: #fff; opacity: .8; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .download-csv-button .fa.fa-cloud-download[data-v-f6d3e728] { vertical-align: inherit; padding-right: 4px; } .download-csv-button a[data-v-f6d3e728]:not([href]):not([tabindex]) { color: #FFF; cursor: pointer; } .download-csv-button .btn[data-v-f6d3e728] { padding: 0.75rem 2rem; font-size: 1.25rem; border-radius: 0.2rem; box-shadow: 0 1px 2px rgba(0,0,0,.25); } .download-csv-button .btn.btn-outline-primary[data-v-f6d3e728] { border-color: #2AAB9F; background: #2AAB9F; } .download-csv-button .btn.btn-outline-primary[data-v-f6d3e728]:hover { color: #2AAB9F; border-color: #2AAB9F; background-color: #fff; opacity: .8; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -38064,9 +38123,9 @@ var resetAllButton = { render: function render() {
 })();
 
 var csvDownloadButton = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "download-csv-button" }, [_c('a', { staticClass: "btn btn-outline-primary btn-lg", on: { "click": function click($event) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "download-csv-button" }, [_c('a', { staticClass: "btn btn-outline-primary", on: { "click": function click($event) {
           _vm.downloadCSV('data');
-        } } }, [_vm._v("csv download")])]);
+        } } }, [_c('i', { staticClass: "fa fa-cloud-download", attrs: { "aria-hidden": "true" } }), _vm._v(" CSV ダウンロード")])]);
   }, staticRenderFns: [], _scopeId: 'data-v-f6d3e728',
   methods: {
     downloadCSV: function downloadCSV(data) {
@@ -38313,6 +38372,8 @@ function run() {
   if (auto) p = p.then(start);
   if (cb) p = p.then(cb);
 }
+
+// import './libs/styles/default.scss'
 
 init();
 

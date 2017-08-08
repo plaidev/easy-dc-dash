@@ -1,7 +1,7 @@
 <template>
   <div class="krt-dc-tooltip" v-if="data">
     <div class="circle-box" v-if="color">
-      <div class="circle" :style="{backgroundColor: color}"></div>
+      <div class="circle" :style="{backgroundColor: '#FFF', border: '4px solid', borderColor: color}"></div>
     </div>
     <div class="chart-data">
       <div class="key">
@@ -61,15 +61,16 @@ export default {
 <style module>
   .krt-dc-tooltip {
     pointer-events: none;
-    color: #000;
-    font-size: 18px;
-    border: 1px solid #aaa;
-    background: rgba(255,255,255,.8);
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    color: #475A57;
+    font-size: 12px;
+    line-height: 1.2;
+    border: 1px solid rgba(0,0,0,.08);
+    background: #FFF;
+    box-shadow: 2px 4px 8px 0 rgba(0,0,0,.24);
     position: fixed;
     margin: 0 0 0 -32px;
     border-radius: 5px;
-    padding: 8px 10px;
+    padding: 4px 12px;
     z-index: 2;
     display: flex;
     flex-direction: row;
@@ -90,6 +91,10 @@ export default {
     flex-direction: column;
   }
   .krt-dc-tooltip .chart-data .key {
+    color: #9B9B9B;
+  }
+  .krt-dc-tooltip .chart-data .val,
+  .krt-dc-tooltip .chart-data .rate, {
     font-weight: bold;
   }
 

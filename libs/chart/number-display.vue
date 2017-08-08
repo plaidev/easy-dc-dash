@@ -1,7 +1,7 @@
 <template>
   <div :class="$style['chart-root']">
     <div class="krt-dc-number-display nd-box" :id="id" :style="boxStyles">
-      <span v-text="this.title || this.reduce" :style="{fontSize: (fontSize/4)+'px'}"></span>
+      <span class="title" v-text="this.title || this.reduce" :style="{fontSize: (fontSize/2.5)+'px'}"></span>
     </div>
   </div>
 </template>
@@ -23,7 +23,6 @@ export default {
       default: 'numberDisplay'
     },
     width: {
-      type: Number,
       default: 160
     },
     height: {
@@ -116,6 +115,9 @@ export default {
         background: this.themeColor,
         fontSize: this.fontSize+'px'
       }
+      if (this.width === 'auto') {
+        styles.width = '100%'
+      } 
       if (!this.fillBoxColor) {
         styles.color = this.themeColor
         styles.borderColor = this.themeColor
@@ -129,9 +131,9 @@ export default {
         templates.one += `<span class="number-unit">${this.unitPrefix}</span>`
         templates.some += `<span class="number-unit">${this.unitPrefix}</span>`
       }
-      templates.none += `<span class="number-display">0</span>`,
-      templates.one += `<span class="number-display">%number</span>`,
-      templates.some += `<span class="number-display">%number</span>`
+      templates.none += `<span class="number-threshold">0</span>`,
+      templates.one += `<span class="number-threshold">%number</span>`,
+      templates.some += `<span class="number-threshold">%number</span>`
 
       const unitPostfixes = this._unitPostFix.split(',');
       if (unitPostfixes.length === 1) {
@@ -161,17 +163,28 @@ export default {
 
 <style lang="less" module>
 .chart-root :global {
-  .nd-box {
+  .card__render-area {
+    justify-content: flex-start;
+  }
+  .krt-dc-number-display {
+    color: #354341;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
-    border: 2px solid;
-    background: #FFF;
-    color: #FFF;
+    flex-direction: column;
   }
-  .nd-box .number-display {
+  .title {
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    padding: 12px 24px;
+    width: 100%;
+  }
+  .number-display {
+    display: block;
+    padding: 12px 24px;
+    width: 100%;
+  }
+  .number-threshold,
+  .number-unit {
     font-weight: bold;
   }
   .nd-box .number-unit {

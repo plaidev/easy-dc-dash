@@ -35,6 +35,9 @@ export default {
   margin-left: 2px;
   cursor: pointer;
 }
+span.reset {
+  visibility: hidden;
+}
 .reset i {
   vertical-align: middle;
 }

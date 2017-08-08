@@ -57,7 +57,12 @@ export default {
     },
     outerSizeStyle: function() {
       const style = {};
-      if (this.width) style.width = this.width+'px';
+      if (this.width === 'auto') {
+        style.width = '100%'
+      }
+      else if (this.width) {
+        style.width = this.width+'px';
+      }
       if (this.height) style.height = this.height+'px';
       return style
     },
@@ -68,7 +73,10 @@ export default {
         style.height = 90+'vh';
       }
       else {
-        if (this.width) style.width = this.width+'px';
+        if (this.width === 'auto') {
+          style.width = '100%'
+        }
+        else if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
       }
       this.$nextTick(() => {
@@ -123,13 +131,15 @@ export default {
 }
 
 .card-container {
-  background-color: white;
-  position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 2px;
-  right: 2px;
+  background-color: #FFF;
+  /*position: absolute;*/
+  width: 100%;
+  height: 100%;
   transition: all 200ms 0s ease;
+}
+
+.card-container.self-margned {
+  margin: 2px;
 }
 
 .fullscreen .card-container {
@@ -138,16 +148,21 @@ export default {
   left: 5vw;
   right: 5vw;
   bottom: 5vh;
+  width: auto;
+  height: auto;
   z-index: 100;
 }
 
 .inner-container {
   position: relative;
-  margin: -2px;
 
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.card-container.self-margined .inner-container {
+  margin: -2px;
 }
 
 .render-area {
@@ -164,26 +179,28 @@ export default {
 .container-header {
   position: absolute;
   top: 0;
-  left: 10px;
-  right: 10px;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
 
 .title {
+  color: #475A57;
+  font-size: 1em;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding-left: 24px;
   width: calc(100% - 2em);
-  opacity: 0.6;
-  font-size: 24px;
 }
 
 .icon-box {
   position: absolute;
-  right: 0px;
-  top: 3px;
-  height: 1.5em;
-  width: 2em;
+  right: 8px;
+  top: 12px;
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
-  color: gray;
+  color: rgba(0,0,0,.16);
 }
 
 .icon-box i {

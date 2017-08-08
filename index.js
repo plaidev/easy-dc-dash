@@ -3,6 +3,8 @@ import Chart from './libs/chart'
 import {init, run} from './libs/autorun'
 import Vue from 'vue/dist/vue.js'
 
+// import './libs/styles/default.scss'
+
 init()
 
 // auto install in dist mode

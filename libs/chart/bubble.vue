@@ -69,6 +69,9 @@ export default {
     },
     useLegend: {
       default: false
+    },
+    color: {
+      default: 'analogous'
     }
   },
   computed: {
@@ -177,7 +180,6 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .colors(d3.scale.category10())
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
       .elasticRadius(this.elasticRadius)

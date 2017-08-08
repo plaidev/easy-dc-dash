@@ -5,10 +5,14 @@
         <!--
           {{this.filteredDataSize}} selected out of {{this.cfSize}} records
         -->
-        Showing <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
-        <span> / total {{this.filteredSize}} rows</span>
-        <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
-        <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
+        <div class="table-btns">
+          <button class="btn btn-secondary" :disabled="isFirstPage" @click="prevPage()">Prev</button>
+          <button class="btn btn-secondary" :disabled="isLastPage" @click="nextPage()">Next</button>
+        </div>
+        <div class="table-record-row">
+          <span>{{this.beginRow}}</span>-<span>{{this.endRow}}</span>
+          <span> / total {{this.filteredSize}} rows</span>
+        </div>
       </div>
       <div class="table-container">
         <table v-on:click="onclick($event)" class="krt-dc-data-table table table-hover" :id="id"></table>
@@ -98,7 +102,6 @@ export default {
     },
     // chart style
     width: {
-      type: Number,
       default: 1000
     },
     height: {
@@ -138,7 +141,8 @@ export default {
       filteredDataSize: 0,
       filteredSize: 0,
       sortKey: this.sortBy,
-      sortOrder: this.order
+      sortOrder: this.order,
+      selectedColumnName: ''
     }
   },
   watch: {
@@ -264,6 +268,7 @@ export default {
           }
         }
       }
+      this.selectedColumnName = el.textContent
     },
     reorder: function() {
       this.chart
@@ -342,10 +347,25 @@ export default {
         this.filteredDataSize = dim.groupAll().value()
         this.filteredSize = this.grouping.size()
         const ths = d3.selectAll(`#${this.id} th.dc-table-head`)
+        const sortOrder = this.sortOrder
+        const selectedColumnName = this.selectedColumnName
         ths
           .append('i')
             .attr('class', 'fa fa-sort')
-            .style('margin-left', '3px')
+            .style('margin-left', '8px')
+          .each(function() {
+            if (this.parentElement.textContent === selectedColumnName)
+            {
+              if (sortOrder === 'descending')
+              {
+                this.parentElement.classList.add('desc');
+              }
+              if (sortOrder === 'ascending')
+              {
+                this.parentElement.classList.add('asc');
+              }
+            }
+          });
       })
     this.updateTable()
     return chart
@@ -361,22 +381,59 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    height: calc(100% - 25px);
     width: 94%;
-    padding-top: 25px;
+    padding-top: 42px;
     font-size: 14px;
   }
 
   .table-container {
     overflow-y: auto;
+    white-space: nowrap;
     width: 100%;
   }
 
-  table {
+  .table-paging {
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    margin: 32px auto;
+    width: 100%;
+  }
+  .table-record-row {
+    position: absolute;
+  }
+  .table-btns {
+    margin: 0 auto;
+  }
+
+  .table-paging .btn-secondary {
+    border-color: #45AB9F;
+    color: #45AB9F;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+  }
+  .table-paging .btn-secondary.disabled, .table-paging .btn-secondary:disabled {
+    border-color: #ccc;
+    color: #ccc;
+  }
+  .table-paging .btn-secondary:hover {
+    background-color: #45AB9F;
+    color: #FFF;
   }
 
   th.dc-table-head {
-    cursor: pointer
+    cursor: pointer;
+  }
+  th.dc-table-head.asc,
+  th.dc-table-head.desc {
+    color: #2AAB9F;
+  }
+  th.dc-table-head.asc .fa-sort:before {
+    content: '\f0dd';
+  }
+  th.dc-table-head.desc .fa-sort:before {
+    content: '\f0de';
   }
 }
 </style>

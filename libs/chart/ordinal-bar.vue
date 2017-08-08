@@ -4,11 +4,12 @@
 import d3 from "d3"
 import dc from 'dc'
 import Base from './_base'
+import coordinateGridBase from './_coordinateGridBase'
 import Store from '../store'
 import {removeEmptyBins} from '../utils'
 
 export default {
-  extends: Base,
+  extends: coordinateGridBase,
 
   props: {
     chartType: {
@@ -60,7 +61,6 @@ export default {
   },
   mounted: function() {
     const chart = this.chart;
-
     chart
       .barPadding(this.barPadding)
       .outerPadding(this.outerPadding)
@@ -68,6 +68,7 @@ export default {
       .xUnits(dc.units.ordinal)
       .elasticX(this.elasticX)
       .elasticY(this.elasticY)
+      .renderVerticalGridLines(false)
     return chart
   }
 }

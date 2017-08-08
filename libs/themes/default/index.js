@@ -3,7 +3,7 @@ export default {
   extends: null,
 
   colors: function(_super, chartType, name, options={}) {
-    let time, ordinal, weekOrdinal, linear;
+    let ordinal, linear;
 
     linear = ['red', '#f7fcfd', '#00441b']
 
@@ -12,13 +12,32 @@ export default {
     }
 
     if (name == 'week') {
-      weekOrdinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']
+      ordinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']
+    }
+
+    if (name == 'analogous') {
+      ordinal = ['#2AAB9F', '#2EB9DC', '#2E85DC', '#2E50DC', '#3F2EDC', '#732EDC', '#AC21E8', '#DC2EDC', '#DC2EA7', '#DC2E73', '#DC2E3F', '#DC502E', '#DC852E', '#E8C021', '#D4E821', '#98E821', '#62DC2E', '#34D534', '#23CD56', '#29C782']
+    }
+
+    if (name == 'approximate') {
+      ordinal = ['#2AAB9F', '#009688', '#66BB6A', '#4CAF50', '#9CCC65', '#8BC34A', '#D4E157', '#CDDC39', '#26C6DA', '#00BCD4']
+    }
+
+    if (name == 'tint') {
+      ordinal = ['#2AAB9F', '#3ACFC0', '#63D9CD', '#8CE3DA', '#B5EDE7'] 
+    }
+
+    if (name == 'tint_complement') {
+      ordinal = ['#BD0022', '#F0002C', '#FF244C', '#FF5776', '#FF8A9F'] 
+    }
+
+    if (name && name.startsWith('#')) {
+      ordinal = [name]
     }
 
     return {
       linear,
-      ordinal,
-      weekOrdinal
+      ordinal
     }
   },
 
@@ -33,7 +52,7 @@ export default {
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
     const xAxisLabelLimit = fullscreen ? 30 : 10;
-    const captionHeight = 0;
+    const captionHeight = 42;
 
     height -= captionHeight
 
