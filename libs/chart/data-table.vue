@@ -1,5 +1,5 @@
 <template>
-  <card :width="width" :height="height" :title="title" :class="$style['chart-root']" @update:fullscreen="v => isFullscreen = v" :is-responsive="isResponsive">
+  <card :width="width" :height="height" :title="title" :class="$style['chart-root']" @update:fullscreen="v => isFullscreen = v">
     <div class="data-table-container">
       <div class="table-paging" v-if="this.useTablePaging">
         <!--
@@ -431,10 +431,10 @@ export default {
     color: #2AAB9F;
   }
   th.dc-table-head.asc .fa-sort:before {
-    content: '';
+    content: '\f0dd';
   }
   th.dc-table-head.desc .fa-sort:before {
-    content: '';
+    content: '\f0de';
   }
 }
 </style>

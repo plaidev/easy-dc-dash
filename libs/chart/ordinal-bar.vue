@@ -38,15 +38,7 @@ export default {
     },
     useLegend: {
       default: false
-    },
-    chartColor: {
-      type: String,
-      default: ''
-    },
-    isResponsive: {
-      type: Boolean,
-      default: false
-    },
+    }
   },
   computed: {
     reducer: function() {
@@ -54,9 +46,6 @@ export default {
       const reducer = this.reducerExtractor;
       const group = dim.group().reduceSum(reducer)
       return this.removeEmptyRows ? removeEmptyBins(group) : group
-    },
-    colors: function() {
-      return this.chartColor ? this.chartColor : null
     }
   },
   methods: {

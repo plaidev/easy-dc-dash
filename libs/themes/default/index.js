@@ -3,7 +3,7 @@ export default {
   extends: null,
 
   colors: function(_super, chartType, name, options={}) {
-    let time, ordinal, weekOrdinal, linear;
+    let ordinal, linear;
 
     linear = ['red', '#f7fcfd', '#00441b']
 
@@ -12,7 +12,7 @@ export default {
     }
 
     if (name == 'week') {
-      weekOrdinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']
+      ordinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e']
     }
 
     if (name == 'analogous') {
@@ -33,8 +33,7 @@ export default {
 
     return {
       linear,
-      ordinal,
-      weekOrdinal
+      ordinal
     }
   },
 

@@ -37,10 +37,6 @@ export default {
       type: Boolean,
       default: false
     },
-    isResponsive: {
-      type: Boolean,
-      default: false
-    },
     hideLegend: {
       type: Boolean,
       default: false
@@ -61,15 +57,8 @@ export default {
     },
     outerSizeStyle: function() {
       const style = {};
-      if (this.isResponsive) {
-        style.width = 100+'%';
-        if (this.height > 0 ) {
-          style.height = this.height+'px'
-        }
-      } else {
-        if (this.width) style.width = this.width+'px';
-        if (this.height) style.height = this.height+'px';
-      }
+      if (this.width) style.width = this.width+'px';
+      if (this.height) style.height = this.height+'px';
       return style
     },
     sizeStyle: function() {
@@ -77,12 +66,8 @@ export default {
       if (this.isFullscreen) {
         style.width = 90+'vw';
         style.height = 90+'vh';
-      } else if (this.isResponsive) {
-        style.width = 100+'%';
-        if (this.height > 0 ) {
-          style.height = this.height+'px'
-        }
-      } else {
+      }
+      else {
         if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
       }
@@ -139,12 +124,12 @@ export default {
 
 .card-container {
   background-color: #FFF;
-  /*position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 2px;
-  right: 2px;*/
+  position: absolute;
   transition: all 200ms 0s ease;
+}
+
+.card-container.self-margned {
+  margin: 2px;
 }
 
 .fullscreen .card-container {
@@ -162,6 +147,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.card-container.self-margined .inner-container {
+  margin: -2px;
 }
 
 .render-area {

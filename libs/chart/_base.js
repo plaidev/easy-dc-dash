@@ -64,7 +64,7 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :is-responsive="isResponsive" :hide-legend="hideLegend" :class="$style['chart-root']">
+    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
       <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
@@ -347,7 +347,7 @@ export default {
     },
     colorSettings: function() {
       const theme = Store.getTheme(this.theme)
-      return theme.colors(this.chartType, '')
+      return theme.colors(this.chartType, this.color)
     },
     colors: function() {
       return this.colorSettings.ordinal
@@ -400,10 +400,6 @@ export default {
     isTimeChart: function() {
       const [scale, unit] = this.scale ? this.scale.split('.') : []
       if(scale == 'time' || this.dateKey || this.timeScale) return true
-      return false
-    },
-    isResponsive: function() {
-      if (this) return true
       return false
     },
     hideLegend: function() {
@@ -526,7 +522,12 @@ export default {
 
       this.applyLegend();
 
-      if (this.colors && chart.colors) chart.colors(this.colors)
+      if (chart.ordinalColors && this.colorSettings.ordinal) {
+        chart.ordinalColors(this.colorSettings.ordinal)
+      }
+      else if (chart.colors && this.colors) {
+        chart.colors(this.colors)
+      }
 
       this.render()
     },
@@ -545,6 +546,10 @@ export default {
     },
     showChartLink: function(chart, filterValue) {
       let link;
+      if (!this.chart.filters().includes(filterValue)) {
+        this.$refs.chartLink.remove()
+        return
+      }
       if(this.linkFormatter) {
         const formatter = Store.getLinkFormatter(this.linkFormatter)
         link = formatter === undefined ? filterValue : formatter(filterValue)

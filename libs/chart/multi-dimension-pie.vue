@@ -12,7 +12,7 @@ export default {
       type: String,
       default: 'pieChart'
     },
-    colorScale: {
+    color: {
       type: String,
       default: 'tint'
     }
@@ -38,13 +38,6 @@ export default {
           rate: rate
         }
       }
-    },
-    colorSettings: function() {
-      const theme = Store.getTheme(this.theme)
-      return theme.colors(this.chartType, this.colorScale)
-    },
-    colors: function() {
-      return null;
     }
   },
 
@@ -60,7 +53,6 @@ export default {
   mounted: function() {
     const chart = this.chart;
     chart
-      .ordinalColors(this.colorSettings.ordinal)
       .othersLabel(this.othersLabel)
 
     if(!this.showLabel) {
