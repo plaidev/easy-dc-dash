@@ -36,9 +36,8 @@
               unit-postfix="回"
               theme-color="#FFFFFF"
               :font-size="40"
-              :width="100"
-              :height="100"
-              :is-responsive=true
+              width="auto"
+              :height="120"
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -48,9 +47,8 @@
               unit-postfix="秒"
               theme-color="#FFFFFF"
               :font-size="40"
-              :width="100"
-              :height="100"
-              :is-responsive=true
+              width="auto"
+              :height="120"
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -60,9 +58,8 @@
               unit-postfix="％"
               theme-color="#FFFFFF"
               :font-size="40"
-              :width="100"
-              :height="100"
-              :is-responsive=true
+              width="auto"
+              :height="120"
             ></number-display>
           </div>
           <div class="col-md-3">
@@ -72,9 +69,8 @@
               unit-postfix="円"
               theme-color="#FFFFFF"
               :font-size="40"
-              :width="100"
-              :height="100"
-              :is-responsive=true
+              width="auto"
+              :height="120"
             ></number-display>
           </div>
         </section>
@@ -87,9 +83,9 @@
               reduce='d.pv'
               x-axis-label='name'
               y-axis-label='pv'
+              width='auto'
               :height="320"
               link-formatter="segmentUsers"
-              layout-details="{margins: {top: 88, bottom: 48, left: 52, right: 24}}"
               chart-color="#2AAB9F"
             ></ordinal-bar>
           </div>
@@ -101,10 +97,10 @@
               title="RFM分析(recencyとfrequency)"
               dimension="[d.name,d.meta]"
               reduce="d.pv"
+              width='auto'
               :height="320"
               :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
               :border-radius=0
-              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
             ></heat-map>
           </div>
           <div class="col-md-6">
@@ -112,10 +108,10 @@
               title="RFM分析(frequencyとmonetary)"
               dimension="[d.name,d.meta]"
               reduce="d.pv"
+              width='auto'
               :height="320"
               :labels="{name: '名前', meta: 'メタタグ', fuga: 'ふが', hoge: 'ほげ'}"
               :border-radius=0
-              layout-details="{margins: {top: 88, bottom: 48, left: 44, right: 24}}"
             ></heat-map>
           </div>
         </section>
@@ -129,6 +125,7 @@
               reduce='d.pv'
               :use-legend='false'
               :cap=3
+              width='auto'
               :height=300
               others-label='その他'
             ></multidim-pie>
@@ -141,6 +138,7 @@
               reduce='d.pv'
               :use-legend='false'
               :cap=3
+              width='auto'
               :height=300
               others-label='その他'
               color-scale='tint_complement'
@@ -155,11 +153,10 @@
               date-key='d.session_end_date'
               dimension='ymd'
               reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+              width='auto'
               :height=400
               radius-format='%'
               :max-bubble-relative-size=0.1
-              layout-details="{margins: {top: 88, bottom: 48, left: 52, right: 24}}"
-              :is-resposive='true'
               color-scale='approximate'
               :render-text=false
             ></bubble>
@@ -175,6 +172,7 @@
               sort-by="name"
               order="descending"
               :representations="{link: 'linkFormat'}"
+              width='auto'
               :height=0
               :use-table-paging='true'
               :offset=0

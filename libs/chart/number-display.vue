@@ -23,7 +23,6 @@ export default {
       default: 'numberDisplay'
     },
     width: {
-      type: Number,
       default: 160
     },
     height: {
@@ -116,14 +115,13 @@ export default {
         background: this.themeColor,
         fontSize: this.fontSize+'px'
       }
+      if (this.width === 'auto') {
+        styles.width = '100%'
+      } 
       if (!this.fillBoxColor) {
         styles.color = this.themeColor
         styles.borderColor = this.themeColor
         styles.background = undefined
-      }
-      if (this.isResponsive) {
-        styles.width = this.width+'%'
-        styles.height = this.height+'%'
       }
       return styles
     },

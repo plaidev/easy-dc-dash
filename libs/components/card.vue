@@ -57,7 +57,12 @@ export default {
     },
     outerSizeStyle: function() {
       const style = {};
-      if (this.width) style.width = this.width+'px';
+      if (this.width === 'auto') {
+        style.width = '100%'
+      }
+      else if (this.width) {
+        style.width = this.width+'px';
+      }
       if (this.height) style.height = this.height+'px';
       return style
     },
@@ -68,7 +73,10 @@ export default {
         style.height = 90+'vh';
       }
       else {
-        if (this.width) style.width = this.width+'px';
+        if (this.width === 'auto') {
+          style.width = '100%'
+        }
+        else if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
       }
       this.$nextTick(() => {
@@ -124,7 +132,9 @@ export default {
 
 .card-container {
   background-color: #FFF;
-  position: absolute;
+  /*position: absolute;*/
+  width: 100%;
+  height: 100%;
   transition: all 200ms 0s ease;
 }
 
@@ -138,6 +148,8 @@ export default {
   left: 5vw;
   right: 5vw;
   bottom: 5vh;
+  width: auto;
+  height: auto;
   z-index: 100;
 }
 

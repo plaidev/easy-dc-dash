@@ -102,7 +102,6 @@ export default {
     },
     // chart style
     width: {
-      type: Number,
       default: 1000
     },
     height: {

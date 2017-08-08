@@ -48,7 +48,7 @@ export default {
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
     const xAxisLabelLimit = fullscreen ? 30 : 10;
-    const captionHeight = 0;
+    const captionHeight = 42;
 
     height -= captionHeight
 
