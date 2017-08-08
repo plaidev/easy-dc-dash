@@ -24416,8 +24416,10 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    //# sourceMappingURL=dc.js.map
+    
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24742,9 +24744,7 @@ var DefaultTheme = {
   colors: function colors(_super, chartType, name) {
     var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-    var time = void 0,
-        ordinal = void 0,
-        weekOrdinal = void 0,
+    var ordinal = void 0,
         linear = void 0;
 
     linear = ['red', '#f7fcfd', '#00441b'];
@@ -24754,7 +24754,7 @@ var DefaultTheme = {
     }
 
     if (name == 'week') {
-      weekOrdinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'];
+      ordinal = ['#bd3122', "#2AAB9F", "#54BCB2", "#70C7BF", "#9BD7D2", "#C5E8E5", '#d66b6e'];
     }
 
     if (name == 'analogous') {
@@ -24773,10 +24773,13 @@ var DefaultTheme = {
       ordinal = ['#BD0022', '#F0002C', '#FF244C', '#FF5776', '#FF8A9F'];
     }
 
+    if (name && name.startsWith('#')) {
+      ordinal = [name];
+    }
+
     return {
       linear: linear,
-      ordinal: ordinal,
-      weekOrdinal: weekOrdinal
+      ordinal: ordinal
     };
   },
 
@@ -24795,7 +24798,7 @@ var DefaultTheme = {
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
     var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
     var xAxisLabelLimit = fullscreen ? 30 : 10;
-    var captionHeight = 0;
+    var captionHeight = 42;
 
     height -= captionHeight;
 
@@ -24944,6 +24947,8 @@ var DefaultTheme = {
     return {};
   }
 };
+
+//-------------------------------------
 
 function _defaultRepresentation(v, d, key) {
   if (v instanceof Array || typeof v == 'array') {
@@ -25300,6 +25305,8 @@ var Store = new DashboardStore();
  * Licensed under the MIT License.
  */
 
+// see http://jsperf.com/testing-value-is-primitive/7
+
 var index$6 = function isPrimitive(value) {
   return value == null || typeof value !== 'function' && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object';
 };
@@ -25576,7 +25583,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px;*/ transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 12px; display: flex; flex-direction: row-reverse; align-items: center; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute;*/ width: 100%; height: 100%; transition: all 200ms 0s ease; } .card__card-container.card__self-margned { margin: 2px; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; width: auto; height: auto; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__card-container.card__self-margined .card__inner-container { margin: -2px; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 12px; display: flex; flex-direction: row-reverse; align-items: center; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25586,7 +25593,7 @@ var ResetButton = { render: function render() {
 
 var CardContainer = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
-  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
+  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "self-margned": "card__self-margned", "inner-container": "card__inner-container", "self-margined": "card__self-margined", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
   props: {
     title: {
       type: String
@@ -25601,10 +25608,6 @@ var CardContainer = { render: function render() {
       default: 0
     },
     fullscreen: {
-      type: Boolean,
-      default: false
-    },
-    isResponsive: {
       type: Boolean,
       default: false
     },
@@ -25628,15 +25631,12 @@ var CardContainer = { render: function render() {
     },
     outerSizeStyle: function outerSizeStyle() {
       var style = {};
-      if (this.isResponsive) {
-        style.width = 100 + '%';
-        if (this.height > 0) {
-          style.height = this.height + 'px';
-        }
-      } else {
-        if (this.width) style.width = this.width + 'px';
-        if (this.height) style.height = this.height + 'px';
+      if (this.width === 'auto') {
+        style.width = '100%';
+      } else if (this.width) {
+        style.width = this.width + 'px';
       }
+      if (this.height) style.height = this.height + 'px';
       return style;
     },
     sizeStyle: function sizeStyle() {
@@ -25646,13 +25646,10 @@ var CardContainer = { render: function render() {
       if (this.isFullscreen) {
         style.width = 90 + 'vw';
         style.height = 90 + 'vh';
-      } else if (this.isResponsive) {
-        style.width = 100 + '%';
-        if (this.height > 0) {
-          style.height = this.height + 'px';
-        }
       } else {
-        if (this.width) style.width = this.width + 'px';
+        if (this.width === 'auto') {
+          style.width = '100%';
+        } else if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
       }
       this.$nextTick(function () {
@@ -25822,7 +25819,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :is-responsive="isResponsive" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -25932,6 +25929,9 @@ var Base = {
     width: {},
     height: {},
     layoutDetails: {
+      type: String
+    },
+    color: {
       type: String
     },
 
@@ -26115,7 +26115,7 @@ var Base = {
     },
     colorSettings: function colorSettings() {
       var theme = Store.getTheme(this.theme);
-      return theme.colors(this.chartType, '');
+      return theme.colors(this.chartType, this.color);
     },
     colors: function colors() {
       return this.colorSettings.ordinal;
@@ -26177,10 +26177,6 @@ var Base = {
           unit = _ref2[1];
 
       if (scale == 'time' || this.dateKey || this.timeScale) return true;
-      return false;
-    },
-    isResponsive: function isResponsive() {
-      if (this) return true;
       return false;
     },
     hideLegend: function hideLegend() {
@@ -26312,7 +26308,11 @@ var Base = {
 
       this.applyLegend();
 
-      if (this.colors && chart.colors) chart.colors(this.colors);
+      if (chart.ordinalColors && this.colorSettings.ordinal) {
+        chart.ordinalColors(this.colorSettings.ordinal);
+      } else if (chart.colors && this.colors) {
+        chart.colors(this.colors);
+      }
 
       this.render();
     },
@@ -26331,6 +26331,10 @@ var Base = {
     },
     showChartLink: function showChartLink(chart, filterValue) {
       var link = void 0;
+      if (!this.chart.filters().includes(filterValue)) {
+        this.$refs.chartLink.remove();
+        return;
+      }
       if (this.linkFormatter) {
         var formatter = Store.getLinkFormatter(this.linkFormatter);
         link = formatter === undefined ? filterValue : formatter(filterValue);
@@ -35570,7 +35574,6 @@ var NumberDisplay = { render: function render() {
       default: 'numberDisplay'
     },
     width: {
-      type: Number,
       default: 160
     },
     height: {
@@ -35663,14 +35666,13 @@ var NumberDisplay = { render: function render() {
         background: this.themeColor,
         fontSize: this.fontSize + 'px'
       };
+      if (this.width === 'auto') {
+        styles.width = '100%';
+      }
       if (!this.fillBoxColor) {
         styles.color = this.themeColor;
         styles.borderColor = this.themeColor;
         styles.background = undefined;
-      }
-      if (this.isResponsive) {
-        styles.width = this.width + '%';
-        styles.height = this.height + '%';
       }
       return styles;
     },
@@ -35899,7 +35901,7 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
       type: String,
       default: 'pieChart'
     },
-    colorScale: {
+    color: {
       type: String,
       default: 'tint'
     }
@@ -35925,13 +35927,6 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
           rate: rate
         };
       };
-    },
-    colorSettings: function colorSettings() {
-      var theme = Store.getTheme(this.theme);
-      return theme.colors(this.chartType, this.colorScale);
-    },
-    colors: function colors() {
-      return null;
     }
   },
 
@@ -35944,7 +35939,7 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
 
   mounted: function mounted() {
     var chart = this.chart;
-    chart.ordinalColors(this.colorSettings.ordinal).othersLabel(this.othersLabel);
+    chart.othersLabel(this.othersLabel);
 
     if (!this.showLabel) {
       chart.label(function (d) {
@@ -36390,14 +36385,6 @@ var OrdinalBar = {
     },
     useLegend: {
       default: false
-    },
-    chartColor: {
-      type: String,
-      default: ''
-    },
-    isResponsive: {
-      type: Boolean,
-      default: false
     }
   },
   computed: {
@@ -36406,9 +36393,6 @@ var OrdinalBar = {
       var reducer = this.reducerExtractor;
       var group = dim.group().reduceSum(reducer);
       return this.removeEmptyRows ? removeEmptyBins(group) : group;
-    },
-    colors: function colors() {
-      return this.chartColor ? this.chartColor : null;
     }
   },
   methods: {
@@ -36825,6 +36809,20 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -36925,6 +36923,9 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
+// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
+// point sequences are identified. The topology can then be subsequently deduped
+// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -36936,6 +36937,8 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
+
+// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -36963,6 +36966,10 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
+
+// Constructs the TopoJSON Topology for the specified hash of features.
+// Each object in the specified hash must be a GeoJSON object,
+// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -37054,7 +37061,7 @@ var _computed;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; width: 94%; padding-top: 42px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; white-space: nowrap; width: 100%; } .data-table__chart-root .table-paging { display: flex; align-items: center; flex-direction: row-reverse; margin: 32px auto; width: 100%; } .data-table__chart-root .table-record-row { position: absolute; } .data-table__chart-root .table-btns { margin: 0 auto; } .data-table__chart-root .table-paging .btn-secondary { border-color: #45AB9F; color: #45AB9F; font-size: 12px; font-weight: bold; margin-left: 8px; } .data-table__chart-root .table-paging .btn-secondary.disabled, .data-table__chart-root .table-paging .btn-secondary:disabled { border-color: #ccc; color: #ccc; } .data-table__chart-root .table-paging .btn-secondary:hover { background-color: #45AB9F; color: #FFF; } .data-table__chart-root th.dc-table-head { cursor: pointer; } .data-table__chart-root th.dc-table-head.asc, .data-table__chart-root th.dc-table-head.desc { color: #2AAB9F; } .data-table__chart-root th.dc-table-head.asc .fa-sort:before { content: '\\F0DE'; } .data-table__chart-root th.dc-table-head.desc .fa-sort:before { content: '\\F0DD'; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; width: 94%; padding-top: 42px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; white-space: nowrap; width: 100%; } .data-table__chart-root .table-paging { display: flex; align-items: center; flex-direction: row-reverse; margin: 32px auto; width: 100%; } .data-table__chart-root .table-record-row { position: absolute; } .data-table__chart-root .table-btns { margin: 0 auto; } .data-table__chart-root .table-paging .btn-secondary { border-color: #45AB9F; color: #45AB9F; font-size: 12px; font-weight: bold; margin-left: 8px; } .data-table__chart-root .table-paging .btn-secondary.disabled, .data-table__chart-root .table-paging .btn-secondary:disabled { border-color: #ccc; color: #ccc; } .data-table__chart-root .table-paging .btn-secondary:hover { background-color: #45AB9F; color: #FFF; } .data-table__chart-root th.dc-table-head { cursor: pointer; } .data-table__chart-root th.dc-table-head.asc, .data-table__chart-root th.dc-table-head.desc { color: #2AAB9F; } .data-table__chart-root th.dc-table-head.asc .fa-sort:before { content: '\\F0DD'; } .data-table__chart-root th.dc-table-head.desc .fa-sort:before { content: '\\F0DE'; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -37113,7 +37120,7 @@ function _filteredGroup(group) {
 }
 
 var DataTable = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { class: _vm.$style['chart-root'], attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title, "is-responsive": _vm.isResponsive }, on: { "update:fullscreen": function updateFullscreen(v) {
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('card', { class: _vm.$style['chart-root'], attrs: { "width": _vm.width, "height": _vm.height, "title": _vm.title }, on: { "update:fullscreen": function updateFullscreen(v) {
           return _vm.isFullscreen = v;
         } } }, [_c('div', { staticClass: "data-table-container" }, [this.useTablePaging ? _c('div', { staticClass: "table-paging" }, [_c('div', { staticClass: "table-btns" }, [_c('button', { staticClass: "btn btn-secondary", attrs: { "disabled": _vm.isFirstPage }, on: { "click": function click($event) {
           _vm.prevPage();
@@ -37142,7 +37149,6 @@ var DataTable = { render: function render() {
     },
     // chart style
     width: {
-      type: Number,
       default: 1000
     },
     height: {
@@ -37760,8 +37766,7 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     default: '20%'
   }), defineProperty(_props, 'useLegend', {
     default: false
-  }), defineProperty(_props, 'colorScale', {
-    type: String,
+  }), defineProperty(_props, 'color', {
     default: 'analogous'
   }), _props),
   computed: {
@@ -37824,13 +37829,6 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
         p._count = 0;
         return p;
       });
-    },
-    colorSettings: function colorSettings() {
-      var theme = Store.getTheme(this.theme);
-      return theme.colors(this.chartType, this.colorScale);
-    },
-    colors: function colors() {
-      return null;
     }
   },
   methods: {
@@ -37871,7 +37869,7 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     var _this3 = this;
 
     var chart = this.chart;
-    chart.ordinalColors(this.colorSettings.ordinal).elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
+    chart.elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
     // .label((p) => this.formatKey(p.key))
     .keyAccessor(function (p) {
       return _this3.extractValue(p.value[_this3.xAxisLabel]);
@@ -38374,6 +38372,8 @@ function run() {
   if (auto) p = p.then(start);
   if (cb) p = p.then(cb);
 }
+
+// import './libs/styles/default.scss'
 
 init();
 
