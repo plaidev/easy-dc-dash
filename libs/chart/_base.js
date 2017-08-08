@@ -185,6 +185,9 @@ export default {
     layoutDetails: {
       type: String
     },
+    color: {
+      type: String
+    },
 
     // chart specific labels
     labels: {

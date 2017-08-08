@@ -31,6 +31,10 @@ export default {
       ordinal = ['#BD0022', '#F0002C', '#FF244C', '#FF5776', '#FF8A9F'] 
     }
 
+    if (name && name.startsWith('#')) {
+      ordinal = [name]
+    }
+
     return {
       linear,
       ordinal
