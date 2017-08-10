@@ -65,7 +65,7 @@ export default {
 
   template: `
     <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
-      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">
+      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
         <chart-link ref='chartLink'></chart-link>

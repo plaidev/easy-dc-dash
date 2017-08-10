@@ -24416,10 +24416,8 @@ var dc$1 = createCommonjsModule(function (module) {
         }
     })();
 
-    
+    //# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -24948,8 +24946,6 @@ var DefaultTheme = {
   }
 };
 
-//-------------------------------------
-
 function _defaultRepresentation(v, d, key) {
   if (v instanceof Array || typeof v == 'array') {
     return v.map(function (item) {
@@ -25305,8 +25301,6 @@ var Store = new DashboardStore();
  * Licensed under the MIT License.
  */
 
-// see http://jsperf.com/testing-value-is-primitive/7
-
 var index$6 = function isPrimitive(value) {
   return value == null || typeof value !== 'function' && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object';
 };
@@ -25557,7 +25551,7 @@ var index$5 = assign;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 0; top: 0; padding-right: 5px; padding-bottom: 5px; margin-right: 1.8em; color: gray; } .reset[data-v-3fb031d6] { vertical-align: middle; margin-left: 2px; cursor: pointer; } span.reset[data-v-3fb031d6] { visibility: hidden; } .reset i[data-v-3fb031d6] { vertical-align: middle; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 8px; top: 8px; color: rgba(0,0,0,.16); font-size: 12px; display: flex; display: -webkit-flex; } .reset-button[data-v-3fb031d6]:hover { color: rgba(0,0,0,1); } a.reset[data-v-3fb031d6] { cursor: pointer; border: 1px solid; padding: 2px 4px; border-radius: 2px; display: flex; display: -webkit-flex; -webkit-align-items: center; align-items: center; } a.reset span[data-v-3fb031d6] { font-size: 10px; } span.reset[data-v-3fb031d6] { visibility: hidden; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25570,7 +25564,7 @@ var ResetButton = { render: function render() {
   }, staticRenderFns: [function () {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('span', { staticClass: "filter badge" })]);
   }, function () {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('i', { staticClass: "fa fa-ban" }, [_vm._v(" ")])]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('i', { staticClass: "fa fa-ban" }, [_vm._v(" ")]), _vm._v(" "), _c('span', [_vm._v("フィルター解除")])]);
   }], _scopeId: 'data-v-3fb031d6',
   methods: {
     reset: function reset() {
@@ -25583,7 +25577,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute;*/ width: 100%; height: 100%; transition: all 200ms 0s ease; } .card__card-container.card__self-margned { margin: 2px; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; width: auto; height: auto; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__card-container.card__self-margined .card__inner-container { margin: -2px; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 12px; display: flex; flex-direction: row-reverse; align-items: center; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: black; padding: 1px; border: solid 1px gray; border-radius: 3px; } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute;*/ width: 100%; height: 100%; transition: all 200ms 0s ease; } .card__card-container.card__self-margned { margin: 2px; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; width: auto; height: auto; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__card-container.card__self-margined .card__inner-container { margin: -2px; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 8px; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: rgba(0,0,0,1); } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -25819,7 +25813,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -36809,20 +36803,6 @@ var hashPoint = function (point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function (topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -36923,9 +36903,6 @@ var join = function (topology) {
   return junctionByPoint;
 };
 
-// Given an extracted (pre-)topology, cuts (or rotates) arcs so that all shared
-// point sequences are identified. The topology can then be subsequently deduped
-// to remove exact duplicate arcs.
 function rotateArray(array, start, end, offset) {
   reverse$1(array, start, end);
   reverse$1(array, start, start + offset);
@@ -36937,8 +36914,6 @@ function reverse$1(array, start, end) {
     t = array[start], array[start] = array[end], array[end] = t;
   }
 }
-
-// Given a cut topology, combines duplicate arcs.
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
@@ -36966,10 +36941,6 @@ function reverse$1(array, start, end) {
 // Any null input geometry objects are represented as {type: null} in the output.
 // Any feature.{id,properties,bbox} are transferred to the output geometry object.
 // Each output geometry object is a shallow copy of the input (e.g., properties, coordinates)!
-
-// Constructs the TopoJSON Topology for the specified hash of features.
-// Each object in the specified hash must be a GeoJSON object,
-// meaning FeatureCollection, a Feature or a geometry object.
 
 (function () {
   if (document) {
@@ -38372,8 +38343,6 @@ function run() {
   if (auto) p = p.then(start);
   if (cb) p = p.then(cb);
 }
-
-// import './libs/styles/default.scss'
 
 init();
 

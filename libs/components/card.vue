@@ -196,10 +196,7 @@ export default {
 .icon-box {
   position: absolute;
   right: 8px;
-  top: 12px;
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
+  top: 8px;
   color: rgba(0,0,0,.16);
 }
 
@@ -208,10 +205,7 @@ export default {
 }
 
 .icon-box i:hover {
-  color: black;
-  padding: 1px;
-  border: solid 1px gray;
-  border-radius: 3px;
+  color: rgba(0,0,0,1);
 }
 
 .hide-legend .dc-legend {
