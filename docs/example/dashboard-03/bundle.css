@@ -10013,3 +10013,10 @@ a.text-gray-dark:focus, a.text-gray-dark:hover {
 
 .section-row.is-16 {
   margin-bottom: 16px; }
+
+.dc-chart .axis path, 
+.dc-chart .axis line {
+  stroke: transparent; }
+
+.dc-chart g.axis text {
+  fill: #9B9B9B; }
