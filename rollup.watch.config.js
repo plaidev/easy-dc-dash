@@ -11,16 +11,16 @@ import css          from 'rollup-plugin-css-only'
 export default {
 
   // iifeでは必須
-  moduleName: 'EasyDC',
+  name: 'EasyDC',
 
   // entry
-  entry: 'index.js',
+  input: 'index.js',
 
-  sourceMap: false,
+  sourcemap: false,
 
   // output
-  targets: [
-    { dest: 'dist/bundle.browser.js', format: 'iife' } // 直接実行可能な形式
+  output: [
+    { file: 'dist/bundle.browser.js', format: 'iife' } // 直接実行可能な形式
   ],
 
   plugins: [
@@ -52,11 +52,13 @@ export default {
     }),
 
     // ES5に変換。.babelrcは別途用意済み
-    babel()
+    babel({
+      exclude: 'node_modules/**' // only transpile our source code
+    })
   ],
 
   // d3 v3系が動かないので。
   // http://stackoverflow.com/questions/35560305/d3-js-uncaught-typeerror-cannot-read-property-document-of-undefined
-  useStrict: false,
+  strict: false,
 
 }
