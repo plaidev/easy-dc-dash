@@ -24,15 +24,11 @@ export default {
     }
 
     if (name == 'tint') {
-      ordinal = ['#2AAB9F', '#3ACFC0', '#63D9CD', '#8CE3DA', '#B5EDE7'] 
+      ordinal = ['#2aab9f', '#2ebbae', '#32cabc', '#50d4c8', '#5fd8cd', '#6fdcd2', '#7fe0d7', '#8fe3db', '#9ee7e0', '#aeebe5', '#beefea'] 
     }
 
     if (name == 'tint_complement') {
-      ordinal = ['#BD0022', '#F0002C', '#FF244C', '#FF5776', '#FF8A9F'] 
-    }
-
-    if (name && name.startsWith('#')) {
-      ordinal = [name]
+      ordinal = ['#bd0022', '#d10026', '#e40029', '#f8002d', '#ff2048', '#ff3458', '#ff4768', '#ff5b78', '#ff6f89', '#ff8299', '#ff96a9'] 
     }
 
     return {
