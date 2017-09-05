@@ -335,7 +335,14 @@ export default {
       const {width, height} = this.containerInnerSize
       const legendable = this.useLegend
       const theme = Store.getTheme(this.theme)
-      const setting = theme.layout(this.chartType, this.layout, {width, height, legendable, fullscreen: this.isFullscreen})
+      const layoutOptions = {
+        width,
+        height,
+        legendable,
+        fullscreen: this.isFullscreen,
+        hasCaption: !!this.title
+      }
+      const setting = theme.layout(this.chartType, this.layout, layoutOptions)
       if (this.layoutDetails) {
         const custom = generateExtractor(this.layoutDetails)(setting)
         return assignDeep({}, setting, custom)

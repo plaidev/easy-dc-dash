@@ -42,13 +42,14 @@ export default {
       width = 377,
       height = 233,
       legendable = true,
-      fullscreen = false
+      fullscreen = false,
+      hasCaption = false
     } = options;
 
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
     const xAxisLabelLimit = fullscreen ? 30 : 10;
-    const captionHeight = 42;
+    const captionHeight = hasCaption ? 42 : 0;
 
     height -= captionHeight
 

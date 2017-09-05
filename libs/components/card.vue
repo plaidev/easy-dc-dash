@@ -7,7 +7,7 @@
           <div class="icon-box">
             <i class="fa" :class="fullscreenIconClass" @click="toggleFullscreen"></i>
           </div>
-          <h3 v-text="title" class="title"></h3>
+          <h3 v-if="title" v-text="title" class="title"></h3>
         </div>
         <div class="render-area" :style="renderAreaStyle">
           <slot></slot>
