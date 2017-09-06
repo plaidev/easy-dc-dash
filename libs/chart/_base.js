@@ -125,25 +125,10 @@ export default {
       type: Boolean,
       default: false
     },
-      // if chart has not xAxis & yAxis
     showLabel: {
       type: Boolean,
       default: true
     },
-    // else
-    showXAxisLabel: {
-      type: Boolean,
-      default: null
-    },
-    showYAxisLabel: {
-      type: Boolean,
-      default: true
-    },
-    rotateXAxisLabel: {
-      type: Boolean,
-      default: true
-    },
-
     // animation
     transitionDuration: {
       type: Number,
@@ -342,12 +327,6 @@ export default {
       }
       return setting
     },
-    isShowXAxisLabels: function() {
-      if(this.showXAxisLabel != null) return this.showXAxisLabel
-      let [scale, unit] = this.scale.split('.')
-      if(scale !== 'ordinal') return true
-      return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit
-    },
     colorSettings: function() {
       const theme = Store.getTheme(this.theme)
       return theme.colors(this.chartType, this.color)
@@ -494,7 +473,6 @@ export default {
         height = defaultHeight,
         margins,
         legend: legendOptions,
-        axis
       } = this.layoutSettings;
 
       chart
@@ -503,20 +481,6 @@ export default {
 
       if (margins && chart.margins) {
         chart.margins(margins)
-      }
-
-      if(!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
-        chart.xAxis().tickValues([])
-      }
-      else if(chart.xAxis instanceof Function){
-        chart.xAxis().tickValues(null)
-      }
-
-      if(!this.showYAxisLabel && chart.yAxis instanceof Function) {
-        chart.yAxis().tickValues([])
-      }
-      else if(chart.yAxis instanceof Function){
-        chart.yAxis().tickValues(null)
       }
 
       if (this.useDataPoints && chart.renderDataPoints) {
@@ -668,12 +632,6 @@ export default {
             let d = _d.key || _d;
             return d.length > 15 ? d.substr(0,15)+'...' : d
         })
-      }
-
-      // TODO: layout system
-      if(!this.hideXAxisLabel && this.rotateXAxisLabel) {
-        chart.selectAll(`#${this.id} g.x text`)
-          .attr('transform', 'translate(-10,5) rotate(330)')
       }
     })
 
