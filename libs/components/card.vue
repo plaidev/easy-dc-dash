@@ -43,11 +43,17 @@ export default {
     }
   },
   data: function() {
-    return {isFullscreen: false}
+    return {
+      isFullscreen: false,
+      updating: false
+    }
   },
   computed: {
+    $style: function() {
+      return this.$options.cssModules
+    },
     renderAreaStyle: function() {
-      if (this.captionHeight) {
+      if (this.captionHeight && this.title) {
         return {
           'margin-top': this.captionHeight + 'px',
           height: 'calc(100% - ' + this.captionHeight + 'px)'
@@ -79,9 +85,6 @@ export default {
         else if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
       }
-      this.$nextTick(() => {
-        this.$emit('resized', {isFullscreen: this.isFullscreen})
-      })
       return style
     },
     screenModeClass: function() {
@@ -101,12 +104,30 @@ export default {
   watch: {
     fullscreen: function(v) {
       this.isFullscreen = v
+    },
+    sizeStyle: function() {
+      this.updateRenderAreaSize()
+    },
+    captionHeight: function() {
+      this.updateRenderAreaSize()
     }
   },
   methods: {
     toggleFullscreen: function() {
       this.isFullscreen = !this.isFullscreen
+    },
+    updateRenderAreaSize: function() {
+      if (this.updating) return;
+      this.updating = true
+      // 設定変更後、レンダリングの完了を待つ
+      this.$nextTick(() => {
+        this.updating = false
+        this.$emit('resized', {isFullscreen: this.isFullscreen})
+      })
     }
+  },
+  mounted: function() {
+    this.updateRenderAreaSize()
   }
 }
 </script>
@@ -181,6 +202,10 @@ export default {
   top: 0;
   left: 0;
   right: 0;
+  z-index: 2;
+}
+
+.container-header.has-caption {
   border-bottom: 1px solid rgba(0,0,0,.08);
 }
 

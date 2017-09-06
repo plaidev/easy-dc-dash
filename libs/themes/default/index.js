@@ -37,21 +37,25 @@ export default {
     }
   },
 
+  card: function(_super, chartType, name, options={}) {
+    return {
+      defaultCaption: '',
+      captionHeight: 42,
+      selfMargined: true
+    }
+  },
+
   layout: function(_super, chartType, name, options={}) {
     let {
       width = 377,
       height = 233,
       legendable = true,
-      fullscreen = false,
-      hasCaption = false
+      fullscreen = false
     } = options;
 
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
     const xAxisLabelLimit = fullscreen ? 30 : 10;
-    const captionHeight = hasCaption ? 42 : 0;
-
-    height -= captionHeight
 
     if (name === 'auto') {
       if (legendable && width / height > 2) {
@@ -97,9 +101,6 @@ export default {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
         },
-        caption: {
-          height: captionHeight
-        }
       }
     }
 
@@ -124,9 +125,6 @@ export default {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       }
     }
@@ -155,9 +153,6 @@ export default {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       }
     }
@@ -196,9 +191,6 @@ export default {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit},
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       }
 
