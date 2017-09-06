@@ -1,9 +1,9 @@
 <template>
   <div class="outer-container" :style="outerSizeStyle" :class="screenModeClass">
     <div class="backdrop" @click="toggleFullscreen"></div>
-    <div class="card-container">
+    <div class="card-container" :class="selfMargined ? $style['self-margined'] : ''">
       <div class="inner-container" :style="sizeStyle">
-        <div class="container-header">
+        <div class="container-header" :class="title ? $style['has-caption'] : ''">
           <div class="icon-box">
             <i class="fa" :class="fullscreenIconClass" @click="toggleFullscreen"></i>
           </div>
@@ -40,6 +40,10 @@ export default {
     hideLegend: {
       type: Boolean,
       default: false
+    },
+    selfMargined: {
+      type: Boolean,
+      default: true
     }
   },
   data: function() {
@@ -153,14 +157,9 @@ export default {
 
 .card-container {
   background-color: #FFF;
-  /*position: absolute;*/
   width: 100%;
   height: 100%;
   transition: all 200ms 0s ease;
-}
-
-.card-container.self-margned {
-  margin: 2px;
 }
 
 .fullscreen .card-container {
@@ -176,14 +175,27 @@ export default {
 
 .inner-container {
   position: relative;
-
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.card-container.self-margined .inner-container {
+.self-margined {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: auto;
+  height: auto;
+}
+
+.self-margined .inner-container {
   margin: -2px;
+}
+
+.fullscreen .self-margined .inner-container {
+  margin: 0;
 }
 
 .render-area {
