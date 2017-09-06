@@ -82,7 +82,7 @@ export default {
         width: width,
         height: height * heightCoef,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: width - height
@@ -112,7 +112,7 @@ export default {
         width: length,
         height: length,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: 40
@@ -135,7 +135,7 @@ export default {
         width: width,
         height: height * heightCoef,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: 40
@@ -161,7 +161,7 @@ export default {
       const legendWidth = Math.min(height * heightCoef, 200)
 
       const margins = {
-        top: 40,
+        top: 20,
         bottom: 30,
         left: 60,
         right: legendWidth
