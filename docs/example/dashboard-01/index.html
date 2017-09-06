@@ -87,14 +87,6 @@
     reduce='d.pv'
   ></segment-pie>
 
-  <stack-and-rate
-    scale='time.day'
-    dimension='d.session_end_date'
-    volume='volume-chart'
-    reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
-    labels='直帰,非直帰,直帰率'
-  ></stack-and-rate>
-
   <list-row
     title='list-row'
     dimension='d.name'
@@ -109,7 +101,16 @@
     reduce='d.pv'
     x-axis-label='name'
     y-axis-label='pv'
+    :show-x-axis-label='false'
+    :show-y-axis-label='false'
   ></ordinal-bar>
+
+  <ordinal-bar
+    title='ordinal-bar'
+    dimension='d.name'
+    reduce='d.pv'
+  ></ordinal-bar>
+
 
   <filter-stacked-bar
     title="filter stacked bar"
@@ -133,10 +134,26 @@
     labels='PV,セッション数,直帰率'
   ></stacked-lines>
 
+  <stack-and-rate
+    scale='time.day'
+    dimension='d.session_end_date'
+    volume='volume-chart'
+    reduce='[[d.bounce_cnt, d.pv - d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
+    labels='直帰,非直帰,直帰率'
+  ></stack-and-rate>
+
   <rate-line
     dimension='d.session_end_date'
     reduce='{count: d.session_cnt, value: d.bounce_cnt}'
     scale="time.day"
+  ></rate-line>
+
+  <rate-line
+    dimension='d.session_end_date'
+    reduce='{count: d.session_cnt, value: d.bounce_cnt}'
+    scale="time.day"
+    :show-x-axis-label='false'
+    :show-y-axis-label='false'
   ></rate-line>
 
   <heat-map
@@ -162,6 +179,7 @@
     :height=250
     radius-format='%'
     :max-bubble-relative-size=0.1
+    :show-label='false'
   ></bubble>
 
   <data-table

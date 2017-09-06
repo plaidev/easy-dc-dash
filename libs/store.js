@@ -267,6 +267,10 @@ class DashboardStore {
         if (!Theme.colors) return BaseTheme.colors(...args)
         return Theme.colors(BaseTheme.colors, ...args)
       },
+      card: function(...args) {
+        if (!Theme.card) return BaseTheme.card(...args)
+        return Theme.card(BaseTheme.card, ...args)
+      },
       layout: function(...args) {
         if (!Theme.layout) return BaseTheme.layout(...args)
         return Theme.layout(BaseTheme.layout, ...args)

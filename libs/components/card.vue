@@ -1,13 +1,13 @@
 <template>
   <div class="outer-container" :style="outerSizeStyle" :class="screenModeClass">
     <div class="backdrop" @click="toggleFullscreen"></div>
-    <div class="card-container">
+    <div class="card-container" :class="selfMargined ? $style['self-margined'] : ''">
       <div class="inner-container" :style="sizeStyle">
-        <div class="container-header">
+        <div class="container-header" :class="title ? $style['has-caption'] : ''">
           <div class="icon-box">
             <i class="fa" :class="fullscreenIconClass" @click="toggleFullscreen"></i>
           </div>
-          <h3 v-text="title" class="title"></h3>
+          <h3 v-if="title" v-text="title" class="title"></h3>
         </div>
         <div class="render-area" :style="renderAreaStyle">
           <slot></slot>
@@ -40,14 +40,24 @@ export default {
     hideLegend: {
       type: Boolean,
       default: false
+    },
+    selfMargined: {
+      type: Boolean,
+      default: true
     }
   },
   data: function() {
-    return {isFullscreen: false}
+    return {
+      isFullscreen: false,
+      updating: false
+    }
   },
   computed: {
+    $style: function() {
+      return this.$options.cssModules
+    },
     renderAreaStyle: function() {
-      if (this.captionHeight) {
+      if (this.captionHeight && this.title) {
         return {
           'margin-top': this.captionHeight + 'px',
           height: 'calc(100% - ' + this.captionHeight + 'px)'
@@ -79,9 +89,6 @@ export default {
         else if (this.width) style.width = this.width+'px';
         if (this.height) style.height = this.height+'px';
       }
-      this.$nextTick(() => {
-        this.$emit('resized', {isFullscreen: this.isFullscreen})
-      })
       return style
     },
     screenModeClass: function() {
@@ -101,12 +108,30 @@ export default {
   watch: {
     fullscreen: function(v) {
       this.isFullscreen = v
+    },
+    sizeStyle: function() {
+      this.updateRenderAreaSize()
+    },
+    captionHeight: function() {
+      this.updateRenderAreaSize()
     }
   },
   methods: {
     toggleFullscreen: function() {
       this.isFullscreen = !this.isFullscreen
+    },
+    updateRenderAreaSize: function() {
+      if (this.updating) return;
+      this.updating = true
+      // 設定変更後、レンダリングの完了を待つ
+      this.$nextTick(() => {
+        this.updating = false
+        this.$emit('resized', {isFullscreen: this.isFullscreen})
+      })
     }
+  },
+  mounted: function() {
+    this.updateRenderAreaSize()
   }
 }
 </script>
@@ -132,14 +157,9 @@ export default {
 
 .card-container {
   background-color: #FFF;
-  /*position: absolute;*/
   width: 100%;
   height: 100%;
   transition: all 200ms 0s ease;
-}
-
-.card-container.self-margned {
-  margin: 2px;
 }
 
 .fullscreen .card-container {
@@ -155,14 +175,27 @@ export default {
 
 .inner-container {
   position: relative;
-
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.card-container.self-margined .inner-container {
+.self-margined {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: auto;
+  height: auto;
+}
+
+.self-margined .inner-container {
   margin: -2px;
+}
+
+.fullscreen .self-margined .inner-container {
+  margin: 0;
 }
 
 .render-area {
@@ -181,6 +214,10 @@ export default {
   top: 0;
   left: 0;
   right: 0;
+  z-index: 2;
+}
+
+.container-header.has-caption {
   border-bottom: 1px solid rgba(0,0,0,.08);
 }
 

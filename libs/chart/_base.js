@@ -11,6 +11,11 @@ import CardContainer from '../components/card.vue'
 import KrtDcTooltip from '../components/krt-dc-tooltip.vue'
 import ChartLink from '../components/chart-link.vue'
 
+
+// TODO:
+// データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
+
+
 function generateScales(scaleCode) {
   if (!scaleCode) return {};
 
@@ -64,8 +69,8 @@ function generateScales(scaleCode) {
 export default {
 
   template: `
-    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']">
-      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative">
+    <card :title="title || cardSettings.defaultCaption" :width="width" :height="height" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style['chart-root']" :caption-height="cardSettings.captionHeight" :self-margined="cardSettings.selfMargined">
+      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%">
         <krt-dc-tooltip ref='tooltip'></krt-dc-tooltip>
         <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>
         <chart-link ref='chartLink'></chart-link>
@@ -315,12 +320,24 @@ export default {
     extraDimensionScale: function () {
       return generateScales(this.extraScale)
     },
+    cardSettings: function() {
+      const theme = Store.getTheme(this.theme)
+      const options = {}
+      const setting = theme.card(this.chartType, this.layout, options)
+      return setting
+    },
     layoutSettings: function() {
       if (!this.containerInnerSize) return {}
       const {width, height} = this.containerInnerSize
       const legendable = this.useLegend
       const theme = Store.getTheme(this.theme)
-      const setting = theme.layout(this.chartType, this.layout, {width, height, legendable, fullscreen: this.isFullscreen})
+      const layoutOptions = {
+        width,
+        height,
+        legendable,
+        fullscreen: this.isFullscreen
+      }
+      const setting = theme.layout(this.chartType, this.layout, layoutOptions)
       if (this.layoutDetails) {
         const custom = generateExtractor(this.layoutDetails)(setting)
         return assignDeep({}, setting, custom)
@@ -333,10 +350,6 @@ export default {
     },
     colors: function() {
       return this.colorSettings.ordinal
-    },
-    captionHeight: function() {
-      if (!this.layoutSettings || !this.layoutSettings.caption) return;
-      return this.layoutSettings.caption.height
     },
     textSelector: function() {
       if(this.chartType === 'bubbleChart') return `#${this.id} .node text`
@@ -396,10 +409,10 @@ export default {
       // not mounted
       if (!this.isMounted) return;
       if (typeof this.parent === 'string' || this.parent instanceof String) {
-        const el = this.$el.querySelector(`#${this.id}`).parentNode
+        const el = this.$el.querySelector(`#${this.id}`)
         this.containerInnerSize = {
-          width: el.clientWidth,
-          height: el.clientHeight
+          width: el.offsetWidth,
+          height: el.offsetHeight
         }
       }
       else {

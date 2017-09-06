@@ -37,6 +37,14 @@ export default {
     }
   },
 
+  card: function(_super, chartType, name, options={}) {
+    return {
+      defaultCaption: '',
+      captionHeight: 42,
+      selfMargined: true
+    }
+  },
+
   layout: function(_super, chartType, name, options={}) {
     let {
       width = 377,
@@ -48,9 +56,6 @@ export default {
     const heightCoef = (chartType === 'pieChart') ? 0.8: 1;
     const legendYCoef = (chartType === 'pieChart') ? 0: 0.2;
     const xAxisLabelLimit = fullscreen ? 30 : 10;
-    const captionHeight = 42;
-
-    height -= captionHeight
 
     if (name === 'auto') {
       if (legendable && width / height > 2) {
@@ -77,7 +82,7 @@ export default {
         width: width,
         height: height * heightCoef,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: width - height
@@ -96,9 +101,6 @@ export default {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
         },
-        caption: {
-          height: captionHeight
-        }
       }
     }
 
@@ -110,7 +112,7 @@ export default {
         width: length,
         height: length,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: 40
@@ -123,9 +125,6 @@ export default {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       }
     }
@@ -136,7 +135,7 @@ export default {
         width: width,
         height: height * heightCoef,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: 40
@@ -154,9 +153,6 @@ export default {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       }
     }
@@ -165,7 +161,7 @@ export default {
       const legendWidth = Math.min(height * heightCoef, 200)
 
       const margins = {
-        top: 40,
+        top: 20,
         bottom: 30,
         left: 60,
         right: legendWidth
@@ -195,9 +191,6 @@ export default {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit},
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       }
 
