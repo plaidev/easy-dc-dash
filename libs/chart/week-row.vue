@@ -20,6 +20,9 @@ export default {
     },
     useLegend: {
       default: false
+    },
+    color: {
+      default: 'week'
     }
   },
 
@@ -85,13 +88,6 @@ export default {
     },
     dimensionRange: function() {
       return [0, 6]
-    },
-    colorSettings: function() {
-      const theme = Store.getTheme(this.theme)
-      return theme.colors(this.chartType, 'week')
-    },
-    colors: function() {
-      return null;
     }
   },
 
@@ -110,7 +106,6 @@ export default {
     const chart = this.chart;
 
     chart
-      .ordinalColors(this.colorSettings.weekOrdinal)
       .elasticX(true)
     return chart
   }
