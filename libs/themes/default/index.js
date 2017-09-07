@@ -41,7 +41,7 @@ export default {
     return {
       defaultCaption: '',
       captionHeight: 42,
-      selfMargined: true
+      selfMargined: false
     }
   },
 
