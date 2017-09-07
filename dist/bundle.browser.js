@@ -23104,8 +23104,10 @@ return dc;}
 }
 )();
 
-//# sourceMappingURL=dc.js.map
+
 });
+
+// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$1;
@@ -23465,6 +23467,16 @@ var DefaultTheme = {
     };
   },
 
+  card: function card(_super, chartType, name) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    return {
+      defaultCaption: '',
+      captionHeight: 42,
+      selfMargined: false
+    };
+  },
+
   layout: function layout(_super, chartType, name) {
     var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
     var _options$width = options.width,
@@ -23480,9 +23492,6 @@ var DefaultTheme = {
     var heightCoef = chartType === 'pieChart' ? 0.8 : 1;
     var legendYCoef = chartType === 'pieChart' ? 0 : 0.2;
     var xAxisLabelLimit = fullscreen ? 30 : 10;
-    var captionHeight = 42;
-
-    height -= captionHeight;
 
     if (name === 'auto') {
       if (legendable && width / height > 2) {
@@ -23506,7 +23515,7 @@ var DefaultTheme = {
         width: width,
         height: height * heightCoef,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: width - height
@@ -23524,9 +23533,6 @@ var DefaultTheme = {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       };
     } else if (name === 'square') {
@@ -23537,7 +23543,7 @@ var DefaultTheme = {
         width: length,
         height: length,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: 40
@@ -23550,9 +23556,6 @@ var DefaultTheme = {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       };
     } else if (name === 'overlay-legend') {
@@ -23561,7 +23564,7 @@ var DefaultTheme = {
         width: width,
         height: height * heightCoef,
         margins: {
-          top: 40,
+          top: 20,
           bottom: 30,
           left: 40,
           right: 40
@@ -23579,16 +23582,13 @@ var DefaultTheme = {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       };
     } else if (name === 'wide') {
       var legendWidth = Math.min(height * heightCoef, 200);
 
       var margins = {
-        top: 40,
+        top: 20,
         bottom: 30,
         left: 60,
         right: legendWidth
@@ -23617,9 +23617,6 @@ var DefaultTheme = {
         axis: {
           xLabel: { padding: 15, limit: xAxisLabelLimit },
           yLabel: { padding: 20 }
-        },
-        caption: {
-          height: captionHeight
         }
       };
     }
@@ -23746,6 +23743,8 @@ var slicedToArray = function () {
     }
   };
 }();
+
+//-------------------------------------
 
 function _defaultRepresentation(v, d, key) {
   if (v instanceof Array || typeof v == 'array') {
@@ -24051,9 +24050,17 @@ var DashboardStore = function () {
           if (!Theme.colors) return BaseTheme.colors.apply(BaseTheme, args);
           return Theme.colors.apply(Theme, [BaseTheme.colors].concat(args));
         },
-        layout: function layout() {
+        card: function card() {
           for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
             args[_key2] = arguments[_key2];
+          }
+
+          if (!Theme.card) return BaseTheme.card.apply(BaseTheme, args);
+          return Theme.card.apply(Theme, [BaseTheme.card].concat(args));
+        },
+        layout: function layout() {
+          for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+            args[_key3] = arguments[_key3];
           }
 
           if (!Theme.layout) return BaseTheme.layout.apply(BaseTheme, args);
@@ -24102,6 +24109,7 @@ var Store = new DashboardStore();
  * Licensed under the MIT License.
  */
 
+// see http://jsperf.com/testing-value-is-primitive/7
 var index$6 = function isPrimitive(value) {
   return value == null || (typeof value !== 'function' && typeof value !== 'object');
 };
@@ -24376,7 +24384,7 @@ var ResetButton = { render: function render() {
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; /*position: absolute;*/ width: 100%; height: 100%; transition: all 200ms 0s ease; } .card__card-container.card__self-margned { margin: 2px; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; width: auto; height: auto; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__card-container.card__self-margined .card__inner-container { margin: -2px; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 8px; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: rgba(0,0,0,1); } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .card__outer-container { position: relative; } .card__backdrop { } .card__fullscreen .card__backdrop { position: fixed; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); } .card__card-container { background-color: #FFF; width: 100%; height: 100%; transition: all 200ms 0s ease; } .card__fullscreen .card__card-container { position: fixed; top: 5vh; left: 5vw; right: 5vw; bottom: 5vh; width: auto; height: auto; z-index: 100; } .card__inner-container { position: relative; display: flex; align-items: center; justify-content: center; } .card__self-margined { position: absolute; left: 2px; right: 2px; top: 2px; bottom: 2px; width: auto; height: auto; } .card__self-margined .card__inner-container { margin: -2px; } .card__fullscreen .card__self-margined .card__inner-container { margin: 0; } .card__render-area { width: 100%; height: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; } .card__container-header { position: absolute; top: 0; left: 0; right: 0; z-index: 2; } .card__container-header.card__has-caption { border-bottom: 1px solid rgba(0,0,0,.08); } .card__title { color: #475A57; font-size: 1em; margin-top: 12px; margin-bottom: 12px; padding-left: 24px; width: calc(100% - 2em); } .card__icon-box { position: absolute; right: 8px; top: 8px; color: rgba(0,0,0,.16); } .card__icon-box i { padding: 2px; } .card__icon-box i:hover { color: rgba(0,0,0,1); } .card__hide-legend .card__dc-legend { display: none; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -24385,8 +24393,8 @@ var ResetButton = { render: function render() {
 })();
 
 var CardContainer = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container" }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header" }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } })]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
-  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "self-margned": "card__self-margned", "inner-container": "card__inner-container", "self-margined": "card__self-margined", "render-area": "card__render-area", "container-header": "card__container-header", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "card__outer-container", class: _vm.screenModeClass, style: _vm.outerSizeStyle }, [_c('div', { staticClass: "card__backdrop", on: { "click": _vm.toggleFullscreen } }), _c('div', { staticClass: "card__card-container", class: _vm.selfMargined ? _vm.$style['self-margined'] : '' }, [_c('div', { staticClass: "card__inner-container", style: _vm.sizeStyle }, [_c('div', { staticClass: "card__container-header", class: _vm.title ? _vm.$style['has-caption'] : '' }, [_c('div', { staticClass: "card__icon-box" }, [_c('i', { staticClass: "fa", class: _vm.fullscreenIconClass, on: { "click": _vm.toggleFullscreen } })]), _vm.title ? _c('h3', { staticClass: "card__title", domProps: { "textContent": _vm._s(_vm.title) } }) : _vm._e()]), _c('div', { staticClass: "card__render-area", style: _vm.renderAreaStyle }, [_vm._t("default")], 2)])])]);
+  }, staticRenderFns: [], cssModules: { "outer-container": "card__outer-container", "backdrop": "card__backdrop", "fullscreen": "card__fullscreen", "card-container": "card__card-container", "inner-container": "card__inner-container", "self-margined": "card__self-margined", "render-area": "card__render-area", "container-header": "card__container-header", "has-caption": "card__has-caption", "title": "card__title", "icon-box": "card__icon-box", "hide-legend": "card__hide-legend", "dc-legend": "card__dc-legend" },
   props: {
     title: {
       type: String
@@ -24407,14 +24415,24 @@ var CardContainer = { render: function render() {
     hideLegend: {
       type: Boolean,
       default: false
+    },
+    selfMargined: {
+      type: Boolean,
+      default: true
     }
   },
   data: function data() {
-    return { isFullscreen: false };
+    return {
+      isFullscreen: false,
+      updating: false
+    };
   },
   computed: {
+    $style: function $style() {
+      return this.$options.cssModules;
+    },
     renderAreaStyle: function renderAreaStyle() {
-      if (this.captionHeight) {
+      if (this.captionHeight && this.title) {
         return {
           'margin-top': this.captionHeight + 'px',
           height: 'calc(100% - ' + this.captionHeight + 'px)'
@@ -24433,8 +24451,6 @@ var CardContainer = { render: function render() {
       return style;
     },
     sizeStyle: function sizeStyle() {
-      var _this = this;
-
       var style = {};
       if (this.isFullscreen) {
         style.width = 90 + 'vw';
@@ -24445,9 +24461,6 @@ var CardContainer = { render: function render() {
         } else if (this.width) style.width = this.width + 'px';
         if (this.height) style.height = this.height + 'px';
       }
-      this.$nextTick(function () {
-        _this.$emit('resized', { isFullscreen: _this.isFullscreen });
-      });
       return style;
     },
     screenModeClass: function screenModeClass() {
@@ -24467,12 +24480,32 @@ var CardContainer = { render: function render() {
   watch: {
     fullscreen: function fullscreen(v) {
       this.isFullscreen = v;
+    },
+    sizeStyle: function sizeStyle() {
+      this.updateRenderAreaSize();
+    },
+    captionHeight: function captionHeight() {
+      this.updateRenderAreaSize();
     }
   },
   methods: {
     toggleFullscreen: function toggleFullscreen() {
       this.isFullscreen = !this.isFullscreen;
+    },
+    updateRenderAreaSize: function updateRenderAreaSize() {
+      var _this = this;
+
+      if (this.updating) return;
+      this.updating = true;
+      // 設定変更後、レンダリングの完了を待つ
+      this.$nextTick(function () {
+        _this.updating = false;
+        _this.$emit('resized', { isFullscreen: _this.isFullscreen });
+      });
     }
+  },
+  mounted: function mounted() {
+    this.updateRenderAreaSize();
   }
 };
 
@@ -24560,6 +24593,10 @@ var ChartLink = { render: function render() {
   }
 };
 
+// TODO:
+// データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
+
+
 function generateScales(scaleCode) {
   if (!scaleCode) return {};
 
@@ -24612,7 +24649,7 @@ function generateScales(scaleCode) {
 
 var Base = {
 
-  template: '\n    <card :title="title" :width="width" :height="height" :captionHeight="captionHeight" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
+  template: '\n    <card :title="title || cardSettings.defaultCaption" :width="width" :height="height" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']" :caption-height="cardSettings.captionHeight" :self-margined="cardSettings.selfMargined">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
 
   components: {
     'card': CardContainer,
@@ -24666,25 +24703,10 @@ var Base = {
       type: Boolean,
       default: false
     },
-    // if chart has not xAxis & yAxis
     showLabel: {
       type: Boolean,
       default: true
     },
-    // else
-    showXAxisLabel: {
-      type: Boolean,
-      default: null
-    },
-    showYAxisLabel: {
-      type: Boolean,
-      default: true
-    },
-    rotateXAxisLabel: {
-      type: Boolean,
-      default: true
-    },
-
     // animation
     transitionDuration: {
       type: Number,
@@ -24880,6 +24902,12 @@ var Base = {
     extraDimensionScale: function extraDimensionScale() {
       return generateScales(this.extraScale);
     },
+    cardSettings: function cardSettings() {
+      var theme = Store.getTheme(this.theme);
+      var options = {};
+      var setting = theme.card(this.chartType, this.layout, options);
+      return setting;
+    },
     layoutSettings: function layoutSettings() {
       if (!this.containerInnerSize) return {};
       var _containerInnerSize = this.containerInnerSize,
@@ -24888,23 +24916,18 @@ var Base = {
 
       var legendable = this.useLegend;
       var theme = Store.getTheme(this.theme);
-      var setting = theme.layout(this.chartType, this.layout, { width: width, height: height, legendable: legendable, fullscreen: this.isFullscreen });
+      var layoutOptions = {
+        width: width,
+        height: height,
+        legendable: legendable,
+        fullscreen: this.isFullscreen
+      };
+      var setting = theme.layout(this.chartType, this.layout, layoutOptions);
       if (this.layoutDetails) {
         var custom = generateExtractor(this.layoutDetails)(setting);
         return index$5({}, setting, custom);
       }
       return setting;
-    },
-    isShowXAxisLabels: function isShowXAxisLabels() {
-      if (this.showXAxisLabel != null) return this.showXAxisLabel;
-
-      var _scale$split3 = this.scale.split('.'),
-          _scale$split4 = slicedToArray(_scale$split3, 2),
-          scale = _scale$split4[0],
-          unit = _scale$split4[1];
-
-      if (scale !== 'ordinal') return true;
-      return this.reducerAll && this.reducerAll.length < this.layoutSettings.axis.xLabel.limit;
     },
     colorSettings: function colorSettings() {
       var theme = Store.getTheme(this.theme);
@@ -24912,10 +24935,6 @@ var Base = {
     },
     colors: function colors() {
       return this.colorSettings.ordinal;
-    },
-    captionHeight: function captionHeight() {
-      if (!this.layoutSettings || !this.layoutSettings.caption) return;
-      return this.layoutSettings.caption.height;
     },
     textSelector: function textSelector() {
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .node text';else if (this.chartType === 'heatMap') return '#' + this.id + ' g.cols.axis text';else return '#' + this.id + ' g.x text';
@@ -24953,10 +24972,10 @@ var Base = {
       // 互換性のための一時的なメソッド
       if (!this.scale) return null;
 
-      var _scale$split5 = this.scale.split('.'),
-          _scale$split6 = slicedToArray(_scale$split5, 2),
-          scale = _scale$split6[0],
-          unit = _scale$split6[1];
+      var _scale$split3 = this.scale.split('.'),
+          _scale$split4 = slicedToArray(_scale$split3, 2),
+          scale = _scale$split4[0],
+          unit = _scale$split4[1];
 
       if (scale == 'time' && !unit) unit = 'day';
       if (scale == 'time' && unit in TIME_INTERVALS) {
@@ -24986,10 +25005,10 @@ var Base = {
       // not mounted
       if (!this.isMounted) return;
       if (typeof this.parent === 'string' || this.parent instanceof String) {
-        var el = this.$el.querySelector('#' + this.id).parentNode;
+        var el = this.$el.querySelector('#' + this.id);
         this.containerInnerSize = {
-          width: el.clientWidth,
-          height: el.clientHeight
+          width: el.offsetWidth,
+          height: el.offsetHeight
         };
       } else {
         // this.parent is compositeChart instance
@@ -25073,26 +25092,13 @@ var Base = {
           _layoutSettings$heigh = _layoutSettings.height,
           height = _layoutSettings$heigh === undefined ? defaultHeight : _layoutSettings$heigh,
           margins = _layoutSettings.margins,
-          legendOptions = _layoutSettings.legend,
-          axis = _layoutSettings.axis;
+          legendOptions = _layoutSettings.legend;
 
 
       chart.width(width).height(height);
 
       if (margins && chart.margins) {
         chart.margins(margins);
-      }
-
-      if (!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
-        chart.xAxis().tickValues([]);
-      } else if (chart.xAxis instanceof Function) {
-        chart.xAxis().tickValues(null);
-      }
-
-      if (!this.showYAxisLabel && chart.yAxis instanceof Function) {
-        chart.yAxis().tickValues([]);
-      } else if (chart.yAxis instanceof Function) {
-        chart.yAxis().tickValues(null);
       }
 
       if (this.useDataPoints && chart.renderDataPoints) {
@@ -25213,10 +25219,10 @@ var Base = {
 
     // deisgn hack
     if (this.chartType === 'barChart') {
-      var _scale$split7 = this.scale.split('.'),
-          _scale$split8 = slicedToArray(_scale$split7, 2),
-          scale = _scale$split8[0],
-          unit = _scale$split8[1];
+      var _scale$split5 = this.scale.split('.'),
+          _scale$split6 = slicedToArray(_scale$split5, 2),
+          scale = _scale$split6[0],
+          unit = _scale$split6[1];
 
       if (scale === 'time') {
         if (!unit) unit = 'day';
@@ -25230,11 +25236,6 @@ var Base = {
           var d = _d.key || _d;
           return d.length > 15 ? d.substr(0, 15) + '...' : d;
         });
-      }
-
-      // TODO: layout system
-      if (!_this6.hideXAxisLabel && _this6.rotateXAxisLabel) {
-        chart.selectAll('#' + _this6.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
     });
 
@@ -25270,6 +25271,18 @@ var coordinateGridBase = {
       type: String,
       default: ''
     },
+    showXAxisLabel: {
+      type: Boolean,
+      default: null
+    },
+    showYAxisLabel: {
+      type: Boolean,
+      default: true
+    },
+    rotateXAxisLabel: {
+      type: Boolean,
+      default: true
+    },
     renderHorizontalGridLines: {
       type: Boolean,
       default: true
@@ -25288,32 +25301,77 @@ var coordinateGridBase = {
     }
   },
   computed: {
+    isShowXAxisLabels: function isShowXAxisLabels() {
+      var axis = this.layoutSettings.axis;
+
+
+      if (this.showXAxisLabel != null) return this.showXAxisLabel;
+
+      var _scale$split = this.scale.split('.'),
+          _scale$split2 = slicedToArray(_scale$split, 2),
+          scale = _scale$split2[0],
+          unit = _scale$split2[1];
+
+      if (scale !== 'ordinal') return true;
+      return this.reducerAll && this.reducerAll.length < axis.xLabel.limit;
+    },
     colors: function colors() {
       return this.colorSettings.ordinal;
     }
   },
   methods: {
     applyAxisStyles: function applyAxisStyles() {
+      var _this = this;
+
+      if (!this.containerInnerSize || !this.layoutSettings || !this.chart) return;
+
+      var chart = this.chart;
+      var axis = this.layoutSettings.axis;
+
+
       if (chart.xAxisLabel && this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding);
       if (chart.yAxisLabel && this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding);
+
+      // FIXME: formatではなくunitになっている
+      if (this.xAxisFormat) chart.xAxis().tickFormat(function (d) {
+        return d + ('' + _this.xAxisFormat);
+      });
+      if (this.yAxisFormat) chart.yAxis().tickFormat(function (d) {
+        return d + ('' + _this.yAxisFormat);
+      });
+
+      if (!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
+        chart.xAxis().tickValues([]);
+      } else if (chart.xAxis instanceof Function) {
+        chart.xAxis().tickValues(null);
+      }
+
+      if (!this.showYAxisLabel && chart.yAxis instanceof Function) {
+        chart.yAxis().tickValues([]);
+      } else if (chart.yAxis instanceof Function) {
+        chart.yAxis().tickValues(null);
+      }
+    }
+  },
+  watch: {
+    layoutSettings: function layoutSettings() {
+      this.applyStyles();
+      this.applyAxisStyles();
     }
   },
   mounted: function mounted() {
-    var _this = this;
+    var _this2 = this;
 
     var chart = this.chart;
-
-    this.applyStyles();
 
     chart.brushOn(this.brushOn).renderVerticalGridLines(this.renderVerticalGridLines).renderHorizontalGridLines(this.renderHorizontalGridLines).elasticY(this.elasticY).mouseZoomable(false);
     // .clipPadding(10) // ??
 
-    // FIXME: formatではなくunitになっている
-    if (this.xAxisFormat) chart.xAxis().tickFormat(function (d) {
-      return d + ('' + _this.xAxisFormat);
-    });
-    if (this.yAxisFormat) chart.yAxis().tickFormat(function (d) {
-      return d + ('' + _this.yAxisFormat);
+    chart.on('pretransition', function () {
+      // TODO: layout system
+      if (!_this2.hideXAxisLabel && _this2.rotateXAxisLabel) {
+        chart.selectAll('#' + _this2.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
+      }
     });
 
     return chart;
@@ -35593,6 +35651,9 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
     },
     useLegend: {
       default: false
+    },
+    color: {
+      default: 'week'
     }
   },
 
@@ -35652,13 +35713,6 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
     },
     dimensionRange: function dimensionRange() {
       return [0, 6];
-    },
-    colorSettings: function colorSettings() {
-      var theme = Store.getTheme(this.theme);
-      return theme.colors(this.chartType, 'week');
-    },
-    colors: function colors() {
-      return null;
     }
   },
 
@@ -35676,7 +35730,7 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
   mounted: function mounted() {
     var chart = this.chart;
 
-    chart.ordinalColors(this.colorSettings.weekOrdinal).elasticX(true);
+    chart.elasticX(true);
     return chart;
   }
 };
@@ -36404,6 +36458,20 @@ var hashPoint = function(point) {
   return hash & 0x7fffffff;
 };
 
+// Given an extracted (pre-)topology, identifies all of the junctions. These are
+// the points at which arcs (lines or rings) will need to be cut so that each
+// arc is represented uniquely.
+//
+// A junction is a point where at least one arc deviates from another arc going
+// through the same point. For example, consider the point B. If there is a arc
+// through ABC and another arc through CBA, then B is not a junction because in
+// both cases the adjacent point pairs are {A,C}. However, if there is an
+// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
+//
+// For a closed ring ABCA, the first point A’s adjacent points are the second
+// and last point {B,C}. For a line, the first and last point are always
+// considered junctions, even if the line is closed; this ensures that a closed
+// line is never rotated.
 var join = function(topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -37942,6 +38010,8 @@ function run() {
   if (auto) p = p.then(start);
   if (cb) p = p.then(cb);
 }
+
+// import './libs/styles/default.scss'
 
 init();
 
