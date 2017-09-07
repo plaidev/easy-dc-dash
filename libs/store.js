@@ -285,7 +285,7 @@ class DashboardStore {
   downloadCSV(filename, dimensionName='_all', options={}) {
     const {
       dataset = 'default',
-      labels = this._labels[dataset] || {},
+      labels = this._labels[dataset][''] || {},
     } = options;
 
     if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {

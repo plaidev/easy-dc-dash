@@ -24081,7 +24081,7 @@ var DashboardStore = function () {
       var _options$dataset9 = options.dataset,
           dataset = _options$dataset9 === undefined ? 'default' : _options$dataset9,
           _options$labels2 = options.labels,
-          labels = _options$labels2 === undefined ? this._labels[dataset] || {} : _options$labels2;
+          labels = _options$labels2 === undefined ? this._labels[dataset][''] || {} : _options$labels2;
 
 
       if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
