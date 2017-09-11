@@ -36884,6 +36884,7 @@ var DataTable = { render: function render() {
       if (vals[_this.dimensionName] === '') return p;
       _this.colsKeys.forEach(function (k) {
         if (vals[k] === null || vals[k] === undefined) return;
+        if (p[k] === null || p[k] === undefined) return;
         if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
           p[k].count += vals[k].count;
           p[k].value += vals[k].value;
@@ -36909,6 +36910,7 @@ var DataTable = { render: function render() {
       if (vals[_this.dimension] === '') return p;
       _this.colsKeys.forEach(function (k) {
         if (vals[k] === null || vals[k] === undefined) return;
+        if (p[k] === null || p[k] === undefined) return;
         if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
           p[k].count -= vals[k].count;
           p[k].value -= vals[k].value;
