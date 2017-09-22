@@ -1,22 +1,41 @@
 <template>
   <div class="download-csv-button">
-    <a class="btn btn-outline-primary" @click="downloadCSV('data')">
+    <a class="btn btn-outline-primary" @click="downloadCSV()">
       <i class="fa fa-cloud-download" aria-hidden="true"></i> CSV ダウンロード
     </a>
   </div>
 </template>
 
 <script lang="js">
-import Store from '../store'
+import Store from '../store';
 
 export default {
+  props: {
+    fileName: {
+      type: String,
+      default: 'data',
+    },
+    dataset: {
+      type: String,
+      default: 'default',
+    },
+    dimensionName: {
+      type: String,
+    },
+    labels: {
+      type: Object,
+    },
+  },
   methods: {
-    downloadCSV: function(data) {
-      return EasyDC.Store.downloadCSV(data)
-    }
-  }
-}
-
+    downloadCSV: function() {
+      const options = {
+        dataset: this.dataset,
+        labels: this.labels,
+      };
+      return EasyDC.Store.downloadCSV(this.fileName, this.dimensionName, options);
+    },
+  },
+};
 </script>
 
 <style scoped>

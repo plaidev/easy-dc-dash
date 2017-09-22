@@ -68,6 +68,9 @@ class DashboardStore {
     this._linkFormatters = {
       default: (v) => v
     };
+
+    this._csvFileNames = {
+    };
   }
 
   setBindData(name, data) {
@@ -282,11 +285,25 @@ class DashboardStore {
     this._defaultTheme = theme
   }
 
+  setDefaultTheme(theme) {
+    this._defaultTheme = theme;
+  }
+
+  setCsvFileNames(filenames) {
+    this._csvFileNames = filenames;
+  }
+
   downloadCSV(filename, dimensionName='_all', options={}) {
     const {
       dataset = 'default',
       labels = this._labels[dataset][''] || {},
     } = options;
+
+    if(!this._dimensions[dataset]) {
+      return console.log('dataset not registered')
+    }
+
+    filename = this._csvFileNames[dataset] || filename;
 
     if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
       let idx = 0;

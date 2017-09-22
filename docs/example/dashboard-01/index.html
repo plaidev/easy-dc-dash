@@ -245,6 +245,13 @@ EasyDC.Store.registerRepresentation('linkFormat', (v, d, k) => {
   }).join(', ')
 })
 
+const params = {
+  project_name: 'ProjectA',
+  start_date: '20170920',
+  end_date: '20170922'
+}
+const CSV_FILE_NAME = `Report ${params.project_name} (${params.start_date}〜${params.end_date})`;
+EasyDC.Store.setCsvFileNames({default: CSV_FILE_NAME});
 
 EasyDC.run(true)
 
