@@ -26,7 +26,6 @@
   "dependencies": {
     "assign-deep": "0.4.5",
     "bootstrap": "4.0.0-alpha.6",
-    "crossfilter": "1.3.12",
     "crossxfilters": "https://github.com/plaidev/crossxfilters.git",
     "dc": "2.0.2",
     "font-awesome": "4.7.0",
