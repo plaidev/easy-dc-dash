@@ -237,6 +237,9 @@ export default {
       return generateExtractor(this.reduce, this.dateKey)
     },
     grouping: function() {
+      if (this.dimensionName[0] === '$') {
+        return Store.getDimension(this.dimensionName, {dataset: this.dataset})
+      }
       const getter = this.dimensionExtractor
       const extraGetter = this.extraDimensionExtractor
       let grouping = getter

@@ -1,4 +1,4 @@
-import crossfilter from 'crossfilter'
+import {Manager} from 'crossxfilters'
 import dc from 'dc'
 import {downloadCSV} from './utils/blob-csv'
 import {TIME_FORMATS} from './utils/time-format'
@@ -44,12 +44,10 @@ class DashboardStore {
       binds: {}
     };
 
-    this._cf = {};
+    this.manager = new Manager()
+
     this._charts = {};
     this._volumeBind = {};
-    this._dimensions = {
-      default: {}
-    };
     this._themes = {
       default: DefaultTheme
     }
@@ -75,7 +73,6 @@ class DashboardStore {
     this.state.binds[name] = data;
   }
 
-
   registerData(data=[], options={}) {
     const {
       dataset = 'default',
@@ -83,8 +80,7 @@ class DashboardStore {
       labelMapper = null
     } = options;
 
-    // crossfilterのインスタンス作成
-    this._cf[dataset] = crossfilter(data);
+    this.manager.registerDataset(data, {dataset})
 
     if (labelMapper) {
       this.setLabels(_collectLabelsByRecords(data, labelMapper), {dataset})
@@ -94,21 +90,11 @@ class DashboardStore {
   }
 
   registerDimension(name, method, options={}) {
-    if(!name) return
-
-    const {
-      dataset = 'default'
-    } = options;
-
-    if (!(dataset in this._dimensions)) {
-      this._dimensions[dataset] = {};
+    if (name[0] === '$') {
+      options.common = true
+      name = name.slice(1)
     }
-
-    // TODO: dimension作成数のlimit管理
-    if (!(name in this._dimensions[dataset])) {
-      this._dimensions[dataset][name] = this._cf[dataset].dimension(method)
-    }
-    return this._dimensions[dataset][name];
+    return this.manager.registerDimension(name, method, options)
   }
 
   unregisterDimension(name, {dataset='default'}) {
@@ -119,23 +105,20 @@ class DashboardStore {
     const {
       dataset = 'default'
     } = options;
-    return this._cf[dataset]
+    return this.manager.dataset(dataset)
   }
 
   getDimension(name, options={}) {
-    if(!name) return
-
-    const {
-      dataset = 'default'
-    } = options;
-    return this._dimensions[dataset][name];
+    if (name[0] === '$') {
+      options.common = true
+      name = name.slice(1)
+    }
+    return this.manager.dimension(name, options)
   }
 
   getCfSize(options={}) {
-    const {
-      dataset = 'default'
-    } = options;
-    return this._cf[dataset].size();
+    const cf = this.getCf(options)
+    return cf && cf.size();
   }
 
   registerChart(parent, name, chartType, binds={}) {
@@ -287,23 +270,21 @@ class DashboardStore {
     const {
       dataset = 'default',
       labels = this._labels[dataset][''] || {},
+      common = false
     } = options;
-
-    if(!this._dimensions[dataset]) {
-      return console.log('dataset not registered')
-    }
 
     if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
       let idx = 0;
-      this.registerDimension('_all', (d) => idx++, {dataset})
+      dim = this.registerDimension('_all', (d) => idx++, {dataset, common: false})
     }
-    else if (!this._dimensions[dataset][dimensionName]) {
+
+    if (!dim) {
       console.log('dimension not registered')
       return;
     }
 
     downloadCSV(
-      this._dimensions[dataset][dimensionName].top(Infinity),
+      dim.top(Infinity),
       filename,
       labels
     )
