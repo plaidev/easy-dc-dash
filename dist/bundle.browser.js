@@ -25660,14 +25660,14 @@ var DashboardStore = function () {
           common = _options$common === undefined ? false : _options$common;
 
 
-      var dim = this.manager.dimension(dimensionName, { dataset: dataset, common: common });
-
-      if (dimensionName === '_all' && !dim) {
+      if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
         var idx = 0;
-        this.registerDimension('_all', function (d) {
+        dim = this.registerDimension('_all', function (d) {
           return idx++;
         }, { dataset: dataset, common: false });
-      } else if (!dim) {
+      }
+
+      if (!dim) {
         console.log('dimension not registered');
         return;
       }
@@ -39345,12 +39345,32 @@ var resetAllButton = { render: function render() {
 
 var csvDownloadButton = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "download-csv-button" }, [_c('a', { staticClass: "btn btn-outline-primary", on: { "click": function click($event) {
-          _vm.downloadCSV('data');
+          _vm.downloadCSV();
         } } }, [_c('i', { staticClass: "fa fa-cloud-download", attrs: { "aria-hidden": "true" } }), _vm._v(" CSV ダウンロード")])]);
   }, staticRenderFns: [], _scopeId: 'data-v-f6d3e728',
+  props: {
+    fileName: {
+      type: String,
+      default: 'data'
+    },
+    dataset: {
+      type: String,
+      default: 'default'
+    },
+    dimensionName: {
+      type: String
+    },
+    labels: {
+      type: Object
+    }
+  },
   methods: {
-    downloadCSV: function downloadCSV(data) {
-      return EasyDC.Store.downloadCSV(data);
+    downloadCSV: function downloadCSV() {
+      var options = {
+        dataset: this.dataset,
+        labels: this.labels
+      };
+      return EasyDC.Store.downloadCSV(this.fileName, this.dimensionName, options);
     }
   }
 };
