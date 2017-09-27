@@ -68,6 +68,7 @@ class DashboardStore {
     this._linkFormatters = {
       default: (v) => v
     };
+
   }
 
   setBindData(name, data) {
@@ -287,6 +288,10 @@ class DashboardStore {
       dataset = 'default',
       labels = this._labels[dataset][''] || {},
     } = options;
+
+    if(!this._dimensions[dataset]) {
+      return console.log('dataset not registered')
+    }
 
     if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
       let idx = 0;
