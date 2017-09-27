@@ -25660,7 +25660,9 @@ var DashboardStore = function () {
           common = _options$common === undefined ? false : _options$common;
 
 
-      if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
+      var dim = this.manager.dimension(dataset, dimensionName);
+
+      if (dimensionName === '_all' && !dim) {
         var idx = 0;
         dim = this.registerDimension('_all', function (d) {
           return idx++;
