@@ -275,9 +275,10 @@ class DashboardStore {
 
     if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
       let idx = 0;
-      this.registerDimension('_all', (d) => idx++, {dataset, common: false})
+      dim = this.registerDimension('_all', (d) => idx++, {dataset, common: false})
     }
-    else if (!dim) {
+
+    if (!dim) {
       console.log('dimension not registered')
       return;
     }
