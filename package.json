@@ -1,9 +1,9 @@
 {
   "name": "easy-dc-dash",
-  "version": "0.3.0",
-  "main": "dist/bundle.js",
+  "version": "0.3.1",
   "author": "Naoto Kato <naoto.kato@plaid.co.jp>",
   "license": "MIT",
+  "main": "dist/bundle.js",
   "module": "dist/bundle.es.js",
   "jsnext:main": "dist/bundle.es.js",
   "devDependencies": {
