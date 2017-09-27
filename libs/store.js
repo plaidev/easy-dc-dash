@@ -273,7 +273,9 @@ class DashboardStore {
       common = false
     } = options;
 
-    if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
+    let dim = this.manager.dimension(dataset, dimensionName)
+
+    if (dimensionName === '_all' && !dim) {
       let idx = 0;
       dim = this.registerDimension('_all', (d) => idx++, {dataset, common: false})
     }
