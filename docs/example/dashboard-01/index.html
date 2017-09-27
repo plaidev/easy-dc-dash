@@ -224,6 +224,13 @@ const deviceSegments = {
   "5890222d3601a6183b69f14f": 'PC'
 }
 
+const params = {
+  project_name: 'ProjectA',
+  start_date: '20170920',
+  end_date: '20170922'
+}
+const CSV_FILE_NAME = `Report ${params.project_name} (${params.start_date}〜${params.end_date})`;
+
 const bindData = {
   deviceSegments: Object.keys(deviceSegments),
   deviceSegmentLabels: deviceSegments,
@@ -232,7 +239,8 @@ const bindData = {
     "58902caa7048639a5ba53b17": 'newspicks',
     "58902d517048639a5ba53b26": 'facebook',
     "58902e8c7048639a5ba53b3a": 'twitter'
-  }
+  },
+  defaultCsvFileName: CSV_FILE_NAME
 }
 
 for (let k in bindData) {
@@ -244,14 +252,6 @@ EasyDC.Store.registerRepresentation('linkFormat', (v, d, k) => {
     return `<a href="${v}" target="_blank">${v}</a>`
   }).join(', ')
 })
-
-const params = {
-  project_name: 'ProjectA',
-  start_date: '20170920',
-  end_date: '20170922'
-}
-const CSV_FILE_NAME = `Report ${params.project_name} (${params.start_date}〜${params.end_date})`;
-EasyDC.Store.setCsvFileNames({default: CSV_FILE_NAME});
 
 EasyDC.run(true)
 
