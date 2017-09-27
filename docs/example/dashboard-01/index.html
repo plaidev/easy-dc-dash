@@ -34,11 +34,17 @@
     labels="セグメント,PV,UU,セッション数,セッション毎平均PV数,セッション毎平均時間,離脱数,コンバーション数,最終PV時間"
   ></easy-dc-dataset>
 
+  <easy-dc-dataset
+    csv='../morley.csv'
+    dataset="morley"
+  ></easy-dc-dataset>
+
 <div id="krt-dc-dashboard">
   <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
 
     <div class="buttons">
-      <csv-download-button></csv-download-button>
+      <csv-download-button :file-name="defaultCsvFileName"></csv-download-button>
+      <csv-download-button dataset="morley"></csv-download-button>
       <reset-all-button></reset-all-button>
     </div>
 
@@ -94,6 +100,13 @@
     :descending=true
     :cap=5>
   </list-row>
+
+  <list-row
+    dataset="morley"
+    title='morley'
+    dimension='d.Expt'
+    reduce='d.Run'
+  ></list-row>
 
   <ordinal-bar
     title='ordinal-bar'
@@ -224,6 +237,13 @@ const deviceSegments = {
   "5890222d3601a6183b69f14f": 'PC'
 }
 
+const params = {
+  project_name: 'ProjectA',
+  start_date: '20170920',
+  end_date: '20170922'
+}
+const CSV_FILE_NAME = `Report ${params.project_name} (${params.start_date}〜${params.end_date})`;
+
 const bindData = {
   deviceSegments: Object.keys(deviceSegments),
   deviceSegmentLabels: deviceSegments,
@@ -232,7 +252,8 @@ const bindData = {
     "58902caa7048639a5ba53b17": 'newspicks',
     "58902d517048639a5ba53b26": 'facebook',
     "58902e8c7048639a5ba53b3a": 'twitter'
-  }
+  },
+  defaultCsvFileName: CSV_FILE_NAME
 }
 
 for (let k in bindData) {
@@ -244,7 +265,6 @@ EasyDC.Store.registerRepresentation('linkFormat', (v, d, k) => {
     return `<a href="${v}" target="_blank">${v}</a>`
   }).join(', ')
 })
-
 
 EasyDC.run(true)
 

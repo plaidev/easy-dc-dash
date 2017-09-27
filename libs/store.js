@@ -66,6 +66,7 @@ class DashboardStore {
     this._linkFormatters = {
       default: (v) => v
     };
+
   }
 
   setBindData(name, data) {
@@ -272,9 +273,7 @@ class DashboardStore {
       common = false
     } = options;
 
-    const dim = this.manager.dimension(dimensionName, {dataset, common})
-
-    if (dimensionName === '_all' && !dim) {
+    if (dimensionName === '_all' && !this._dimensions[dataset][dimensionName]) {
       let idx = 0;
       this.registerDimension('_all', (d) => idx++, {dataset, common: false})
     }
