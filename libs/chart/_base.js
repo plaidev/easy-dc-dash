@@ -158,6 +158,9 @@ export default {
     linkFormatter: {
       type: String
     },
+    tooltipFormatter: {
+      type: String
+    },
 
     // size / layout
     theme: {

@@ -46,6 +46,10 @@ export default {
         key: d.properties.nam_ja,
         val: this.extractValue(_key)
       }
+      if (this.tooltipFormatter) {
+        const _tooltipFormat = d3.format(this.tooltipFormatter)
+        data.val = _tooltipFormat(data.val)
+      }
       this.$refs.tooltip.show(data, fill)
     },
     extractValue(_key) {

@@ -54,6 +54,10 @@ export default {
       return (d, i) => {
         const _rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
         const rate = roundDecimalFormat(_rate, 2)
+        if (this.tooltipFormatter) {
+          const _tooltipFormat = d3.format(this.tooltipFormatter)
+          d.value = _tooltipFormat(d.value)
+        }
         return {
           key: this.segmentLabel(d.data.key),
           val: d.value,
