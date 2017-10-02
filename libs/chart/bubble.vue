@@ -174,6 +174,11 @@ export default {
           [this.radiusLabel]: v[this.radiusLabel].per ? roundDecimalFormat(v[this.radiusLabel].per, 2) : v[this.radiusLabel]
         }
       }
+      if (this.tooltipFormatter) {
+        const _tooltipFormat = d3.format(this.tooltipFormatter)
+        data.vals.x = _tooltipFormat(data.vals.x)
+        data.vals.y = _tooltipFormat(data.vals.y)
+      }
       this.$refs.tooltip.show(data, fill)
     }
   },

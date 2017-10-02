@@ -91,6 +91,10 @@ export default {
         key: `${k}[${d.layer}]`,
         val: d.data.value[d.layer]
       }
+      if (this.tooltipFormatter) {
+        const _tooltipFormat = d3.format(this.tooltipFormatter)
+        data.val = _tooltipFormat(data.val)
+      }
       this.$refs.tooltip.show(data, fill)
     }
   },

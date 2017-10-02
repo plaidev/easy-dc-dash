@@ -79,6 +79,10 @@ export default {
         },
         val: d.value
       }
+      if (this.tooltipFormatter) {
+        const _tooltipFormat = d3.format(this.tooltipFormatter)
+        data.val = _tooltipFormat(data.val)
+      }
       this.$refs.tooltip.show(data, fill)
     }
   },

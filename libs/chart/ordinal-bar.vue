@@ -56,6 +56,10 @@ export default {
         key: _format ? _format(d.data.key) : d.data.key,
         val: d.data.value
       }
+      if (this.tooltipFormatter) {
+        const _tooltipFormat = d3.format(this.tooltipFormatter)
+        data.val = _tooltipFormat(data.val)
+      }
       this.$refs.tooltip.show(data, fill)
     }
   },

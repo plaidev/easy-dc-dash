@@ -1571,13 +1571,17 @@ class Manager {
       get(ins, prop) {
         if (prop[0] === '_' && FILTER_METHODS.includes(prop.slice(1))) {
           const _prop = prop.slice(1);
-          return (...args) => ins[_prop](...args);
+          return (...args) => {
+            return ins[_prop](...args);
+          };
         }
         if (FILTER_METHODS.includes(prop)) {
           return (...args) => self.filterCommonDimensions(name, prop, ...args);
         }
         if (ins[prop] instanceof Function || typeof ins[prop] === 'function') {
-          return (...args) => ins[prop](...args);
+          return (...args) => {
+            return ins[prop](...args);
+          };
         }
         return ins[prop];
       }
@@ -1586,6 +1590,9 @@ class Manager {
     return proxy;
   }
 }
+
+
+//# sourceMappingURL=index.mjs.map
 
 var commonjsGlobal$1 = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -24692,10 +24699,8 @@ return dc;}
 }
 )();
 
-
+//# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = index$2;
@@ -25332,8 +25337,6 @@ var slicedToArray = function () {
   };
 }();
 
-//-------------------------------------
-
 function _defaultRepresentation(v, d, key) {
   if (v instanceof Array || typeof v == 'array') {
     return v.map(function (item) {
@@ -25688,7 +25691,6 @@ var Store = new DashboardStore();
  * Licensed under the MIT License.
  */
 
-// see http://jsperf.com/testing-value-is-primitive/7
 var index$7 = function isPrimitive(value) {
   return value == null || (typeof value !== 'function' && typeof value !== 'object');
 };
@@ -26172,10 +26174,6 @@ var ChartLink = { render: function render() {
   }
 };
 
-// TODO:
-// データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
-
-
 function generateScales(scaleCode) {
   if (!scaleCode) return {};
 
@@ -26308,6 +26306,9 @@ var Base = {
 
     // formatter
     linkFormatter: {
+      type: String
+    },
+    tooltipFormatter: {
       type: String
     },
 
@@ -37085,6 +37086,10 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
       return function (d, i) {
         var _rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
         var rate = roundDecimalFormat(_rate, 2);
+        if (_this.tooltipFormatter) {
+          var _tooltipFormat = d3.format(_this.tooltipFormatter);
+          d.value = _tooltipFormat(d.value);
+        }
         return {
           key: _this.segmentLabel(d.data.key),
           val: d.value,
@@ -37170,9 +37175,15 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
     },
     tooltipAccessor: function tooltipAccessor() {
+      var _this = this;
+
       return function (d, i) {
         var _rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
         var rate = roundDecimalFormat(_rate, 2);
+        if (_this.tooltipFormatter) {
+          var _tooltipFormat = d3.format(_this.tooltipFormatter);
+          d.value = _tooltipFormat(d.value);
+        }
         return {
           key: d.data.key,
           val: d.value,
@@ -37305,6 +37316,10 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
         key: this.getLabel(d.key),
         val: d.value.value
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.val = _tooltipFormat(data.val);
+      }
       this.$refs.tooltip.show(data, fill);
     }
   },
@@ -37452,6 +37467,10 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
         key: this.getLabel(d.key),
         val: d.value
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.val = _tooltipFormat(data.val);
+      }
       this.$refs.tooltip.show(data, fill);
     },
     keyTextPostProcess: function keyTextPostProcess(key) {
@@ -37651,6 +37670,10 @@ var OrdinalBar = {
         key: _format ? _format(d.data.key) : d.data.key,
         val: d.data.value
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.val = _tooltipFormat(data.val);
+      }
       this.$refs.tooltip.show(data, fill);
     }
   },
@@ -37758,6 +37781,10 @@ var FilterStackedBar = { cssModules: { "chartRoot": "filter-stacked-bar__chart-r
         key: k + '[' + d.layer + ']',
         val: d.data.value[d.layer]
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.val = _tooltipFormat(data.val);
+      }
       this.$refs.tooltip.show(data, fill);
     }
   },
@@ -38040,20 +38067,6 @@ var hashPoint = function(point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function(topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -38246,6 +38259,10 @@ var GeoJP = { cssModules: { "chartRoot": "geo-jp__chart-root", "chart-root": "ge
         key: d.properties.nam_ja,
         val: this.extractValue(_key)
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.val = _tooltipFormat(data.val);
+      }
       this.$refs.tooltip.show(data, fill);
     },
     extractValue: function extractValue(_key) {
@@ -38723,6 +38740,10 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
         keys: (_keys = {}, defineProperty(_keys, xAxisLabel, this.getLabel(d.key[0])), defineProperty(_keys, yAxisLabel, this.getLabel(d.key[1])), _keys),
         val: d.value
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.val = _tooltipFormat(data.val);
+      }
       this.$refs.tooltip.show(data, fill);
     }
   },
@@ -39084,6 +39105,11 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
         key: _k,
         vals: (_vals = {}, defineProperty(_vals, this.xAxisLabel, v[this.xAxisLabel].per ? roundDecimalFormat(v[this.xAxisLabel].per, 2) : v[this.xAxisLabel]), defineProperty(_vals, this.yAxisLabel, v[this.yAxisLabel].per ? roundDecimalFormat(v[this.yAxisLabel].per, 2) : v[this.yAxisLabel]), defineProperty(_vals, this.radiusLabel, v[this.radiusLabel].per ? roundDecimalFormat(v[this.radiusLabel].per, 2) : v[this.radiusLabel]), _vals)
       };
+      if (this.tooltipFormatter) {
+        var _tooltipFormat = d3$1.format(this.tooltipFormatter);
+        data.vals.x = _tooltipFormat(data.vals.x);
+        data.vals.y = _tooltipFormat(data.vals.y);
+      }
       this.$refs.tooltip.show(data, fill);
     }
   },
@@ -39614,8 +39640,6 @@ function run() {
   if (auto) p = p.then(start);
   if (cb) p = p.then(cb);
 }
-
-// import './libs/styles/default.scss'
 
 init();
 
