@@ -105,6 +105,9 @@ export default {
     },
 
     // formatter
+    tooltipFormat: {
+      type: String
+    },
     linkFormatter: {
       type: String
     },
@@ -303,6 +306,20 @@ export default {
     },
     colors: function() {
       return this.colorSettings.ordinal
+    },
+    tooltipFormatter: function() {
+      let key, extraKey, val, _val
+      key = this.dimensionScale.format || ((k) => k)
+      layer = this.extraDimensionScale.format || ((k) => k)
+
+      if (!this.tooltipFormat) {
+        val = (n) => d3.round(n, 2)
+      }
+      else {
+        val = d3.format(this.tooltipFormat)
+      }
+
+      return {key, layer, val}
     },
     textSelector: function() {
       if(this.chartType === 'bubbleChart') return `#${this.id} .node text`
