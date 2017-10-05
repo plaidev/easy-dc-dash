@@ -401,6 +401,10 @@ export default {
       }
       else _domain = null
 
+      if (unit === 'ordinal') {
+        _format = (k) => this.getLabel(k)
+      }
+
       return {
         domain: _domain,
         interval: _interval,
