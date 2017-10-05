@@ -351,7 +351,6 @@ export default {
         case 'seriesChart':
         case 'compositeChart':
           return (d, i) => {
-            console.log('coordinations', d)
             const data = {}
             // coordinationGrid
             // pointのマウスオーバー
@@ -380,7 +379,6 @@ export default {
 
         case 'rowChart':
           return (d, i) => {
-            console.log('row', d)
             let v = d.value
             if (valueAccessor) v = valueAccessor(d)
             return {
@@ -392,7 +390,6 @@ export default {
 
         case 'pieChart':
           return (d, i) => {
-            console.log('pie', d)
             const rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
             let v = d.value
             if (valueAccessor) v = valueAccessor(d)
@@ -406,7 +403,6 @@ export default {
 
         case 'bubbleChart':
           return (d, i) => {
-            console.log('bubble', d)
             const key = _formats.key(d.key)
             const labels = [this.xAxisLabel, this.yAxisLabel, this.radiusLabel]
             const vals = {}
@@ -420,7 +416,6 @@ export default {
 
         case 'geoChoroplethChart':
           return (d, i) => {
-            console.log('geo', d)
             const _key = d3.format('02d')(d.properties.id)
             const value = this.reducerAll.filter(x => x.key === _key)[0].value
             return {
@@ -432,7 +427,6 @@ export default {
 
         case 'heatMap':
           return (d, i) => {
-            console.log('heatmap', d)
             const xAxisLabel = this.getLabel(this.xAxisLabel || this.dimensionKeys[0] || 'x')
             const yAxisLabel = this.getLabel(this.yAxisLabel || this.dimensionKeys[1] || 'y')
             let v = d.value
