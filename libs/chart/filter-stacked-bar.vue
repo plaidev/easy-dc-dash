@@ -76,7 +76,7 @@ export default {
           // then produce multivalue key/value pairs
           return Object.keys(m).map((k) => {
             let key = k
-            if (_format) key = _format.parse(k)
+            if (_format && _format.parse) key = _format.parse(k)
               // if (this.scale === 'time')
                 // key = ymdFormat.parse(k)
             return {key: [key], value: m[k]};

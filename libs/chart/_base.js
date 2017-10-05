@@ -240,8 +240,10 @@ export default {
       return false
     },
     valueAccessor: function() {
-      if (this.isRateReducer) return (d) => {
-        return (d.value.count === 0 ? 0 : d.value.value / d.value.count)
+      if (this.isRateReducer) {
+        return (d) => {
+          return (d.value.count === 0 ? 0 : d.value.value / d.value.count)
+        }
       }
       return null;
     },
@@ -704,9 +706,10 @@ export default {
     }
     if (this.valueAccessor) chart.valueAccessor(this.valueAccessor);
     if (chart.x) {
-      if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange));
-      if (this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit);
+      if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange))
     }
+    if (chart.xUnits && this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit)
+
     if (this.extraDimensionExtractor) {
       chart.keyAccessor((d) => {
         return d.key[0]
