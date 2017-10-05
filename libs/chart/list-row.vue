@@ -49,14 +49,6 @@ export default {
     }
   },
   methods: {
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const data = {
-        key: this.getLabel(d.key),
-        val: d.value
-      }
-      this.$refs.tooltip.show(data, fill)
-    },
     keyTextPostProcess: function(key) {
       let label = this.getLabel(key)
       return label.length > 20 ? label.substring(0,20)+'...' : label

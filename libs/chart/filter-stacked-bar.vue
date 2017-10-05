@@ -42,6 +42,15 @@ export default {
       })
       return stackKeys
     }
+    // tooltipAccessor: function() {
+    //   const _formats = this.tooltipFormatter
+    //   return (d, i) => {
+    //     return {
+    //       key: `${_formats.key(d.data.key)}[${d.layer}]`,
+    //       val: _formats.val(d.data.value[d.layer])
+    //     }
+    //   }
+    // }
   },
   methods: {
     stackSecond: function (group) {
@@ -84,15 +93,6 @@ export default {
         return d.value[k] || 0
       }
     },
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const k = this.getLabel(d.data.key)
-      const data = {
-        key: `${k}[${d.layer}]`,
-        val: d.data.value[d.layer]
-      }
-      this.$refs.tooltip.show(data, fill)
-    }
   },
   mounted: function() {
     const chart = this.chart;

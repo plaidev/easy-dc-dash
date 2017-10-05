@@ -49,17 +49,6 @@ export default {
         return Object.keys(this.segments)
       }
       return []
-    },
-    tooltipAccessor: function() {
-      return (d, i) => {
-        const _rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
-        const rate = roundDecimalFormat(_rate, 2)
-        return {
-          key: this.segmentLabel(d.data.key),
-          val: d.value,
-          rate: rate
-        }
-      }
     }
   },
 

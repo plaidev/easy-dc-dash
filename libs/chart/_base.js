@@ -338,21 +338,115 @@ export default {
       if(this.chartType === 'geoChoroplethChart') return `#${this.id} g path`
     },
     tooltipAccessor: function() {
-      const _format = this.dimensionScale.format
+      // valueをどうformatするかという問題はtooltipFormatterが担当する
+      // dが持つデータ構造の解釈と、formatterのどれを適用するかはこのメソッドが担当する
+      const _formats = this.tooltipFormatter
+      const valueAccessor = this.valueAccessor
 
-      return (d, i) => {
-        let key = null;
-        let val = null;
-        if (d.x != undefined && d.y != undefined) {
-          key = _format ? _format(d.x) : d.x;
-          val = roundDecimalFormat(d.y, 2);
-        }
-        else {
-          key = d.name.replace(/^(left|right):/, '')
-        }
-        key = this.getLabel(key)
-        return {key, val}
+      switch (this.chartType) {
+        case 'barChart':
+        case 'lineChart':
+        case 'seriesChart':
+        case 'compositeChart':
+          return (d, i) => {
+            console.log('coordinations', d)
+            const data = {}
+            // coordinationGrid
+            // pointのマウスオーバー
+            if ('x' in d && 'y' in d) {
+              if ('layer' in d && this.extraDimension) {
+                data.key = d.layer
+                data.vals = {
+                  x: _formats.key(d.x),
+                  y: _formats.val(d.y)
+                }
+              }
+              else {
+                data.key = _formats.key(d.x)
+                data.val = _formats.val(d.y)
+              }
+            }
+
+            // areaのマウスオーバー
+            if (d.name) {
+              data.key = _formats.layer(d.name.replace(/^(left|right):/, ''))
+            }
+
+            return data
+          }
+          break;
+
+        case 'rowChart':
+          return (d, i) => {
+            console.log('row', d)
+            let v = d.value
+            if (valueAccessor) v = valueAccessor(d)
+            return {
+              key: _formats.key(d.key),
+              val: _formats.val(v)
+            }
+          }
+          break;
+
+        case 'pieChart':
+          return (d, i) => {
+            console.log('pie', d)
+            const rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
+            let v = d.value
+            if (valueAccessor) v = valueAccessor(d)
+            return {
+              key: _formats.key(d.data.key),
+              val: _formats.val(v),
+              rate: roundDecimalFormat(rate, 2)
+            }
+          }
+          break;
+
+        case 'bubbleChart':
+          return (d, i) => {
+            console.log('bubble', d)
+            const key = _formats.key(d.key)
+            const labels = [this.xAxisLabel, this.yAxisLabel, this.radiusLabel]
+            const vals = {}
+            labels.forEach((label) => {
+              const v = d.value[label].per || d.value[label]
+              vals[label] = _formats.val(v)
+            })
+            return {key, vals}
+          }
+          break;
+
+        case 'geoChoroplethChart':
+          return (d, i) => {
+            console.log('geo', d)
+            const _key = d3.format('02d')(d.properties.id)
+            const value = this.reducerAll.filter(x => x.key === _key)[0].value
+            return {
+              key: d.properties.nam_ja,
+              val: _formats.val(value)
+            }
+          }
+          break;
+
+        case 'heatMap':
+          return (d, i) => {
+            console.log('heatmap', d)
+            const xAxisLabel = this.getLabel(this.xAxisLabel || this.dimensionKeys[0] || 'x')
+            const yAxisLabel = this.getLabel(this.yAxisLabel || this.dimensionKeys[1] || 'y')
+            let v = d.value
+            if (valueAccessor) v = valueAccessor(d)
+            return {
+              keys: {
+                [xAxisLabel]: _formats.key(d.key[0]),
+                [yAxisLabel]: _formats.key(d.key[1]),
+              },
+              val: _formats.val(v)
+            }
+          }
+          break;
+
       }
+      return null
     },
     timeScale: function() { // 互換性のための一時的なメソッド
       if (!this.scale) return null;
@@ -541,6 +635,7 @@ export default {
       const stroke = d3.event.target.getAttribute('stroke');
       const color = fill || stroke;
       const data = this.tooltipAccessor(d, i)
+      if (data === null) return
       this.$refs.tooltip.show(data, color)
     },
     moveTooltip: function() {

@@ -27,17 +27,6 @@ export default {
         return v.join(',');
       }
       return Store.registerDimension(this.dimensionName, grouping, {dataset: this.dataset});
-    },
-    tooltipAccessor: function() {
-      return (d, i) => {
-        const _rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
-        const rate = roundDecimalFormat(_rate, 2)
-        return {
-          key: d.data.key,
-          val: d.value,
-          rate: rate
-        }
-      }
     }
   },
 

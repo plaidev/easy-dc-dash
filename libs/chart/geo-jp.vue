@@ -38,20 +38,6 @@ export default {
         .range([z, p])
     }
   },
-  methods: {
-    showTooltip(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const _key = ('0'+d.properties.id).slice(-2)
-      const data = {
-        key: d.properties.nam_ja,
-        val: this.extractValue(_key)
-      }
-      this.$refs.tooltip.show(data, fill)
-    },
-    extractValue(_key) {
-      return this.reducerAll.filter(x => x.key === _key)[0].value
-    }
-  },
   mounted: function() {
     const chart = this.chart;
     const max = this.reducer.top(1)[0].value;
