@@ -16,56 +16,6 @@ import ChartLink from '../components/chart-link.vue'
 // データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
 
 
-function generateScales(scaleCode) {
-  if (!scaleCode) return {};
-
-  let [scale, unit] = scaleCode.split('.');
-  if (scale == 'time' && !unit) unit = 'day'
-  if (scale == 'ordinal' && !unit) unit = 'ordinal'
-
-  let _scale, _interval, _unit, _format, _domain;
-
-  // scale
-  if (scale == 'time') _scale = d3.time.scale;
-  else _scale = d3.scale[scale];
-
-  // interval
-  if (scale == 'time' && TIME_INTERVALS[unit]) {
-    _interval = TIME_INTERVALS[unit]
-  }
-
-  // unit
-  if (scale == 'time' && TIME_INTERVALS[unit]) {
-    _unit = TIME_INTERVALS[unit].range
-  }
-  if (scale == 'ordinal' && dc.units[unit]) {
-    _unit = dc.units[unit]
-  }
-
-  // format
-  if (scale == 'time') {
-    if (unit == 'month') _format = TIME_FORMATS.ym
-    else if (unit == 'day') _format = TIME_FORMATS.ymd
-    else if (unit == 'hour') _format = TIME_FORMATS.ymdh
-    else if (unit == 'minute') _format = TIME_FORMATS.ymdhm
-    else if (unit == 'second') _format = TIME_FORMATS.ymdhms
-    else _format = TIME_FORMATS[unit]
-  }
-
-  if (_scale) {
-    if (unit !== 'ordinal') _domain = _scale().domain
-    else _domain = _scale
-  }
-  else _domain = null
-
-  return {
-    domain: _domain,
-    interval: _interval,
-    unit: _unit,
-    format: _format
-  }
-}
-
 export default {
 
   template: `
@@ -318,10 +268,10 @@ export default {
       return this.reducer.all();
     },
     dimensionScale: function () {
-      return generateScales(this.scale)
+      return this.generateScales(this.scale)
     },
     extraDimensionScale: function () {
-      return generateScales(this.extraScale)
+      return this.generateScales(this.extraScale)
     },
     cardSettings: function() {
       const theme = Store.getTheme(this.theme)
@@ -407,6 +357,57 @@ export default {
   },
 
   methods: {
+    generateScales: function(scaleCode) {
+      if (!scaleCode) return {};
+
+      let [scale, unit] = scaleCode.split('.');
+      if (!unit) {
+        if (scale == 'time') unit = 'day'
+        else if (scale == 'ordinal') unit = 'ordinal'
+      }
+
+      let _scale, _interval, _unit, _format, _domain;
+
+      // scale
+      if (scale == 'time') _scale = d3.time.scale;
+      else _scale = d3.scale[scale];
+
+      // interval
+      if (scale == 'time' && TIME_INTERVALS[unit]) {
+        _interval = TIME_INTERVALS[unit]
+      }
+
+      // unit
+      if (scale == 'time' && TIME_INTERVALS[unit]) {
+        _unit = TIME_INTERVALS[unit].range
+      }
+      if (scale == 'ordinal' && dc.units[unit]) {
+        _unit = dc.units[unit]
+      }
+
+      // format
+      if (scale == 'time') {
+        if (unit == 'month') _format = TIME_FORMATS.ym
+        else if (unit == 'day') _format = TIME_FORMATS.ymd
+        else if (unit == 'hour') _format = TIME_FORMATS.ymdh
+        else if (unit == 'minute') _format = TIME_FORMATS.ymdhm
+        else if (unit == 'second') _format = TIME_FORMATS.ymdhms
+        else _format = TIME_FORMATS[unit]
+      }
+
+      if (_scale) {
+        if (unit !== 'ordinal') _domain = _scale().domain
+        else _domain = _scale
+      }
+      else _domain = null
+
+      return {
+        domain: _domain,
+        interval: _interval,
+        unit: _unit,
+        format: _format
+      }
+    },
     updateContainerInnerSize: function({isFullscreen}) {
       this.isFullscreen = isFullscreen
       // not mounted
