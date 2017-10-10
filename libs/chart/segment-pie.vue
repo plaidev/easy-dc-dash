@@ -49,34 +49,19 @@ export default {
         return Object.keys(this.segments)
       }
       return []
-    },
-    tooltipAccessor: function() {
-      return (d, i) => {
-        const _rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
-        const rate = roundDecimalFormat(_rate, 2)
-        return {
-          key: this.segmentLabel(d.data.key),
-          val: d.value,
-          rate: rate
-        }
-      }
     }
   },
 
   methods: {
-    segmentLabel: function(segmentId) {
-      let label = segmentId;
-      if (this.labels && segmentId in this.labels) {
-        label = this.labels[segmentId]
+    getLabel: function(key) {
+      if (this.segments instanceof Object && key in this.segments) {
+        return this.segments[key]
       }
-      else if (this.segments instanceof Object && this.segments[segmentId]) {
-        label = this.segments[segmentId]
-      }
-      else {
-        label = Store.getLabel(segmentId)
-      }
-      return label;
-    }
+      return Store.getLabel(key, {
+        dataset: this.dataset,
+        chartName: this.id
+      })
+    },
   },
 
   watch: {
@@ -90,9 +75,12 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
+    const _label = this.showLabel ? (d => this.getLabel(d.key)) : d => null
+
     chart
       .othersLabel(this.othersLabel)
-    this.showLabel ? chart.label(d => this.segmentLabel(d.key)) : chart.label(d => null)
+      .label(_label)
+
     if(this.cap && this.cap > 0) chart.slicesCap(this.cap)
     return chart
   },

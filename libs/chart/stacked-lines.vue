@@ -15,6 +15,9 @@ export default {
     },
     scale: {
       default: 'linear'
+    },
+    extraScale: {
+      default: 'ordinal'
     }
   },
 
@@ -60,11 +63,11 @@ export default {
     const lineNum = _reducer(dim.top(1)[0] || {}).length;
 
     chart
-      .group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), this.generateValueAccessor(0))
+      .group(this.combinedGroup, this.getReduceKey(0), this.generateValueAccessor(0))
       .renderArea(true)
     for (let i=1; i<lineNum; i++) {
       chart
-        .stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), this.generateValueAccessor(i))
+        .stack(this.combinedGroup, this.getReduceKey(i), this.generateValueAccessor(i))
         .hidableStacks(true)
     }
     // FIXME:

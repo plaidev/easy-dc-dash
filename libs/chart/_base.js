@@ -16,56 +16,6 @@ import ChartLink from '../components/chart-link.vue'
 // データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
 
 
-function generateScales(scaleCode) {
-  if (!scaleCode) return {};
-
-  let [scale, unit] = scaleCode.split('.');
-  if (scale == 'time' && !unit) unit = 'day'
-  if (scale == 'ordinal' && !unit) unit = 'ordinal'
-
-  let _scale, _interval, _unit, _format, _domain;
-
-  // scale
-  if (scale == 'time') _scale = d3.time.scale;
-  else _scale = d3.scale[scale];
-
-  // interval
-  if (scale == 'time' && TIME_INTERVALS[unit]) {
-    _interval = TIME_INTERVALS[unit]
-  }
-
-  // unit
-  if (scale == 'time' && TIME_INTERVALS[unit]) {
-    _unit = TIME_INTERVALS[unit].range
-  }
-  if (scale == 'ordinal' && dc.units[unit]) {
-    _unit = dc.units[unit]
-  }
-
-  // format
-  if (scale == 'time') {
-    if (unit == 'month') _format = TIME_FORMATS.ym
-    else if (unit == 'day') _format = TIME_FORMATS.ymd
-    else if (unit == 'hour') _format = TIME_FORMATS.ymdh
-    else if (unit == 'minute') _format = TIME_FORMATS.ymdhm
-    else if (unit == 'second') _format = TIME_FORMATS.ymdhms
-    else _format = TIME_FORMATS[unit]
-  }
-
-  if (_scale) {
-    if (unit !== 'ordinal') _domain = _scale().domain
-    else _domain = _scale
-  }
-  else _domain = null
-
-  return {
-    domain: _domain,
-    interval: _interval,
-    unit: _unit,
-    format: _format
-  }
-}
-
 export default {
 
   template: `
@@ -155,6 +105,9 @@ export default {
     },
 
     // formatter
+    tooltipFormat: {
+      type: String
+    },
     linkFormatter: {
       type: String
     },
@@ -287,8 +240,10 @@ export default {
       return false
     },
     valueAccessor: function() {
-      if (this.isRateReducer) return (d) => {
-        return (d.value.count === 0 ? 0 : d.value.value / d.value.count)
+      if (this.isRateReducer) {
+        return (d) => {
+          return (d.value.count === 0 ? 0 : d.value.value / d.value.count)
+        }
       }
       return null;
     },
@@ -318,10 +273,10 @@ export default {
       return this.reducer.all();
     },
     dimensionScale: function () {
-      return generateScales(this.scale)
+      return this.generateScales(this.scale)
     },
     extraDimensionScale: function () {
-      return generateScales(this.extraScale)
+      return this.generateScales(this.extraScale)
     },
     cardSettings: function() {
       const theme = Store.getTheme(this.theme)
@@ -354,6 +309,20 @@ export default {
     colors: function() {
       return this.colorSettings.ordinal
     },
+    tooltipFormatter: function() {
+      let key, extraKey, val, _val
+      key = this.dimensionScale.format || ((k) => k)
+      layer = this.extraDimensionScale.format || ((k) => k)
+
+      if (!this.tooltipFormat) {
+        val = (n) => d3.round(n, 2)
+      }
+      else {
+        val = d3.format(this.tooltipFormat)
+      }
+
+      return {key, layer, val}
+    },
     textSelector: function() {
       if(this.chartType === 'bubbleChart') return `#${this.id} .node text`
       else if(this.chartType === 'heatMap') return `#${this.id} g.cols.axis text`
@@ -371,21 +340,109 @@ export default {
       if(this.chartType === 'geoChoroplethChart') return `#${this.id} g path`
     },
     tooltipAccessor: function() {
-      const _format = this.dimensionScale.format
+      // valueをどうformatするかという問題はtooltipFormatterが担当する
+      // dが持つデータ構造の解釈と、formatterのどれを適用するかはこのメソッドが担当する
+      const _formats = this.tooltipFormatter
+      const valueAccessor = this.valueAccessor
 
-      return (d, i) => {
-        let key = null;
-        let val = null;
-        if (d.x != undefined && d.y != undefined) {
-          key = _format ? _format(d.x) : d.x;
-          val = roundDecimalFormat(d.y, 2);
-        }
-        else {
-          key = d.name.replace(/^(left|right):/, '')
-        }
-        key = this.getLabel(key)
-        return {key, val}
+      switch (this.chartType) {
+        case 'barChart':
+        case 'lineChart':
+        case 'seriesChart':
+        case 'compositeChart':
+          return (d, i) => {
+            const data = {}
+            // coordinationGrid
+            // pointのマウスオーバー
+            if ('x' in d && 'y' in d) {
+              if ('layer' in d && this.extraDimension) {
+                data.key = d.layer
+                data.vals = {
+                  x: _formats.key(d.x),
+                  y: _formats.val(d.y)
+                }
+              }
+              else {
+                data.key = _formats.key(d.x)
+                data.val = _formats.val(d.y)
+              }
+            }
+
+            // areaのマウスオーバー
+            if (d.name) {
+              data.key = _formats.layer(d.name.replace(/^(left|right):/, ''))
+            }
+
+            return data
+          }
+          break;
+
+        case 'rowChart':
+          return (d, i) => {
+            let v = d.value
+            if (valueAccessor) v = valueAccessor(d)
+            return {
+              key: _formats.key(d.key),
+              val: _formats.val(v)
+            }
+          }
+          break;
+
+        case 'pieChart':
+          return (d, i) => {
+            const rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
+            let v = d.value
+            if (valueAccessor) v = valueAccessor(d)
+            return {
+              key: _formats.key(d.data.key),
+              val: _formats.val(v),
+              rate: roundDecimalFormat(rate, 2)
+            }
+          }
+          break;
+
+        case 'bubbleChart':
+          return (d, i) => {
+            const key = _formats.key(d.key)
+            const labels = [this.xAxisLabel, this.yAxisLabel, this.radiusLabel]
+            const vals = {}
+            labels.forEach((label) => {
+              const v = d.value[label].per || d.value[label]
+              vals[label] = _formats.val(v)
+            })
+            return {key, vals}
+          }
+          break;
+
+        case 'geoChoroplethChart':
+          return (d, i) => {
+            const _key = d3.format('02d')(d.properties.id)
+            const value = this.reducerAll.filter(x => x.key === _key)[0].value
+            return {
+              key: d.properties.nam_ja,
+              val: _formats.val(value)
+            }
+          }
+          break;
+
+        case 'heatMap':
+          return (d, i) => {
+            const xAxisLabel = this.getLabel(this.xAxisLabel || this.dimensionKeys[0] || 'x')
+            const yAxisLabel = this.getLabel(this.yAxisLabel || this.dimensionKeys[1] || 'y')
+            let v = d.value
+            if (valueAccessor) v = valueAccessor(d)
+            return {
+              keys: {
+                [xAxisLabel]: _formats.key(d.key[0]),
+                [yAxisLabel]: _formats.key(d.key[1]),
+              },
+              val: _formats.val(v)
+            }
+          }
+          break;
+
       }
+      return null
     },
     timeScale: function() { // 互換性のための一時的なメソッド
       if (!this.scale) return null;
@@ -407,6 +464,61 @@ export default {
   },
 
   methods: {
+    generateScales: function(scaleCode) {
+      if (!scaleCode) return {};
+
+      let [scale, unit] = scaleCode.split('.');
+      if (!unit) {
+        if (scale == 'time') unit = 'day'
+        else if (scale == 'ordinal') unit = 'ordinal'
+      }
+
+      let _scale, _interval, _unit, _format, _domain;
+
+      // scale
+      if (scale == 'time') _scale = d3.time.scale;
+      else _scale = d3.scale[scale];
+
+      // interval
+      if (scale == 'time' && TIME_INTERVALS[unit]) {
+        _interval = TIME_INTERVALS[unit]
+      }
+
+      // unit
+      if (scale == 'time' && TIME_INTERVALS[unit]) {
+        _unit = TIME_INTERVALS[unit].range
+      }
+      if (scale == 'ordinal' && dc.units[unit]) {
+        _unit = dc.units[unit]
+      }
+
+      // format
+      if (scale == 'time') {
+        if (unit == 'month') _format = TIME_FORMATS.ym
+        else if (unit == 'day') _format = TIME_FORMATS.ymd
+        else if (unit == 'hour') _format = TIME_FORMATS.ymdh
+        else if (unit == 'minute') _format = TIME_FORMATS.ymdhm
+        else if (unit == 'second') _format = TIME_FORMATS.ymdhms
+        else _format = TIME_FORMATS[unit]
+      }
+
+      if (_scale) {
+        if (unit !== 'ordinal') _domain = _scale().domain
+        else _domain = _scale
+      }
+      else _domain = null
+
+      if (unit === 'ordinal') {
+        _format = (k) => this.getLabel(k)
+      }
+
+      return {
+        domain: _domain,
+        interval: _interval,
+        unit: _unit,
+        format: _format
+      }
+    },
     updateContainerInnerSize: function({isFullscreen}) {
       this.isFullscreen = isFullscreen
       // not mounted
@@ -519,6 +631,7 @@ export default {
       const stroke = d3.event.target.getAttribute('stroke');
       const color = fill || stroke;
       const data = this.tooltipAccessor(d, i)
+      if (data === null) return
       this.$refs.tooltip.show(data, color)
     },
     moveTooltip: function() {
@@ -587,9 +700,10 @@ export default {
     }
     if (this.valueAccessor) chart.valueAccessor(this.valueAccessor);
     if (chart.x) {
-      if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange));
-      if (this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit);
+      if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange))
     }
+    if (chart.xUnits && this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit)
+
     if (this.extraDimensionExtractor) {
       chart.keyAccessor((d) => {
         return d.key[0]

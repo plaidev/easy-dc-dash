@@ -81,24 +81,13 @@ export default {
         return cnt > 0 ? p.value.value / cnt: 0;
       }
     },
-    dimensionScale: function() {
-      return {
-        domain: d3.scale.linear().domain
-      }
-    },
+    // dimensionScale: function() {
+    //   return {
+    //     domain: d3.scale.linear().domain
+    //   }
+    // },
     dimensionRange: function() {
       return [0, 6]
-    }
-  },
-
-  methods: {
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const data = {
-        key: this.getLabel(d.key),
-        val: d.value.value
-      }
-      this.$refs.tooltip.show(data, fill)
     }
   },
 

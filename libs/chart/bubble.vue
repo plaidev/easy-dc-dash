@@ -159,22 +159,6 @@ export default {
       else if(val instanceof Object || typeof val === 'object') {
         if(val.per != undefined) return val.per
       }
-    },
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const _format = this.dimensionScale.format
-      const v = d.value
-      const k = d.key
-      const _k = _format ? _format(k) : k
-      const data = {
-        key: _k,
-        vals: {
-          [this.xAxisLabel]: v[this.xAxisLabel].per ? roundDecimalFormat(v[this.xAxisLabel].per, 2) : v[this.xAxisLabel],
-          [this.yAxisLabel]: v[this.yAxisLabel].per ? roundDecimalFormat(v[this.yAxisLabel].per, 2) : v[this.yAxisLabel],
-          [this.radiusLabel]: v[this.radiusLabel].per ? roundDecimalFormat(v[this.radiusLabel].per, 2) : v[this.radiusLabel]
-        }
-      }
-      this.$refs.tooltip.show(data, fill)
     }
   },
   mounted: function() {

@@ -63,36 +63,7 @@ export default {
       return d3.extent(all, (d) => d.key[1])
     }
   },
-  methods: {
-    showTooltip: function(d) {
-      const _format = this.dimensionScale.format
-      const fill = d3.event.target.getAttribute('fill');
-      const stroke = d3.event.target.getAttribute('stroke');
-      const color = fill || stroke;
 
-      if (d.x != undefined && d.y != undefined) {
-        const key = d.layer
-        const vals = {
-          x: _format ? _format(d.x) : d.x,
-          y: d.y
-        }
-        const data = {
-          key: key,
-          vals: vals
-        }
-        this.$refs.tooltip.show(data, color)
-      }
-      else {
-        const key = d.name
-        const vals = d.values.map(_d => _d.y).reduce((a,b) => a+b);
-        const data = {
-          key: key,
-          val: vals
-        }
-        this.$refs.tooltip.show(data, color)
-      }
-    }
-  },
   mounted: function() {
     const chart = this.chart;
 

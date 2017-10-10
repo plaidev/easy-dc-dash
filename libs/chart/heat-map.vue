@@ -67,21 +67,6 @@ export default {
         .range(range);
     }
   },
-  methods: {
-    showTooltip: function(d) {
-      const fill = d3.event.target.getAttribute('fill')
-      const xAxisLabel = this.getLabel(this.xAxisLabel || this.dimensionKeys[0] || 'x')
-      const yAxisLabel = this.getLabel(this.yAxisLabel || this.dimensionKeys[1] || 'y')
-      const data = {
-        keys: {
-          [xAxisLabel]: this.getLabel(d.key[0]),
-          [yAxisLabel]: this.getLabel(d.key[1]),
-        },
-        val: d.value
-      }
-      this.$refs.tooltip.show(data, fill)
-    }
-  },
   mounted: function() {
     const chart = this.chart;
 
