@@ -26177,56 +26177,6 @@ var ChartLink = { render: function render() {
 // データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
 
 
-function generateScales(scaleCode) {
-  if (!scaleCode) return {};
-
-  var _scaleCode$split = scaleCode.split('.'),
-      _scaleCode$split2 = slicedToArray(_scaleCode$split, 2),
-      scale = _scaleCode$split2[0],
-      unit = _scaleCode$split2[1];
-
-  if (scale == 'time' && !unit) unit = 'day';
-  if (scale == 'ordinal' && !unit) unit = 'ordinal';
-
-  var _scale = void 0,
-      _interval = void 0,
-      _unit = void 0,
-      _format = void 0,
-      _domain = void 0;
-
-  // scale
-  if (scale == 'time') _scale = d3$1.time.scale;else _scale = d3$1.scale[scale];
-
-  // interval
-  if (scale == 'time' && TIME_INTERVALS[unit]) {
-    _interval = TIME_INTERVALS[unit];
-  }
-
-  // unit
-  if (scale == 'time' && TIME_INTERVALS[unit]) {
-    _unit = TIME_INTERVALS[unit].range;
-  }
-  if (scale == 'ordinal' && index$1.units[unit]) {
-    _unit = index$1.units[unit];
-  }
-
-  // format
-  if (scale == 'time') {
-    if (unit == 'month') _format = TIME_FORMATS.ym;else if (unit == 'day') _format = TIME_FORMATS.ymd;else if (unit == 'hour') _format = TIME_FORMATS.ymdh;else if (unit == 'minute') _format = TIME_FORMATS.ymdhm;else if (unit == 'second') _format = TIME_FORMATS.ymdhms;else _format = TIME_FORMATS[unit];
-  }
-
-  if (_scale) {
-    if (unit !== 'ordinal') _domain = _scale().domain;else _domain = _scale;
-  } else _domain = null;
-
-  return {
-    domain: _domain,
-    interval: _interval,
-    unit: _unit,
-    format: _format
-  };
-}
-
 var Base = {
 
   template: '\n    <card :title="title || cardSettings.defaultCaption" :width="width" :height="height" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']" :caption-height="cardSettings.captionHeight" :self-margined="cardSettings.selfMargined">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
@@ -26308,6 +26258,9 @@ var Base = {
     },
 
     // formatter
+    tooltipFormat: {
+      type: String
+    },
     linkFormatter: {
       type: String
     },
@@ -26445,9 +26398,11 @@ var Base = {
       return false;
     },
     valueAccessor: function valueAccessor() {
-      if (this.isRateReducer) return function (d) {
-        return d.value.count === 0 ? 0 : d.value.value / d.value.count;
-      };
+      if (this.isRateReducer) {
+        return function (d) {
+          return d.value.count === 0 ? 0 : d.value.value / d.value.count;
+        };
+      }
       return null;
     },
     min: function min() {
@@ -26480,10 +26435,10 @@ var Base = {
       return this.reducer.all();
     },
     dimensionScale: function dimensionScale() {
-      return generateScales(this.scale);
+      return this.generateScales(this.scale);
     },
     extraDimensionScale: function extraDimensionScale() {
-      return generateScales(this.extraScale);
+      return this.generateScales(this.extraScale);
     },
     cardSettings: function cardSettings() {
       var theme = Store.getTheme(this.theme);
@@ -26519,6 +26474,28 @@ var Base = {
     colors: function colors() {
       return this.colorSettings.ordinal;
     },
+    tooltipFormatter: function tooltipFormatter() {
+      var key = void 0,
+          extraKey = void 0,
+          val = void 0,
+          _val = void 0;
+      key = this.dimensionScale.format || function (k) {
+        return k;
+      };
+      layer = this.extraDimensionScale.format || function (k) {
+        return k;
+      };
+
+      if (!this.tooltipFormat) {
+        val = function val(n) {
+          return d3$1.round(n, 2);
+        };
+      } else {
+        val = d3$1.format(this.tooltipFormat);
+      }
+
+      return { key: key, layer: layer, val: val };
+    },
     textSelector: function textSelector() {
       if (this.chartType === 'bubbleChart') return '#' + this.id + ' .node text';else if (this.chartType === 'heatMap') return '#' + this.id + ' g.cols.axis text';else return '#' + this.id + ' g.x text';
     },
@@ -26536,20 +26513,109 @@ var Base = {
     tooltipAccessor: function tooltipAccessor() {
       var _this3 = this;
 
-      var _format = this.dimensionScale.format;
+      // valueをどうformatするかという問題はtooltipFormatterが担当する
+      // dが持つデータ構造の解釈と、formatterのどれを適用するかはこのメソッドが担当する
+      var _formats = this.tooltipFormatter;
+      var valueAccessor = this.valueAccessor;
 
-      return function (d, i) {
-        var key = null;
-        var val = null;
-        if (d.x != undefined && d.y != undefined) {
-          key = _format ? _format(d.x) : d.x;
-          val = roundDecimalFormat(d.y, 2);
-        } else {
-          key = d.name.replace(/^(left|right):/, '');
-        }
-        key = _this3.getLabel(key);
-        return { key: key, val: val };
-      };
+      switch (this.chartType) {
+        case 'barChart':
+        case 'lineChart':
+        case 'seriesChart':
+        case 'compositeChart':
+          return function (d, i) {
+            var data = {};
+            // coordinationGrid
+            // pointのマウスオーバー
+            if ('x' in d && 'y' in d) {
+              if ('layer' in d && _this3.extraDimension) {
+                data.key = d.layer;
+                data.vals = {
+                  x: _formats.key(d.x),
+                  y: _formats.val(d.y)
+                };
+              } else {
+                data.key = _formats.key(d.x);
+                data.val = _formats.val(d.y);
+              }
+            }
+
+            // areaのマウスオーバー
+            if (d.name) {
+              data.key = _formats.layer(d.name.replace(/^(left|right):/, ''));
+            }
+
+            return data;
+          };
+          break;
+
+        case 'rowChart':
+          return function (d, i) {
+            var v = d.value;
+            if (valueAccessor) v = valueAccessor(d);
+            return {
+              key: _formats.key(d.key),
+              val: _formats.val(v)
+            };
+          };
+          break;
+
+        case 'pieChart':
+          return function (d, i) {
+            var rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
+            var v = d.value;
+            if (valueAccessor) v = valueAccessor(d);
+            return {
+              key: _formats.key(d.data.key),
+              val: _formats.val(v),
+              rate: roundDecimalFormat(rate, 2)
+            };
+          };
+          break;
+
+        case 'bubbleChart':
+          return function (d, i) {
+            var key = _formats.key(d.key);
+            var labels = [_this3.xAxisLabel, _this3.yAxisLabel, _this3.radiusLabel];
+            var vals = {};
+            labels.forEach(function (label) {
+              var v = d.value[label].per || d.value[label];
+              vals[label] = _formats.val(v);
+            });
+            return { key: key, vals: vals };
+          };
+          break;
+
+        case 'geoChoroplethChart':
+          return function (d, i) {
+            var _key = d3$1.format('02d')(d.properties.id);
+            var value = _this3.reducerAll.filter(function (x) {
+              return x.key === _key;
+            })[0].value;
+            return {
+              key: d.properties.nam_ja,
+              val: _formats.val(value)
+            };
+          };
+          break;
+
+        case 'heatMap':
+          return function (d, i) {
+            var _keys;
+
+            var xAxisLabel = _this3.getLabel(_this3.xAxisLabel || _this3.dimensionKeys[0] || 'x');
+            var yAxisLabel = _this3.getLabel(_this3.yAxisLabel || _this3.dimensionKeys[1] || 'y');
+            var v = d.value;
+            if (valueAccessor) v = valueAccessor(d);
+            return {
+              keys: (_keys = {}, defineProperty(_keys, xAxisLabel, _formats.key(d.key[0])), defineProperty(_keys, yAxisLabel, _formats.key(d.key[1])), _keys),
+              val: _formats.val(v)
+            };
+          };
+          break;
+
+      }
+      return null;
     },
     timeScale: function timeScale() {
       // 互換性のための一時的なメソッド
@@ -26581,6 +26647,64 @@ var Base = {
   },
 
   methods: {
+    generateScales: function generateScales(scaleCode) {
+      var _this4 = this;
+
+      if (!scaleCode) return {};
+
+      var _scaleCode$split = scaleCode.split('.'),
+          _scaleCode$split2 = slicedToArray(_scaleCode$split, 2),
+          scale = _scaleCode$split2[0],
+          unit = _scaleCode$split2[1];
+
+      if (!unit) {
+        if (scale == 'time') unit = 'day';else if (scale == 'ordinal') unit = 'ordinal';
+      }
+
+      var _scale = void 0,
+          _interval = void 0,
+          _unit = void 0,
+          _format = void 0,
+          _domain = void 0;
+
+      // scale
+      if (scale == 'time') _scale = d3$1.time.scale;else _scale = d3$1.scale[scale];
+
+      // interval
+      if (scale == 'time' && TIME_INTERVALS[unit]) {
+        _interval = TIME_INTERVALS[unit];
+      }
+
+      // unit
+      if (scale == 'time' && TIME_INTERVALS[unit]) {
+        _unit = TIME_INTERVALS[unit].range;
+      }
+      if (scale == 'ordinal' && index$1.units[unit]) {
+        _unit = index$1.units[unit];
+      }
+
+      // format
+      if (scale == 'time') {
+        if (unit == 'month') _format = TIME_FORMATS.ym;else if (unit == 'day') _format = TIME_FORMATS.ymd;else if (unit == 'hour') _format = TIME_FORMATS.ymdh;else if (unit == 'minute') _format = TIME_FORMATS.ymdhm;else if (unit == 'second') _format = TIME_FORMATS.ymdhms;else _format = TIME_FORMATS[unit];
+      }
+
+      if (_scale) {
+        if (unit !== 'ordinal') _domain = _scale().domain;else _domain = _scale;
+      } else _domain = null;
+
+      if (unit === 'ordinal') {
+        _format = function _format(k) {
+          return _this4.getLabel(k);
+        };
+      }
+
+      return {
+        domain: _domain,
+        interval: _interval,
+        unit: _unit,
+        format: _format
+      };
+    },
     updateContainerInnerSize: function updateContainerInnerSize(_ref3) {
       var isFullscreen = _ref3.isFullscreen;
 
@@ -26621,7 +26745,7 @@ var Base = {
       return this.reduceKeys && this.reduceKeys[idx] || idx;
     },
     applyLegend: function applyLegend() {
-      var _this4 = this;
+      var _this5 = this;
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var _options$indexLabel = options.indexLabel,
@@ -26635,7 +26759,7 @@ var Base = {
 
       this.legend = index$1.legend().legendText(function (d, i) {
         var k = indexLabel ? i : d.name;
-        var key = _this4.getLabel(k);
+        var key = _this5.getLabel(k);
         return key.length > 10 ? key.substring(0, 10) + '...' : key;
       });
 
@@ -26703,6 +26827,7 @@ var Base = {
       var stroke = d3$1.event.target.getAttribute('stroke');
       var color = fill || stroke;
       var data = this.tooltipAccessor(d, i);
+      if (data === null) return;
       this.$refs.tooltip.show(data, color);
     },
     moveTooltip: function moveTooltip() {
@@ -26726,13 +26851,13 @@ var Base = {
       this.$refs.chartLink.show(chart, link);
     },
     render: function render() {
-      var _this5 = this;
+      var _this6 = this;
 
       if (this._rendering) return;
       this._rendering = true;
       this.$nextTick(function () {
-        _this5._rendering = false;
-        _this5.chart.render();
+        _this6._rendering = false;
+        _this6.chart.render();
       });
     }
   },
@@ -26744,7 +26869,7 @@ var Base = {
   },
 
   mounted: function mounted() {
-    var _this6 = this;
+    var _this7 = this;
 
     // layoutが確定する
     this.isMounted = true;
@@ -26769,8 +26894,9 @@ var Base = {
     if (this.valueAccessor) chart.valueAccessor(this.valueAccessor);
     if (chart.x) {
       if (this.dimensionScale.domain) chart.x(this.dimensionScale.domain(this.dimensionRange));
-      if (this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit);
     }
+    if (chart.xUnits && this.dimensionScale.unit) chart.xUnits(this.dimensionScale.unit);
+
     if (this.extraDimensionExtractor) {
       chart.keyAccessor(function (d) {
         return d.key[0];
@@ -26778,21 +26904,21 @@ var Base = {
     }
 
     chart.renderLabel(this.renderLabel).renderTitle(this.renderTitle).transitionDuration(this.transitionDuration).label(function (d) {
-      return _this6.getLabel(d.key);
+      return _this7.getLabel(d.key);
     }).filterPrinter(function (filters) {
       return filters.map(function (filter) {
         if (typeof filter == 'array' || filter instanceof Array) {
           return filter.map(function (f, i) {
-            return _this6.getLabel(index$1.printers.filter(f));
+            return _this7.getLabel(index$1.printers.filter(f));
           }).join('-');
         }
-        return _this6.getLabel(index$1.printers.filter(filter));
+        return _this7.getLabel(index$1.printers.filter(filter));
       }).join(', ');
     });
 
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
-        chart.selectAll(_this6.tooltipSelector).on("mouseover", _this6.showTooltip).on("mousemove", _this6.moveTooltip).on("mouseout", _this6.removeTooltip);
+        chart.selectAll(_this7.tooltipSelector).on("mouseover", _this7.showTooltip).on("mousemove", _this7.moveTooltip).on("mouseout", _this7.removeTooltip);
       });
     }
     if (this.linkFormatter) {
@@ -26814,8 +26940,8 @@ var Base = {
     }
 
     chart.on('pretransition', function () {
-      if (!_this6.dateKey && !_this6.timeScale) {
-        chart.selectAll(_this6.textSelector).text(function (_d) {
+      if (!_this7.dateKey && !_this7.timeScale) {
+        chart.selectAll(_this7.textSelector).text(function (_d) {
           var d = _d.key || _d;
           return d.length > 15 ? d.substr(0, 15) + '...' : d;
         });
@@ -37079,33 +37205,18 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
         return Object.keys(this.segments);
       }
       return [];
-    },
-    tooltipAccessor: function tooltipAccessor() {
-      var _this = this;
-
-      return function (d, i) {
-        var _rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
-        var rate = roundDecimalFormat(_rate, 2);
-        return {
-          key: _this.segmentLabel(d.data.key),
-          val: d.value,
-          rate: rate
-        };
-      };
     }
   },
 
   methods: {
-    segmentLabel: function segmentLabel(segmentId) {
-      var label = segmentId;
-      if (this.labels && segmentId in this.labels) {
-        label = this.labels[segmentId];
-      } else if (this.segments instanceof Object && this.segments[segmentId]) {
-        label = this.segments[segmentId];
-      } else {
-        label = Store.getLabel(segmentId);
+    getLabel: function getLabel(key) {
+      if (this.segments instanceof Object && key in this.segments) {
+        return this.segments[key];
       }
-      return label;
+      return Store.getLabel(key, {
+        dataset: this.dataset,
+        chartName: this.id
+      });
     }
   },
 
@@ -37117,15 +37228,17 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
   },
 
   mounted: function mounted() {
-    var _this2 = this;
+    var _this = this;
 
     var chart = this.chart;
-    chart.othersLabel(this.othersLabel);
-    this.showLabel ? chart.label(function (d) {
-      return _this2.segmentLabel(d.key);
-    }) : chart.label(function (d) {
+    var _label = this.showLabel ? function (d) {
+      return _this.getLabel(d.key);
+    } : function (d) {
       return null;
-    });
+    };
+
+    chart.othersLabel(this.othersLabel).label(_label);
+
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart;
   },
@@ -37169,17 +37282,6 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
         return v.join(',');
       };
       return Store.registerDimension(this.dimensionName, grouping, { dataset: this.dataset });
-    },
-    tooltipAccessor: function tooltipAccessor() {
-      return function (d, i) {
-        var _rate = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
-        var rate = roundDecimalFormat(_rate, 2);
-        return {
-          key: d.data.key,
-          val: d.value,
-          rate: rate
-        };
-      };
     }
   },
 
@@ -37289,24 +37391,13 @@ var WeekRow = { cssModules: { "chartRoot": "week-row__chart-root", "chart-root":
         return cnt > 0 ? p.value.value / cnt : 0;
       };
     },
-    dimensionScale: function dimensionScale() {
-      return {
-        domain: d3$1.scale.linear().domain
-      };
-    },
+    // dimensionScale: function() {
+    //   return {
+    //     domain: d3.scale.linear().domain
+    //   }
+    // },
     dimensionRange: function dimensionRange() {
       return [0, 6];
-    }
-  },
-
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var fill = d3$1.event.target.getAttribute('fill');
-      var data = {
-        key: this.getLabel(d.key),
-        val: d.value.value
-      };
-      this.$refs.tooltip.show(data, fill);
     }
   },
 
@@ -37447,14 +37538,6 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     }
   },
   methods: {
-    showTooltip: function showTooltip(d) {
-      var fill = d3$1.event.target.getAttribute('fill');
-      var data = {
-        key: this.getLabel(d.key),
-        val: d.value
-      };
-      this.$refs.tooltip.show(data, fill);
-    },
     keyTextPostProcess: function keyTextPostProcess(key) {
       var label = this.getLabel(key);
       return label.length > 20 ? label.substring(0, 20) + '...' : label;
@@ -37528,6 +37611,9 @@ var StackedLines = {
     },
     scale: {
       default: 'linear'
+    },
+    extraScale: {
+      default: 'ordinal'
     }
   },
 
@@ -37580,9 +37666,9 @@ var StackedLines = {
 
     var lineNum = _reducer(dim.top(1)[0] || {}).length;
 
-    chart.group(this.combinedGroup, this.getLabel(this.getReduceKey(0)), this.generateValueAccessor(0)).renderArea(true);
+    chart.group(this.combinedGroup, this.getReduceKey(0), this.generateValueAccessor(0)).renderArea(true);
     for (var i = 1; i < lineNum; i++) {
-      chart.stack(this.combinedGroup, this.getLabel(this.getReduceKey(i)), this.generateValueAccessor(i)).hidableStacks(true);
+      chart.stack(this.combinedGroup, this.getReduceKey(i), this.generateValueAccessor(i)).hidableStacks(true);
     }
     // FIXME:
     // Stack Overflow causes when `dc.override(chart, 'legendables', () => {/*...*/)` executing.
@@ -37644,17 +37730,6 @@ var OrdinalBar = {
       return this.removeEmptyRows ? removeEmptyBins(group) : group;
     }
   },
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var fill = d3$1.event.target.getAttribute('fill');
-      var _format = this.dimensionScale.format;
-      var data = {
-        key: _format ? _format(d.data.key) : d.data.key,
-        val: d.data.value
-      };
-      this.$refs.tooltip.show(data, fill);
-    }
-  },
   mounted: function mounted() {
     var chart = this.chart;
     chart.barPadding(this.barPadding).outerPadding(this.outerPadding).x(d3$1.scale.ordinal()).xUnits(index$1.units.ordinal).elasticX(this.elasticX).elasticY(this.elasticY).renderVerticalGridLines(false);
@@ -37706,6 +37781,15 @@ var FilterStackedBar = { cssModules: { "chartRoot": "filter-stacked-bar__chart-r
       });
       return stackKeys;
     }
+    // tooltipAccessor: function() {
+    //   const _formats = this.tooltipFormatter
+    //   return (d, i) => {
+    //     return {
+    //       key: `${_formats.key(d.data.key)}[${d.layer}]`,
+    //       val: _formats.val(d.data.value[d.layer])
+    //     }
+    //   }
+    // }
   },
   methods: {
     stackSecond: function stackSecond(group) {
@@ -37733,7 +37817,7 @@ var FilterStackedBar = { cssModules: { "chartRoot": "filter-stacked-bar__chart-r
           // then produce multivalue key/value pairs
           return Object.keys(m).map(function (k) {
             var key = k;
-            if (_format) key = _format.parse(k);
+            if (_format && _format.parse) key = _format.parse(k);
             // if (this.scale === 'time')
             // key = ymdFormat.parse(k)
             return { key: [key], value: m[k] };
@@ -37751,15 +37835,6 @@ var FilterStackedBar = { cssModules: { "chartRoot": "filter-stacked-bar__chart-r
         }
         return d.value[k] || 0;
       };
-    },
-    showTooltip: function showTooltip(d) {
-      var fill = d3$1.event.target.getAttribute('fill');
-      var k = this.getLabel(d.data.key);
-      var data = {
-        key: k + '[' + d.layer + ']',
-        val: d.data.value[d.layer]
-      };
-      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
@@ -38239,22 +38314,6 @@ var GeoJP = { cssModules: { "chartRoot": "geo-jp__chart-root", "chart-root": "ge
       return d3$1.scale.linear().domain([0, 10]).interpolate(d3$1.interpolateHcl).range([z, p]);
     }
   },
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var fill = d3$1.event.target.getAttribute('fill');
-      var _key = ('0' + d.properties.id).slice(-2);
-      var data = {
-        key: d.properties.nam_ja,
-        val: this.extractValue(_key)
-      };
-      this.$refs.tooltip.show(data, fill);
-    },
-    extractValue: function extractValue(_key) {
-      return this.reducerAll.filter(function (x) {
-        return x.key === _key;
-      })[0].value;
-    }
-  },
   mounted: function mounted() {
     var _this = this;
 
@@ -38713,20 +38772,6 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
       return d3$1.scale.linear().domain(domain).range(range);
     }
   },
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var _keys;
-
-      var fill = d3$1.event.target.getAttribute('fill');
-      var xAxisLabel = this.getLabel(this.xAxisLabel || this.dimensionKeys[0] || 'x');
-      var yAxisLabel = this.getLabel(this.yAxisLabel || this.dimensionKeys[1] || 'y');
-      var data = {
-        keys: (_keys = {}, defineProperty(_keys, xAxisLabel, this.getLabel(d.key[0])), defineProperty(_keys, yAxisLabel, this.getLabel(d.key[1])), _keys),
-        val: d.value
-      };
-      this.$refs.tooltip.show(data, fill);
-    }
-  },
   mounted: function mounted() {
     var _this = this;
 
@@ -38866,39 +38911,7 @@ var Series = {
       });
     }
   },
-  methods: {
-    showTooltip: function showTooltip(d) {
-      var _format = this.dimensionScale.format;
-      var fill = d3$1.event.target.getAttribute('fill');
-      var stroke = d3$1.event.target.getAttribute('stroke');
-      var color = fill || stroke;
 
-      if (d.x != undefined && d.y != undefined) {
-        var key = d.layer;
-        var vals = {
-          x: _format ? _format(d.x) : d.x,
-          y: d.y
-        };
-        var data = {
-          key: key,
-          vals: vals
-        };
-        this.$refs.tooltip.show(data, color);
-      } else {
-        var _key = d.name;
-        var _vals = d.values.map(function (_d) {
-          return _d.y;
-        }).reduce(function (a, b) {
-          return a + b;
-        });
-        var _data = {
-          key: _key,
-          val: _vals
-        };
-        this.$refs.tooltip.show(_data, color);
-      }
-    }
-  },
   mounted: function mounted() {
     var chart = this.chart;
 
@@ -39072,20 +39085,6 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
       if (val instanceof Number || typeof val === 'number') return val;else if (val instanceof Object || (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
         if (val.per != undefined) return val.per;
       }
-    },
-    showTooltip: function showTooltip(d) {
-      var _vals;
-
-      var fill = d3$1.event.target.getAttribute('fill');
-      var _format = this.dimensionScale.format;
-      var v = d.value;
-      var k = d.key;
-      var _k = _format ? _format(k) : k;
-      var data = {
-        key: _k,
-        vals: (_vals = {}, defineProperty(_vals, this.xAxisLabel, v[this.xAxisLabel].per ? roundDecimalFormat(v[this.xAxisLabel].per, 2) : v[this.xAxisLabel]), defineProperty(_vals, this.yAxisLabel, v[this.yAxisLabel].per ? roundDecimalFormat(v[this.yAxisLabel].per, 2) : v[this.yAxisLabel]), defineProperty(_vals, this.radiusLabel, v[this.radiusLabel].per ? roundDecimalFormat(v[this.radiusLabel].per, 2) : v[this.radiusLabel]), _vals)
-      };
-      this.$refs.tooltip.show(data, fill);
     }
   },
   mounted: function mounted() {
