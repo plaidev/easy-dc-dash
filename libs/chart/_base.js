@@ -380,7 +380,8 @@ export default {
         case 'rowChart':
           return (d, i) => {
             let v = d.value
-            if (valueAccessor) v = valueAccessor(d)
+            if (!d.data) v = d.value
+            else if (valueAccessor) v = valueAccessor(d.data)
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
@@ -392,7 +393,8 @@ export default {
           return (d, i) => {
             const rate = (d.endAngle - d.startAngle) / (2*Math.PI) * 100;
             let v = d.value
-            if (valueAccessor) v = valueAccessor(d)
+            if (!d.data) v = d.value
+            else if (valueAccessor) v = valueAccessor(d.data)
             return {
               key: _formats.key(d.data.key),
               val: _formats.val(v),
