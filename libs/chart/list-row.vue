@@ -18,6 +18,9 @@ export default {
       type: String,
       default: 'linear'
     },
+    removeEmptyRows: {
+      default: true
+    },
     // order by
     descending: {
       type: Boolean,
@@ -39,13 +42,6 @@ export default {
     },
     useLegend: {
       default: false
-    }
-  },
-  computed: {
-    reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.reducerExtractor;
-      return removeEmptyBins(dim.group().reduceSum(reducer))
     }
   },
   methods: {
