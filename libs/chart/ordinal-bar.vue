@@ -6,7 +6,6 @@ import dc from 'dc'
 import Base from './_base'
 import coordinateGridBase from './_coordinateGridBase'
 import Store from '../store'
-import {removeEmptyBins} from '../utils'
 
 export default {
   extends: coordinateGridBase,
@@ -33,19 +32,10 @@ export default {
       default: 0.5
     },
     removeEmptyRows: {
-      type: Boolean,
       default: true
     },
     useLegend: {
       default: false
-    }
-  },
-  computed: {
-    reducer: function() {
-      const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const reducer = this.reducerExtractor;
-      const group = dim.group().reduceSum(reducer)
-      return this.removeEmptyRows ? removeEmptyBins(group) : group
     }
   },
   mounted: function() {

@@ -5,6 +5,7 @@ import Store from '../store'
 import {generateDomId, generateExtractor, reverseLegendOrder, splitKey, extractName, roundDecimalFormat} from '../utils'
 import {TIME_INTERVALS, TIME_FORMATS} from '../utils/time-format'
 import assignDeep from 'assign-deep'
+import {removeEmptyBins} from '../utils'
 
 import ResetButton from '../components/reset-button.vue'
 import CardContainer from '../components/card.vue'
@@ -66,6 +67,10 @@ export default {
       type: String
     },
     reduce: {},
+    removeEmptyRows: {
+      type: Boolean,
+      default: false
+    },
 
     // basic render content
     useDataPoints: {
@@ -224,7 +229,9 @@ export default {
           }
         );
       }
-      return dim.group().reduceSum(reducer)
+      const group = dim.group().reduceSum(reducer)
+      if (this.removeEmptyRows) return removeEmptyBins(group)
+      return group
     },
     dimensionKeys: function() { // TODO: 整理
       if (!this.extraDimension) return [extractName(this.dimension)]
