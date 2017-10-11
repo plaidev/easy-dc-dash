@@ -115,7 +115,7 @@ export default {
     // size / layout
     theme: {
       type: String,
-      default: 'default'
+      default: null
     },
     layout: {
       type: String,
