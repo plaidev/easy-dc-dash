@@ -24,13 +24,13 @@ export default {
   position: absolute;
   right: 8px;
   top: 8px;
-  color: rgba(0,0,0,.16);
+  color: rgba(69, 171, 159, 1);
   font-size: 12px;
   display: flex;
   display: -webkit-flex;
 }
 .reset-button:hover {
-  color: rgba(0,0,0,1);
+  color: rgba(0,0,0,.4);
 }
 a.reset {
   cursor: pointer;
