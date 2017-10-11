@@ -1,5 +1,5 @@
 <template>
-  <card :width="width" :height="height" :title="title" :class="$style['chart-root']" @update:fullscreen="v => isFullscreen = v">
+  <card :width="width" :height="height" :title="title" :class="$style['chart-root']" @update:fullscreen="v => isFullscreen = v" :self-margined="cardSettings.selfMargined">
     <div class="data-table-container">
       <div class="table-paging" v-if="this.useTablePaging">
         <!--
