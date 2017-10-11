@@ -49,7 +49,8 @@ export default {
   data: function() {
     return {
       isFullscreen: false,
-      updating: false
+      updating: false,
+      mounted: false
     }
   },
   computed: {
@@ -65,13 +66,24 @@ export default {
       }
       return {}
     },
+    computedWidth: function() {
+      let width = this.width;
+      if (this.mounted && this.$el) {
+        const style = window.getComputedStyle(this.$el);
+        // 設定値と計測した値が異なる時、autoで再計算（flexの場合など）
+        if (style.width !== this.width + 'px') {
+          width = 'auto'
+        }
+      }
+      return width
+    },
     outerSizeStyle: function() {
-      const style = {};
-      if (this.width === 'auto') {
+      const style = {}
+      if (this.computedWidth === 'auto') {
         style.width = '100%'
       }
-      else if (this.width) {
-        style.width = this.width+'px';
+      else if (this.computedWidth) {
+        style.width = this.computedWidth+'px';
       }
       if (this.height) style.height = this.height+'px';
       return style
@@ -83,10 +95,10 @@ export default {
         style.height = 90+'vh';
       }
       else {
-        if (this.width === 'auto') {
+        if (this.computedWidth === 'auto') {
           style.width = '100%'
         }
-        else if (this.width) style.width = this.width+'px';
+        else if (this.computedWidth) style.width = this.computedWidth+'px';
         if (this.height) style.height = this.height+'px';
       }
       return style
@@ -131,7 +143,7 @@ export default {
     }
   },
   mounted: function() {
-    this.updateRenderAreaSize()
+    this.mounted = true
   }
 }
 </script>
@@ -156,10 +168,10 @@ export default {
 }
 
 .card-container {
+  position: absolute;
   background-color: #FFF;
   width: 100%;
   height: 100%;
-  transition: all 200ms 0s ease;
 }
 
 .fullscreen .card-container {
@@ -181,7 +193,6 @@ export default {
 }
 
 .self-margined {
-  position: absolute;
   left: 2px;
   right: 2px;
   top: 2px;
