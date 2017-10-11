@@ -3,7 +3,6 @@
 import dc from 'dc'
 import Base from './_base'
 import Store from '../store'
-import {removeEmptyBins, roundDecimalFormat} from '../utils'
 
 export default {
   extends: Base,
