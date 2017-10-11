@@ -130,6 +130,7 @@ export default {
   },
   methods: {
     toggleFullscreen: function() {
+      if (this.updating) return;
       this.isFullscreen = !this.isFullscreen
     },
     updateRenderAreaSize: function() {
