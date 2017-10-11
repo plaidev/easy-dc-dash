@@ -1,9 +1,7 @@
 <template>
   <div class="reset-button" @click="reset">
-    <span class='reset' style="display: none;">
-      <span class='filter badge'></span>
-    </span>
     <a class="reset" style="display: none;">
+      <!--<span class='filter badge'></span>-->
       <i class="fa fa-ban">&nbsp;</i>
       <span>フィルター解除</span>
     </a>
