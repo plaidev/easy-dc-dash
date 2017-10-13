@@ -1,7 +1,7 @@
 import Store from './libs/store'
 import Chart from './libs/chart'
 import {init, run} from './libs/autorun'
-import Vue from 'vue/dist/vue.js'
+import Vue from 'vue'
 
 // import './libs/styles/default.scss'
 
