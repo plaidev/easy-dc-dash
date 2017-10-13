@@ -7,6 +7,8 @@ import replace      from 'rollup-plugin-replace'
 //import sourcemaps   from 'rollup-plugin-sourcemaps'
 import scss         from 'rollup-plugin-scss'
 import css          from 'rollup-plugin-css-only'
+import json         from 'rollup-plugin-json'
+import nodeBuiltins from 'rollup-plugin-node-builtins'
 
 export default {
 
@@ -31,10 +33,17 @@ export default {
     }),
 
     // npmモジュールを`node_modules`から読み込む
-    nodeResolve({ jsnext: true }),
+    nodeResolve({
+      include: 'node_modules/**',
+      jsnext: true,
+      preferBuiltins: false
+    }),
 
     // CommonJSモジュールをES6に変換
     commonjs(),
+
+    // nodeの環境との互換性。iconv-liteがBufferをrequireする
+    nodeBuiltins(),
 
     // 一応入れてみた。子のファイルのsourcemapurlを追跡する？
     //sourcemaps(),
@@ -50,6 +59,8 @@ export default {
     css({
       output: 'dist/bundle.css'
     }),
+
+    json(),
 
     // ES5に変換。.babelrcは別途用意済み
     babel({
