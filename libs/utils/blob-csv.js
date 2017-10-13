@@ -1,3 +1,4 @@
+import iconv from 'iconv-lite'
 
 function findDataFromDatasets(name) {
   if (!window.datasets || window.datasets instanceof Array) return []
@@ -39,21 +40,38 @@ function convertArrayOfObjectsToCSV(args) {
   return result;
 }
 
-export function downloadCSV(name_or_data, filename, labels) {
-
-  let dat
+export function downloadCSV(name_or_data, filename, labels, options={}) {
+  let data
   if (name_or_data instanceof Array) data = name_or_data;
   else data = findDataFromDatasets(name_or_data)
 
-  const csvContent = convertArrayOfObjectsToCSV({data, labels})
+  let encoding = 'utf-8'
+  if (options.encoding) {
+    encoding = options.encoding
+
+    // 概ねCP932のことである
+    if (encoding === 'Shift_JIS') encoding = 'CP932'
+
+    // https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings
+    if (!iconv.encodingExists(encoding)) {
+      console.log(`encode error, ${encoding} not exists`)
+      return
+    }
+  }
+
+  let csvContent = convertArrayOfObjectsToCSV({data, labels})
 
   if (!csvContent) {
     console.log('dataset not found', name);
     return;
   }
 
+  if (encoding !== 'utf-8') {
+    csvContent = iconv.encode(csvContent, encoding)
+  }
+
   const blob = new Blob([csvContent], {
-    type: 'text/csv;charset=utf-8;'
+    type: `text/csv;charset=${encoding};`
   });
 
   const url = URL.createObjectURL(blob);

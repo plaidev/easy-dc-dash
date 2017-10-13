@@ -25,12 +25,17 @@ export default {
     labels: {
       type: Object,
     },
+    encoding: {
+      type: String,
+      default: null // utf-8, CP932, ...
+    }
   },
   methods: {
     downloadCSV: function() {
       const options = {
         dataset: this.dataset,
         labels: this.labels,
+        encoding: this.encoding
       };
       return EasyDC.Store.downloadCSV(this.fileName, this.dimensionName, options);
     },
