@@ -270,7 +270,8 @@ class DashboardStore {
     const {
       dataset = 'default',
       labels = this._labels[dataset][''] || {},
-      common = false
+      common = false,
+      encoding = null
     } = options;
 
     let dim = this.manager.dimension(dataset, dimensionName)
@@ -288,7 +289,8 @@ class DashboardStore {
     downloadCSV(
       dim.top(Infinity),
       filename,
-      labels
+      labels,
+      {encoding}
     )
   }
 
