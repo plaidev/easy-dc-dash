@@ -774,8 +774,6 @@ export default {
       }
     })
 
-    this.render()
-
     this.chart = chart;
 
     return chart;
