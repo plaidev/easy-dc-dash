@@ -369,6 +369,9 @@ export default {
             }
           });
       })
+    // layoutSettingsが使われていないので明示的に呼ぶ
+    this.render()
+
     this.updateTable()
     return chart
   }

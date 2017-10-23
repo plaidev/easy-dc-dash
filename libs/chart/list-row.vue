@@ -42,6 +42,9 @@ export default {
     },
     useLegend: {
       default: false
+    },
+    rotateXAxisLabel: {
+      default: true
     }
   },
   methods: {
@@ -65,6 +68,11 @@ export default {
       .on('pretransition', () => {
           chart.selectAll('g.row text')
             .text((d) => this.keyTextPostProcess(d.key))
+
+          if (this.rotateXAxisLabel) {
+            chart.selectAll(`#${this.id} g.axis text`)
+              .attr('transform', 'translate(-5, 5) rotate(330)')
+          }
       })
     if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart
