@@ -26,7 +26,25 @@ export default {
     renderText: {
       type: Boolean,
       default: false
-    }
+    },
+    // labels
+    // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    showXAxisLabel: {
+      type: Boolean,
+      default: true
+    },
+    showYAxisLabel: {
+      type: Boolean,
+      default: true
+    },
   },
   computed: {
     dimensionKeys: function() {
@@ -89,10 +107,39 @@ export default {
       });
     }
 
+    chart.on('renderlet', () => {
+      // TODO: layoutSettingsに入れる
+      const {width, height} = this.containerInnerSize;
+
+      if (this.showXAxisLabel) {
+        chart.select('svg')
+          .append("g")
+            .attr("transform", `translate(${width / 2}, ${height - 5})`)
+            .classed("axis x", true)
+            .append("text")
+              .classed("x-axis-label", true)
+              .attr("text-anchor", "middle")
+              .style("font-size", "12px")
+              .text(`${this.xAxisLabel || 'x-axis-label'}`)
+      }
+      if (this.showYAxisLabel) {
+        chart.select(`svg`)
+          .append("g")
+            .attr("transform", `translate(10, ${height / 2})`)
+            .classed("axis y", true)
+            .append("text")
+              .classed("y-axis-label", true)
+              .attr("text-anchor", "middle")
+              .attr("transform", "rotate(-90)")
+              .style("font-size", "12px")
+              .text(`${this.yAxisLabel || 'y-axis-label'}`)
+      }
+    })
+
     if(this.renderText) {
       chart.on('postRender', () => {
         const positions = [];
-        d3.selectAll(`rect.heat-box`).each(function(d) {
+        chart.selectAll(`rect.heat-box`).each(function(d) {
           const rect = d3.select(this);
           positions.push({
             x:  rect.attr("x"),
