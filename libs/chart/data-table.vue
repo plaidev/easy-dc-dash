@@ -163,15 +163,35 @@ export default {
     isRateReducer: function() {
       return null
     },
-    firstRow: function() {
+    schema: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      return dim.top(1)[0]
-    },
-    cols: function() {
-      return (this.getColsExtractor)(this.firstRow)
+      const allRows = dim.top(Infinity);
+      const cols = this.getColsExtractor({})
+
+      const schema = {}
+      for (let row of allRows) {
+        if(Object.keys(schema).length === Object.keys(cols).length) continue;
+
+        for (let col in cols) {
+          let val = row[col]
+          if (!val && typeof cols[col] === 'object' && cols[col] instanceof Object) {
+            // col: {count:0, value:0, per: 0}
+            schema[col] = 'object';
+          } else if (val instanceof Date) {
+            schema[col] = 'date';
+          } else if (val instanceof Object) {
+            schema[col] = 'object';
+          } else if (val === undefined || val === null) {
+            return;
+          } else {
+            schema[col] = typeof val;
+          }
+        }
+      }
+      return schema
     },
     colsKeys: function() {
-      return Object.keys(this.cols)
+      return Object.keys(this.schema)
     },
     beginRow: function() {
       return this.ofs
@@ -247,7 +267,7 @@ export default {
           return p;
         },
         () => {
-          const p = this.getSchema()
+          const p = this.getInitialValues();
           p._count = 0;
           return p
         }
@@ -280,19 +300,21 @@ export default {
         .order(d3[this.sortOrder])
       this.render()
     },
-    getSchema: function() {
-      const schema = {}
-      this.colsKeys.forEach((k) => {
-        let val = this.cols[k]
-        if(val instanceof String || typeof val === 'string') val = '';
-        else if(val instanceof Number || typeof val === 'number') val = 0;
-        else if(val instanceof Date) val = []
-        else if(val instanceof Object || typeof val === 'object') {
-          val = {count: 0, value:0, per:0}
+    getInitialValues: function() {
+      const vals = {}
+
+      this.colsKeys.forEach(k => {
+        if (this.schema[k] === 'string') {
+          vals[k] = '';
+        } else if (this.schema[k] === 'number') {
+          vals[k] = 0;
+        } else if (this.schema[k] === 'date') {
+          vals[k] = [];
+        } else if (this.schema[k] === 'object') {
+          vals[k] = {count: 0, value:0, per:0};
         }
-        Object.assign(schema, {[k]: val})
       })
-      return schema
+      return vals
     },
     buildFormatter: function(key) {
       let repName = null
