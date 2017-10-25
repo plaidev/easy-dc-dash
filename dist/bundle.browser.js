@@ -1572,13 +1572,17 @@ class Manager {
       get(ins, prop) {
         if (prop[0] === '_' && FILTER_METHODS.includes(prop.slice(1))) {
           const _prop = prop.slice(1);
-          return (...args) => ins[_prop](...args);
+          return (...args) => {
+            return ins[_prop](...args);
+          };
         }
         if (FILTER_METHODS.includes(prop)) {
           return (...args) => self.filterCommonDimensions(name, prop, ...args);
         }
         if (ins[prop] instanceof Function || typeof ins[prop] === 'function') {
-          return (...args) => ins[prop](...args);
+          return (...args) => {
+            return ins[prop](...args);
+          };
         }
         return ins[prop];
       }
@@ -26919,7 +26923,7 @@ function isSlowBuffer (obj) {
 }
 
 
-var require$$0$3 = Object.freeze({
+var bufferEs6 = Object.freeze({
 	INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
 	kMaxLength: _kMaxLength,
 	Buffer: Buffer,
@@ -26981,6 +26985,8 @@ var bomHandling = {
 	PrependBOM: PrependBOM,
 	StripBOM: StripBOM
 };
+
+var require$$0$3 = ( bufferEs6 && undefined ) || bufferEs6;
 
 var string_decoder = createCommonjsModule$1(function (module, exports) {
 // Copyright Joyent, Inc. and other Node contributors.
@@ -30375,7 +30381,7 @@ var big5Added$1 = Object.freeze({
 	default: big5Added
 });
 
-var require$$0$5 = ( shiftjis$1 && shiftjis ) || shiftjis$1;
+var require$$0$4 = ( shiftjis$1 && shiftjis ) || shiftjis$1;
 
 var require$$1$3 = ( eucjp$1 && eucjp ) || eucjp$1;
 
@@ -30431,7 +30437,7 @@ var dbcsData = {
 
     'shiftjis': {
         type: '_dbcs',
-        table: function() { return require$$0$5 },
+        table: function() { return require$$0$4 },
         encodeAdd: {'\u00a5': 0x5C, '\u203E': 0x7E},
         encodeSkipVals: [{from: 0xED40, to: 0xF940}],
     },
@@ -46271,6 +46277,10 @@ var NumberDisplay = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
     chart.formatNumber(d3$1.format(this.numberFormat)).html(this.templates);
+
+    // layoutSettingsが使われていないので明示的に呼ぶ
+    this.render();
+
     return chart;
   }
 };
