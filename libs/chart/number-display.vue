@@ -156,6 +156,10 @@ export default {
     chart
       .formatNumber(d3.format(this.numberFormat))
       .html(this.templates)
+
+    // layoutSettingsが使われていないので明示的に呼ぶ
+    this.render()
+
     return chart
   }
 }
