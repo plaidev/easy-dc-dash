@@ -30,11 +30,11 @@
     "assign-deep": "0.4.5",
     "bootstrap": "4.0.0-alpha.6",
     "crossxfilters": "git+https://github.com/plaidev/crossxfilters.git",
-    "dc": "2.0.2",
+    "dc": "2.1.8",
     "font-awesome": "4.7.0",
-    "iconv-lite": "^0.4.19",
+    "iconv-lite": "0.4.19",
     "topojson": "3.0.0",
-    "vue": "2.3.4"
+    "vue": "2.5.2"
   },
   "scripts": {
     "build": "rollup -c -m",
