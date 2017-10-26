@@ -82,8 +82,8 @@ function _filteredGroup(group) {
   }
 }
 
-function _setSchema(dim, cols, schema, offset) {
-  const rows = dim.top(Infinity, offset)
+function _setSchema(dim, cols, schema, limit, offset) {
+  const rows = dim.top(limit, offset)
 
   // 全ての値が undefined or null の時は 'string' にする
   if (rows.length === 0) {
@@ -114,7 +114,8 @@ function _setSchema(dim, cols, schema, offset) {
   }
   if (Object.keys(schema).length !== Object.keys(cols).length) {
     offset += 100
-    return _setSchema(dim, cols, schema, offset)
+    limit += 100
+    return _setSchema(dim, cols, schema, limit, offset)
   }
   return schema
 }
@@ -204,7 +205,7 @@ export default {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
       const cols = this.getColsExtractor({})
 
-      const schema = _setSchema(dim, cols, {}, 100)
+      const schema = _setSchema(dim, cols, {}, 100, 0)
       return schema
     },
     colsKeys: function() {
