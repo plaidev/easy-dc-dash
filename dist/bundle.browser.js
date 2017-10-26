@@ -1572,13 +1572,17 @@ class Manager {
       get(ins, prop) {
         if (prop[0] === '_' && FILTER_METHODS.includes(prop.slice(1))) {
           const _prop = prop.slice(1);
-          return (...args) => ins[_prop](...args);
+          return (...args) => {
+            return ins[_prop](...args);
+          };
         }
         if (FILTER_METHODS.includes(prop)) {
           return (...args) => self.filterCommonDimensions(name, prop, ...args);
         }
         if (ins[prop] instanceof Function || typeof ins[prop] === 'function') {
-          return (...args) => ins[prop](...args);
+          return (...args) => {
+            return ins[prop](...args);
+          };
         }
         return ins[prop];
       }
@@ -26919,7 +26923,7 @@ function isSlowBuffer (obj) {
 }
 
 
-var require$$0$3 = Object.freeze({
+var bufferEs6 = Object.freeze({
 	INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
 	kMaxLength: _kMaxLength,
 	Buffer: Buffer,
@@ -26981,6 +26985,8 @@ var bomHandling = {
 	PrependBOM: PrependBOM,
 	StripBOM: StripBOM
 };
+
+var require$$0$3 = ( bufferEs6 && undefined ) || bufferEs6;
 
 var string_decoder = createCommonjsModule$1(function (module, exports) {
 // Copyright Joyent, Inc. and other Node contributors.
@@ -30375,7 +30381,7 @@ var big5Added$1 = Object.freeze({
 	default: big5Added
 });
 
-var require$$0$5 = ( shiftjis$1 && shiftjis ) || shiftjis$1;
+var require$$0$4 = ( shiftjis$1 && shiftjis ) || shiftjis$1;
 
 var require$$1$3 = ( eucjp$1 && eucjp ) || eucjp$1;
 
@@ -30431,7 +30437,7 @@ var dbcsData = {
 
     'shiftjis': {
         type: '_dbcs',
-        table: function() { return require$$0$5 },
+        table: function() { return require$$0$4 },
         encodeAdd: {'\u00a5': 0x5C, '\u203E': 0x7E},
         encodeSkipVals: [{from: 0xED40, to: 0xF940}],
     },
@@ -35115,7 +35121,7 @@ var assignDeep = assign;
   if (document) {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 8px; top: 8px; color: rgba(0,0,0,.16); font-size: 12px; display: flex; display: -webkit-flex; } .reset-button[data-v-3fb031d6]:hover { color: rgba(0,0,0,1); } a.reset[data-v-3fb031d6] { cursor: pointer; border: 1px solid; padding: 2px 4px; border-radius: 2px; display: flex; display: -webkit-flex; -webkit-align-items: center; align-items: center; } a.reset span[data-v-3fb031d6] { font-size: 10px; } span.reset[data-v-3fb031d6] { visibility: hidden; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = " .reset-button[data-v-3fb031d6] { position: absolute; right: 8px; top: 8px; color: rgba(69, 171, 159, 1); font-size: 12px; display: flex; display: -webkit-flex; } .reset-button[data-v-3fb031d6]:hover { color: rgba(0,0,0,.4); } a.reset[data-v-3fb031d6] { cursor: pointer; border: 1px solid; padding: 2px 4px; border-radius: 2px; display: flex; display: -webkit-flex; -webkit-align-items: center; align-items: center; } a.reset span[data-v-3fb031d6] { font-size: 10px; } span.reset[data-v-3fb031d6] { visibility: hidden; } .filter[data-v-3fb031d6] { overflow: hidden; text-overflow: ellipsis; word-wrap: nowrap; } .reset i[data-v-3fb031d6]:hover { color: black; } .badge[data-v-3fb031d6] { max-width: 200px; background-color: #2FAB9F; font-size: 12px; font-weight: 200; white-space: normal; word-wrap: break-all; vertical-align: middle; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -35124,10 +35130,8 @@ var assignDeep = assign;
 })();
 
 var ResetButton = { render: function render() {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button", on: { "click": _vm.reset } }, [_vm._m(0), _vm._m(1)]);
+    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "reset-button", on: { "click": _vm.reset } }, [_vm._m(0)]);
   }, staticRenderFns: [function () {
-    var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('span', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('span', { staticClass: "filter badge" })]);
-  }, function () {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('a', { staticClass: "reset", staticStyle: { "display": "none" } }, [_c('i', { staticClass: "fa fa-ban" }, [_vm._v(" ")]), _vm._v(" "), _c('span', [_vm._v("フィルター解除")])]);
   }], _scopeId: 'data-v-3fb031d6',
   methods: {
@@ -36143,8 +36147,6 @@ var Base = {
         });
       }
     });
-
-    this.render();
 
     this.chart = chart;
 
@@ -46275,6 +46277,10 @@ var NumberDisplay = { render: function render() {
   mounted: function mounted() {
     var chart = this.chart;
     chart.formatNumber(d3$1.format(this.numberFormat)).html(this.templates);
+
+    // layoutSettingsが使われていないので明示的に呼ぶ
+    this.render();
+
     return chart;
   }
 };
@@ -46727,6 +46733,9 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     },
     useLegend: {
       default: false
+    },
+    rotateXAxisLabel: {
+      default: true
     }
   },
   methods: {
@@ -46746,6 +46755,10 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
       chart.selectAll('g.row text').text(function (d) {
         return _this.keyTextPostProcess(d.key);
       });
+
+      if (_this.rotateXAxisLabel) {
+        chart.selectAll('#' + _this.id + ' g.axis text').attr('transform', 'translate(-5, 5) rotate(330)');
+      }
     });
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
     return chart;
@@ -47871,6 +47884,9 @@ var DataTable = { render: function render() {
         }
       });
     });
+    // layoutSettingsが使われていないので明示的に呼ぶ
+    this.render();
+
     this.updateTable();
     return chart;
   }
@@ -47907,6 +47923,24 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
     renderText: {
       type: Boolean,
       default: false
+    },
+    // labels
+    // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
+    xAxisLabel: {
+      type: String,
+      default: ''
+    },
+    yAxisLabel: {
+      type: String,
+      default: ''
+    },
+    showXAxisLabel: {
+      type: Boolean,
+      default: true
+    },
+    showYAxisLabel: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -47982,10 +48016,25 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
       });
     }
 
+    chart.on('renderlet', function () {
+      // TODO: layoutSettingsに入れる
+      var _containerInnerSize = _this.containerInnerSize,
+          width = _containerInnerSize.width,
+          height = _containerInnerSize.height;
+
+
+      if (_this.showXAxisLabel) {
+        chart.select('svg').append("g").attr("transform", 'translate(' + width / 2 + ', ' + (height - 5) + ')').classed("axis x", true).append("text").classed("x-axis-label", true).attr("text-anchor", "middle").style("font-size", "12px").text('' + (_this.xAxisLabel || 'x-axis-label'));
+      }
+      if (_this.showYAxisLabel) {
+        chart.select('svg').append("g").attr("transform", 'translate(10, ' + height / 2 + ')').classed("axis y", true).append("text").classed("y-axis-label", true).attr("text-anchor", "middle").attr("transform", "rotate(-90)").style("font-size", "12px").text('' + (_this.yAxisLabel || 'y-axis-label'));
+      }
+    });
+
     if (this.renderText) {
       chart.on('postRender', function () {
         var positions = [];
-        d3$1.selectAll('rect.heat-box').each(function (d) {
+        chart.selectAll('rect.heat-box').each(function (d) {
           var rect = d3$1.select(this);
           positions.push({
             x: rect.attr("x"),
