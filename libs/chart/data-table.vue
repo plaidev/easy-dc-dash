@@ -82,6 +82,43 @@ function _filteredGroup(group) {
   }
 }
 
+function _setSchema(dim, cols, schema, offset) {
+  const rows = dim.top(Infinity, offset)
+
+  // 全ての値が undefined or null の時は 'string' にする
+  if (rows.length === 0) {
+    Object.keys(cols)
+      .filter(col => !schema[col])
+      .forEach(key => schema[key] = 'string')
+    return schema
+  }
+
+  for (let row of rows) {
+    if(Object.keys(schema).length === Object.keys(cols).length) continue;
+
+    for (let col in cols) {
+      let val = row[col]
+      if (!val && typeof cols[col] === 'object' && cols[col] instanceof Object) {
+        // col: {count:0, value:0, per: 0}
+        schema[col] = 'object';
+      } else if (val instanceof Date) {
+        schema[col] = 'date';
+      } else if (val instanceof Object) {
+        schema[col] = 'object';
+      } else if (val === undefined || val === null) {
+        continue;
+      } else {
+        schema[col] = typeof val;
+      }
+    }
+  }
+  if (Object.keys(schema).length !== Object.keys(cols).length) {
+    offset += 100
+    return _setSchema(dim, cols, schema, offset)
+  }
+  return schema
+}
+
 export default {
   extends: Base,
   props: {
@@ -165,29 +202,9 @@ export default {
     },
     schema: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const allRows = dim.top(Infinity);
       const cols = this.getColsExtractor({})
 
-      const schema = {}
-      for (let row of allRows) {
-        if(Object.keys(schema).length === Object.keys(cols).length) continue;
-
-        for (let col in cols) {
-          let val = row[col]
-          if (!val && typeof cols[col] === 'object' && cols[col] instanceof Object) {
-            // col: {count:0, value:0, per: 0}
-            schema[col] = 'object';
-          } else if (val instanceof Date) {
-            schema[col] = 'date';
-          } else if (val instanceof Object) {
-            schema[col] = 'object';
-          } else if (val === undefined || val === null) {
-            return;
-          } else {
-            schema[col] = typeof val;
-          }
-        }
-      }
+      const schema = _setSchema(dim, cols, {}, 100)
       return schema
     },
     colsKeys: function() {
