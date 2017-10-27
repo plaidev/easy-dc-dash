@@ -30,21 +30,21 @@ export default {
     // labels
     // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
     xAxisLabel: {
-      type: String,
-      default: ''
+      type: [String, Boolean],
+      default: false
     },
     yAxisLabel: {
-      type: String,
-      default: ''
+      type: [String, Boolean],
+      default: false
     },
-    showXAxisLabel: {
+    colsLabel: {
       type: Boolean,
-      default: true
+      default: false
     },
-    showYAxisLabel: {
+    rowsLabel: {
       type: Boolean,
-      default: true
-    },
+      default: false
+    }
   },
   computed: {
     dimensionKeys: function() {
@@ -94,8 +94,8 @@ export default {
       .colorAccessor((d) => +d.value)
       .xBorderRadius(this.borderRadius)
       .yBorderRadius(this.borderRadius)
-      .colsLabel((d) => this.hideXAxisLabel ? null : this.getLabel(d))
-      .rowsLabel((d) => this.hideYAxisLabel ? null : this.getLabel(d))
+      .colsLabel((d) => this.colsLabel ? this.getLabel(d) : null)
+      .rowsLabel((d) => this.rowsLabel ? this.getLabel(d) : null)
 
     if(this.dateKey) {
       chart.filterPrinter(filters => {
@@ -109,36 +109,36 @@ export default {
 
     chart.on('postRender', () => {
       if(this.renderText) {
-          const positions = [];
-          chart.selectAll(`rect.heat-box`).each(function(d) {
-            const rect = d3.select(this);
-            positions.push({
-              x:  rect.attr("x"),
-              y: rect.attr("y"),
-              width:  rect.attr("width"),
-              height:  rect.attr("height")
-            });
+        const positions = [];
+        chart.selectAll(`rect.heat-box`).each(function(d) {
+          const rect = d3.select(this);
+          positions.push({
+            x:  rect.attr("x"),
+            y: rect.attr("y"),
+            width:  rect.attr("width"),
+            height:  rect.attr("height")
           });
-          chart.selectAll('g .box-group')
-            .append('foreignObject')
-              .attr('x', (d, i) => parseInt(positions[i].x))
-              .attr('y', (d, i) => parseInt(positions[i].y))
-              .attr('width', (d, i) => parseInt(positions[i].width))
-              .attr('height', (d, i) => parseInt(positions[i].height))
-              .style({
-                'line-height': (d, i) => parseInt(positions[i].height)+'px',
-                'text-align': 'center',
-                'pointer-events': 'none',
-                'overflow': 'hidden',
-                'white-space': 'nowrap'
-              })
-              .text(d => `${this.getLabel(d.key[0])}, ${this.getLabel(d.key[1])}`)
+        });
+        chart.selectAll('g .box-group')
+          .append('foreignObject')
+            .attr('x', (d, i) => parseInt(positions[i].x))
+            .attr('y', (d, i) => parseInt(positions[i].y))
+            .attr('width', (d, i) => parseInt(positions[i].width))
+            .attr('height', (d, i) => parseInt(positions[i].height))
+            .style({
+              'line-height': (d, i) => parseInt(positions[i].height)+'px',
+              'text-align': 'center',
+              'pointer-events': 'none',
+              'overflow': 'hidden',
+              'white-space': 'nowrap'
+            })
+            .text(d => `${this.getLabel(d.key[0])}, ${this.getLabel(d.key[1])}`)
       }
 
       // TODO: layoutSettingsに入れる
       const {width, height} = this.containerInnerSize;
 
-      if (this.showXAxisLabel) {
+      if (this.xAxisLabel) {
         chart.select('svg')
           .append("g")
             .attr("transform", `translate(${width / 2}, ${height - 5})`)
@@ -147,9 +147,9 @@ export default {
               .classed("x-axis-label", true)
               .attr("text-anchor", "middle")
               .style("font-size", "12px")
-              .text(`${this.xAxisLabel || 'x-axis-label'}`)
+              .text(this.xAxisLabel === true ? 'x' : this.xAxisLabel)
       }
-      if (this.showYAxisLabel) {
+      if (this.yAxisLabel) {
         chart.select(`svg`)
           .append("g")
             .attr("transform", `translate(10, ${height / 2})`)
@@ -159,7 +159,7 @@ export default {
               .attr("text-anchor", "middle")
               .attr("transform", "rotate(-90)")
               .style("font-size", "12px")
-              .text(`${this.yAxisLabel || 'y-axis-label'}`)
+              .text(this.yAxisLabel === true ? 'y' : this.yAxisLabel)
       }
     })
     return chart
