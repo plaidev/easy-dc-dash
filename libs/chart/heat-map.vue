@@ -107,7 +107,34 @@ export default {
       });
     }
 
-    chart.on('renderlet', () => {
+    chart.on('postRender', () => {
+      if(this.renderText) {
+          const positions = [];
+          chart.selectAll(`rect.heat-box`).each(function(d) {
+            const rect = d3.select(this);
+            positions.push({
+              x:  rect.attr("x"),
+              y: rect.attr("y"),
+              width:  rect.attr("width"),
+              height:  rect.attr("height")
+            });
+          });
+          chart.selectAll('g .box-group')
+            .append('foreignObject')
+              .attr('x', (d, i) => parseInt(positions[i].x))
+              .attr('y', (d, i) => parseInt(positions[i].y))
+              .attr('width', (d, i) => parseInt(positions[i].width))
+              .attr('height', (d, i) => parseInt(positions[i].height))
+              .style({
+                'line-height': (d, i) => parseInt(positions[i].height)+'px',
+                'text-align': 'center',
+                'pointer-events': 'none',
+                'overflow': 'hidden',
+                'white-space': 'nowrap'
+              })
+              .text(d => `${this.getLabel(d.key[0])}, ${this.getLabel(d.key[1])}`)
+      }
+
       // TODO: layoutSettingsに入れる
       const {width, height} = this.containerInnerSize;
 
@@ -135,35 +162,6 @@ export default {
               .text(`${this.yAxisLabel || 'y-axis-label'}`)
       }
     })
-
-    if(this.renderText) {
-      chart.on('postRender', () => {
-        const positions = [];
-        chart.selectAll(`rect.heat-box`).each(function(d) {
-          const rect = d3.select(this);
-          positions.push({
-            x:  rect.attr("x"),
-            y: rect.attr("y"),
-            width:  rect.attr("width"),
-            height:  rect.attr("height")
-          });
-        });
-        chart.selectAll('g .box-group')
-          .append('foreignObject')
-            .attr('x', (d, i) => parseInt(positions[i].x))
-            .attr('y', (d, i) => parseInt(positions[i].y))
-            .attr('width', (d, i) => parseInt(positions[i].width))
-            .attr('height', (d, i) => parseInt(positions[i].height))
-            .style({
-              'line-height': (d, i) => parseInt(positions[i].height)+'px',
-              'text-align': 'center',
-              'pointer-events': 'none',
-              'overflow': 'hidden',
-              'white-space': 'nowrap'
-            })
-            .text(d => `${this.getLabel(d.key[0])}, ${this.getLabel(d.key[1])}`)
-      });
-    }
     return chart
   }
 }
