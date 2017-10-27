@@ -30,21 +30,21 @@ export default {
     // labels
     // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
     xAxisLabel: {
-      type: String,
-      default: ''
+      type: [String, Boolean],
+      default: false
     },
     yAxisLabel: {
-      type: String,
-      default: ''
+      type: [String, Boolean],
+      default: false
     },
-    showXAxisLabel: {
+    colsLabel: {
       type: Boolean,
-      default: true
+      default: false
     },
-    showYAxisLabel: {
+    rowsLabel: {
       type: Boolean,
-      default: true
-    },
+      default: false
+    }
   },
   computed: {
     dimensionKeys: function() {
@@ -94,8 +94,8 @@ export default {
       .colorAccessor((d) => +d.value)
       .xBorderRadius(this.borderRadius)
       .yBorderRadius(this.borderRadius)
-      .colsLabel((d) => this.hideXAxisLabel ? null : this.getLabel(d))
-      .rowsLabel((d) => this.hideYAxisLabel ? null : this.getLabel(d))
+      .colsLabel((d) => this.colsLabel ? this.getLabel(d) : null)
+      .rowsLabel((d) => this.rowsLabel ? this.getLabel(d) : null)
 
     if(this.dateKey) {
       chart.filterPrinter(filters => {
@@ -107,37 +107,8 @@ export default {
       });
     }
 
-    chart.on('renderlet', () => {
-      // TODO: layoutSettingsに入れる
-      const {width, height} = this.containerInnerSize;
-
-      if (this.showXAxisLabel) {
-        chart.select('svg')
-          .append("g")
-            .attr("transform", `translate(${width / 2}, ${height - 5})`)
-            .classed("axis x", true)
-            .append("text")
-              .classed("x-axis-label", true)
-              .attr("text-anchor", "middle")
-              .style("font-size", "12px")
-              .text(`${this.xAxisLabel || 'x-axis-label'}`)
-      }
-      if (this.showYAxisLabel) {
-        chart.select(`svg`)
-          .append("g")
-            .attr("transform", `translate(10, ${height / 2})`)
-            .classed("axis y", true)
-            .append("text")
-              .classed("y-axis-label", true)
-              .attr("text-anchor", "middle")
-              .attr("transform", "rotate(-90)")
-              .style("font-size", "12px")
-              .text(`${this.yAxisLabel || 'y-axis-label'}`)
-      }
-    })
-
-    if(this.renderText) {
-      chart.on('postRender', () => {
+    chart.on('postRender', () => {
+      if(this.renderText) {
         const positions = [];
         chart.selectAll(`rect.heat-box`).each(function(d) {
           const rect = d3.select(this);
@@ -162,8 +133,35 @@ export default {
               'white-space': 'nowrap'
             })
             .text(d => `${this.getLabel(d.key[0])}, ${this.getLabel(d.key[1])}`)
-      });
-    }
+      }
+
+      // TODO: layoutSettingsに入れる
+      const {width, height} = this.containerInnerSize;
+
+      if (this.xAxisLabel) {
+        chart.select('svg')
+          .append("g")
+            .attr("transform", `translate(${width / 2}, ${height - 5})`)
+            .classed("axis x", true)
+            .append("text")
+              .classed("x-axis-label", true)
+              .attr("text-anchor", "middle")
+              .style("font-size", "12px")
+              .text(this.xAxisLabel === true ? 'x' : this.xAxisLabel)
+      }
+      if (this.yAxisLabel) {
+        chart.select(`svg`)
+          .append("g")
+            .attr("transform", `translate(10, ${height / 2})`)
+            .classed("axis y", true)
+            .append("text")
+              .classed("y-axis-label", true)
+              .attr("text-anchor", "middle")
+              .attr("transform", "rotate(-90)")
+              .style("font-size", "12px")
+              .text(this.yAxisLabel === true ? 'y' : this.yAxisLabel)
+      }
+    })
     return chart
   }
 }
