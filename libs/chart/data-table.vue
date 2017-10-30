@@ -77,45 +77,51 @@ function _filteredGroup(group) {
   }
 }
 
-function _setSchema(dim, cols, schema, limit, offset) {
+function _detectSchema(dim, keys, extractor, limit=1, offset=0) {
+  const schema = {}
   const rows = dim.top(limit, offset)
 
-  // 全ての値が undefined or null の時は 'string' にする
-  if (rows.length === 0) {
-    cols.filter(col => !schema[col])
-      .forEach(key => schema[key] = 'string')
-    return schema
-  }
-
   for (let row of rows) {
-    if(Object.keys(schema).length === cols.length) continue;
+    let vals = extractor(row);
 
-    for (let col of cols) {
-      let val = row[col]
+     for (let key of keys) {
+      let val = vals[key]
 
       if (val === undefined || val === null) {
         continue;
       }
       else if (typeof val === 'number' || val instanceof Number) {
-        schema[col] = 'number';
+        schema[key] = 'number';
       }
       else if (typeof val === 'string' || val instanceof String) {
-        schema[col] = 'string';
+        schema[key] = 'string';
       }
       else if (val instanceof Date) {
-        schema[col] = 'date';
+        schema[key] = 'date';
       }
       else if (typeof val === 'boolean' || val instanceof Boolean) {
-        schema[col] = 'boolean';
+        schema[key] = 'boolean';
+      }
+      else if ('count' in val && 'value' in val) {
+        schema[key] = 'rate';
       }
     }
   }
-  if (Object.keys(schema).length !== cols.length) {
-    offset += 100
-    limit += 100
-    return _setSchema(dim, cols, addedCols, chema, limit, offset)
+
+  if (Object.keys(schema).length === keys.length) return schema;
+
+  // 全ての値が undefined or null の時は 'string' にする
+  if (rows.length === 0) {
+    keys.filter(key => !schema[key])
+      .forEach(key => schema[key] = 'string')
   }
-  return schema
+  // schemaが未確定のものだけさらに探す
+  const _keys = keys.map(key => (key in schema) ? null : key).filter(v => v)
+  if (_keys.length > 0) {
+    const _schema = _detectSchema(dim, _keys, extractor, limit+100, offset+limit)
+    Object.assign(schema, _schema)
+  }
+  return schema;
 }
 
 export default {
@@ -201,17 +207,8 @@ export default {
     },
     schema: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      const cols = this.getColsExtractor({});
-      const _cols = Object.keys(cols).filter(col => !cols[col])
-
-      // rate: {count: undefined, value: undefined}
-      const schema = _setSchema(dim, _cols, {}, 100, 0)
-      const additional = Object.keys(cols).filter(col => cols[col])
-      additional.forEach(key => {
-        if (cols[key].hasOwnProperty('count') && cols[key].hasOwnProperty('value')) {
-          schema[key] = 'rate'
-        }
-      })
+      const keys =  Object.keys(this.getColsExtractor({}));
+      const schema = _detectSchema(dim, keys, this.getColsExtractor)
       return schema
     },
     colsKeys: function() {
