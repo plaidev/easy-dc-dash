@@ -39,6 +39,16 @@ function autoLoad() {
       isUTC
     }
 
+    const _commonDims = el.getElementsByTagName('dimension')
+    const commonDims = Array.prototype.map.call(_commonDims, (el) => ({
+      name: el.getAttribute('name'),
+      field: el.getAttribute('field')
+    })).filter(dim => dim.name && dim.field)
+
+    if (commonDims.length > 0) {
+      commonDims.forEach(dim => Store.registerDimension(dim.name, new Function('d', `return ${dim.field}`), {dataset, common: true}))
+    }
+
     let p;
 
     if (mode) {
