@@ -6,19 +6,28 @@
     <link href="../../../dist/bundle.css" rel="stylesheet" type="text/css" />
   </head>
 
+  <easy-dc-dataset>
+    <dimension name="d1" field="d.d1"></dimension>
+    <dimension name="d2" field="d.d2"></dimension>
+  </easy-dc-dataset>
+
+  <easy-dc-dataset dataset="other">
+    <dimension name="d1" field="d.dd1"></dimension>
+    <dimension name="d2" field="d.dd2"></dimension>
+  </easy-dc-dataset>
 
   <body style="display: flex; justify-content: center; align-items: flex-start; background-color: #b0b7b7; flex-wrap: wrap">
 
     <multidim-pie
       title="TITLE"
-      dimension="$D1"
+      dimension="$d1"
       reduce="v"
     ></multidim-pie>
 
     <multidim-pie
       dataset="other"
       title="other square"
-      dimension="$D2"
+      dimension="$d2"
       reduce="v2"
     ></multidim-pie>
 
@@ -38,12 +47,6 @@
       ], {
         dataset: 'other'
       })
-
-      EasyDC.Store.registerDimension('$D1', (d) => d.d1)
-      EasyDC.Store.registerDimension('$D1', (d) => d.dd1, {dataset: 'other'})
-
-      EasyDC.Store.registerDimension('$D2', (d) => d.d2)
-      EasyDC.Store.registerDimension('$D2', (d) => d.dd2, {dataset: 'other'})
 
       EasyDC.run()
     </script>
