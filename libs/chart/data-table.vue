@@ -31,11 +31,6 @@ import 'bootstrap/dist/css/bootstrap.css'
 import '../styles/font-awesome-variables.scss'
 import 'font-awesome/scss/font-awesome.scss'
 
-function _valueAccessor(d, k) {
-  if(d.value[k] === undefined || d.value[k] === null) return
-  return d.value[k].per !== undefined ? d.value[k].per : d.value[k]
-}
-
 function _isDescendantOf(el, klass) {
   if (!el) return false;
   if (el.classList.contains(klass)) return el;
@@ -80,6 +75,53 @@ function _filteredGroup(group) {
         .length
     }
   }
+}
+
+function _detectSchema(dim, keys, extractor, limit=1, offset=0) {
+  const schema = {}
+  const rows = dim.top(limit, offset)
+
+  for (let row of rows) {
+    let vals = extractor(row);
+
+     for (let key of keys) {
+      let val = vals[key]
+
+      if (val === undefined || val === null) {
+        continue;
+      }
+      else if (typeof val === 'number' || val instanceof Number) {
+        schema[key] = 'number';
+      }
+      else if (typeof val === 'string' || val instanceof String) {
+        schema[key] = 'string';
+      }
+      else if (val instanceof Date) {
+        schema[key] = 'date';
+      }
+      else if (typeof val === 'boolean' || val instanceof Boolean) {
+        schema[key] = 'boolean';
+      }
+      else if ('count' in val && 'value' in val) {
+        schema[key] = 'rate';
+      }
+    }
+  }
+
+  if (Object.keys(schema).length === keys.length) return schema;
+
+  // 全ての値が undefined or null の時は 'string' にする
+  if (rows.length === 0) {
+    keys.filter(key => !schema[key])
+      .forEach(key => schema[key] = 'string')
+  }
+  // schemaが未確定のものだけさらに探す
+  const _keys = keys.map(key => (key in schema) ? null : key).filter(v => v)
+  if (_keys.length > 0) {
+    const _schema = _detectSchema(dim, _keys, extractor, limit+100, offset+limit)
+    Object.assign(schema, _schema)
+  }
+  return schema;
 }
 
 export default {
@@ -163,15 +205,14 @@ export default {
     isRateReducer: function() {
       return null
     },
-    firstRow: function() {
+    schema: function() {
       const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset});
-      return dim.top(1)[0]
-    },
-    cols: function() {
-      return (this.getColsExtractor)(this.firstRow)
+      const keys =  Object.keys(this.getColsExtractor({}));
+      const schema = _detectSchema(dim, keys, this.getColsExtractor)
+      return schema
     },
     colsKeys: function() {
-      return Object.keys(this.cols)
+      return Object.keys(this.schema)
     },
     beginRow: function() {
       return this.ofs
@@ -197,25 +238,34 @@ export default {
           const vals = this.getColsExtractor(v);
           if(vals[this.dimensionName] === '') return p;
           this.colsKeys.forEach((k) => {
-            if (vals[k] === null || vals[k] === undefined) return;
-            if (p[k] === null || p[k] === undefined) return;
-            if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
-              p[k].count += vals[k].count;
-              p[k].value += vals[k].value;
+            const schema = this.schema[k];
+            const val = vals[k];
+
+            if (schema === 'number') {
+              if (val === null || val === undefined) return;
+              p[k] += val
+            }
+            else if (schema === 'rate') {
+              p[k].count += val.count || 0
+              p[k].value += val.value || 0
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
-            else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
+            else if (schema === 'string') {
+              if (val === null || val === undefined) return;
               const words = p[k].split(', ').filter((w) => w && w != vals[k])
               words.push(vals[k])
               p[k] = words.join(', ')
             }
-            else if (vals[k] instanceof Date) {
-              if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = []
-              p[k] = p[k].filter((d) => d && d.getTime() != vals[k].getTime())
-              p[k].push(vals[k])
+            else if (schema === 'boolean') {
+              if (val === null || val === undefined) return;
+              if (val) p[k]['t'] += 1
+              else p[k]['f'] += 1
             }
-            else
-              p[k] += vals[k]
+            else if (schema === 'date') {
+              if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = []
+              p[k] = p[k].filter((d) => d && d.getTime() != val.getTime())
+              p[k].push(val)
+            }
           })
           p._count++;
           return p;
@@ -223,31 +273,40 @@ export default {
         (p, v) => {
           const vals = this.getColsExtractor(v);
           if(vals[this.dimension] === '') return p;
+
           this.colsKeys.forEach((k) => {
-            if (vals[k] === null || vals[k] === undefined) return;
-            if (p[k] === null || p[k] === undefined) return;
-            if (vals[k].count != undefined && typeof vals[k].count === 'number' || vals[k].count instanceof Number) {
-              p[k].count -= vals[k].count;
-              p[k].value -= vals[k].value;
+            const schema = this.schema[k];
+            const val = vals[k];
+
+            if (schema === 'number') {
+              if (val === null || val === undefined) return;
+              p[k] -= val
+            }
+            else if (schema === 'rate') {
+              p[k].count -= val.count
+              p[k].value -= val.value
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
-            else if (typeof vals[k] === 'string' || vals[k] instanceof String) {
+            else if (schema === 'string') {
               const words = p[k].split(', ').filter((w) => w && w != vals[k])
               p[k] = words.join(', ')
             }
-            else if (vals[k] instanceof Date) {
+            else if (schema === 'boolean') {
+              if (val === null || val === undefined) return;
+              if (val) p[k]['t'] -= 1
+              else p[k]['f'] -= 1
+            }
+            else if (schema === 'date') {
               if (!(p[k] instanceof Array || typeof p[k] == 'array')) p[k] = []
               p[k] = p[k].filter((d) => d && d != vals[k])
               p[k].push(vals[k])
             }
-            else
-              p[k] -= vals[k]
           })
           p._count--;
           return p;
         },
         () => {
-          const p = this.getSchema()
+          const p = this.getInitialValues();
           p._count = 0;
           return p
         }
@@ -276,23 +335,53 @@ export default {
       this.chart
         .group((d) => null)
         .size(Infinity)
-        .sortBy((d) => _valueAccessor(d, this.sortKey))
+        .sortBy((d) => this._valueAccessor(d, this.sortKey))
         .order(d3[this.sortOrder])
       this.render()
     },
-    getSchema: function() {
-      const schema = {}
-      this.colsKeys.forEach((k) => {
-        let val = this.cols[k]
-        if(val instanceof String || typeof val === 'string') val = '';
-        else if(val instanceof Number || typeof val === 'number') val = 0;
-        else if(val instanceof Date) val = []
-        else if(val instanceof Object || typeof val === 'object') {
-          val = {count: 0, value:0, per:0}
+    _valueAccessor: function(d, k) {
+      const schema = this.schema[k]
+      const val = d.value[k]
+
+      if(!val) return '';
+
+      if (schema === 'rate') {
+        return val.per
+      }
+      else if (schema === 'string') {
+        // val: {key1: 0, key2: 1, key3: 2} => 'key2, key3'
+        return Object.keys(val).map(v => val[v] === 0 ? null : v)
+          .filter(v => v)
+          .join(', ')
+      }
+      else if (schema === 'boolean') {
+        // val: {t: 1, f: 0} => 'true'
+        // val: {t: 1, f: 1} => 'true, false'
+        return Object.keys(val).map(v => val[v] === 0 ? null : v)
+          .filter(v => v)
+          .map(v => ({t: 'true', f: 'false'})[v])
+          .join(', ')
+      }
+    },
+    getInitialValues: function() {
+      const vals = {}
+
+      this.colsKeys.forEach(k => {
+        let schema = this.schema[k];
+
+        if (schema === 'string') {
+          vals[k] = '';
+        } else if (schema === 'number') {
+          vals[k] = 0;
+        } else if (schema === 'date') {
+          vals[k] = [];
+        } else if (schema === 'rate') {
+          vals[k] = {count: 0, value:0, per:0};
+        } else if (schema === 'boolean') {
+          vals[k] = {t: 0, f: 0}
         }
-        Object.assign(schema, {[k]: val})
       })
-      return schema
+      return vals
     },
     buildFormatter: function(key) {
       let repName = null
@@ -342,7 +431,7 @@ export default {
       .size(Infinity)
       .showGroups(false)
       .columns(this.columnSettings)
-      .sortBy((d) => _valueAccessor(d, sortKey))
+      .sortBy((d) => this._valueAccessor(d, sortKey))
       .order(d3[this.order])
       .on('renderlet', () => {
         const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
