@@ -42,7 +42,7 @@
     "watch": "rollup -c -m -w",
     "watch-lite": "rollup -c rollup.watch.config.js -m -w",
     "http-server": "http-server -i",
-    "simplify": "cd ./libs/json; files=$(ls); for file in $files; do toposimplify -P 0.01 -o $file.json $file; done"
+    "simplify": "cd ./libs/json; sh simplify.sh"
   },
   "files": [
     "dist",
