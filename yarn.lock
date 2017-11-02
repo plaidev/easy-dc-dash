@@ -3266,6 +3266,13 @@ topojson-simplify@3.0.0:
     commander "2"
     topojson-client "3"
 
+topojson-simplify@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/topojson-simplify/-/topojson-simplify-3.0.2.tgz#8a2403e639531500fafa0c6594e8b0fadebc2c02"
+  dependencies:
+    commander "2"
+    topojson-client "3"
+
 topojson@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/topojson/-/topojson-3.0.0.tgz#c2aca1b76435e801dce3f229586bbd5767115ce3"
