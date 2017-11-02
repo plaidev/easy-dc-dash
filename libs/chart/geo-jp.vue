@@ -4,6 +4,9 @@ import d3 from 'd3'
 import {feature} from 'topojson'
 import Base from './_base'
 
+import japan from '../json/japan.topojson.json';
+import japan_without_suffix from '../json/japan_without_suffix.topojson.json';
+
 export default {
   extends: Base,
 
@@ -41,17 +44,11 @@ export default {
   mounted: function() {
     const chart = this.chart;
     const max = this.reducer.top(1)[0].value;
-    const path = '../../../libs/json/'
-    const json = this.removePrefSuffix ? 'japan_without_suffix.topojson' : 'japan.topojson'
-    const json_path = path.concat(json)
-    d3.json(json_path, (error, japan) => {
-      const geo_features = feature(japan, japan.objects.japan).features;
-      chart
-        .overlayGeoJson(geo_features, "pref", (d) => ('0'+d.properties.id).slice(-2))
-      this.render()
-    })
+    const json = this.removePrefSuffix ? japan_without_suffix : japan
+    const geo_features = feature(json, json.objects.japan).features;
 
     chart
+      .overlayGeoJson(geo_features, "pref", (d) => ('0'+d.properties.id).slice(-2))
       .projection(d3.geo.mercator()
         .center([136, 35.5])
         .scale(this.geoScale)
@@ -62,6 +59,7 @@ export default {
         .range([0, 10])
         .clamp(true)
       )
+    this.render()
     return chart
   }
 }
