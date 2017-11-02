@@ -8836,7 +8836,6 @@ var d3$1 = createCommonjsModule$1(function (module) {
       d3_geom_voronoi(sites(data)).cells.forEach(function(cell, i) {
         var site = cell.site, edges = cell.edges.sort(d3_geom_voronoiHalfEdgeOrder), j = -1, m = edges.length, e0, s0, e1 = edges[m - 1].edge, s1 = e1.l === site ? e1.r : e1.l;
         while (++j < m) {
-          e0 = e1;
           s0 = s1;
           e1 = edges[j].edge;
           s1 = e1.l === site ? e1.r : e1.l;
@@ -26002,14 +26001,7 @@ Buffer.from = function (value, encodingOrOffset, length) {
 if (Buffer.TYPED_ARRAY_SUPPORT) {
   Buffer.prototype.__proto__ = Uint8Array.prototype;
   Buffer.__proto__ = Uint8Array;
-  if (typeof Symbol !== 'undefined' && Symbol.species &&
-      Buffer[Symbol.species] === Buffer) {
-    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-    // Object.defineProperty(Buffer, Symbol.species, {
-    //   value: null,
-    //   configurable: true
-    // })
-  }
+  
 }
 
 function assertSize (size) {
@@ -27665,6 +27657,8 @@ var require$$0$2 = Object.freeze({
 	isBuffer: isBuffer
 });
 
+"use strict";
+
 var BOMChar = '\uFEFF';
 
 var PrependBOM = PrependBOMWrapper;
@@ -27946,6 +27940,7 @@ function base64DetectIncompleteChar(buffer) {
 
 var string_decoder_1 = string_decoder.StringDecoder;
 
+"use strict";
 var Buffer$1 = require$$0$2.Buffer;
 
 // Export Node.js internal encodings.
@@ -28134,6 +28129,7 @@ InternalDecoderCesu8.prototype.end = function() {
     return res;
 };
 
+"use strict";
 var Buffer$2 = require$$0$2.Buffer;
 
 // Note: UTF16-LE (or UCS2) codec is Node.js native. See encodings/internal.js
@@ -28314,6 +28310,7 @@ var utf16 = {
 	utf16: utf16_1
 };
 
+"use strict";
 var Buffer$3 = require$$0$2.Buffer;
 
 // UTF-7 codec, according to https://tools.ietf.org/html/rfc2152
@@ -28608,6 +28605,7 @@ var utf7 = {
 	utf7imap: utf7imap
 };
 
+"use strict";
 var Buffer$4 = require$$0$2.Buffer;
 
 // Single-byte codec. Needs a 'chars' string parameter that contains 256 or 128 chars that
@@ -28684,6 +28682,8 @@ SBCSDecoder.prototype.end = function() {
 var sbcsCodec = {
 	_sbcs: _sbcs
 };
+
+"use strict";
 
 // Manually added data to be used by sbcs codec in addition to generated one.
 
@@ -28851,6 +28851,8 @@ var sbcsData = {
     "mac": "macintosh",
     "csmacintosh": "macintosh",
 };
+
+"use strict";
 
 // Generated data for sbcs codec. Don't edit manually. Regenerate using generation/gen-sbcs.js script.
 var sbcsDataGenerated = {
@@ -29302,6 +29304,7 @@ var sbcsDataGenerated = {
   }
 };
 
+"use strict";
 var Buffer$5 = require$$0$2.Buffer;
 
 // Multibyte codec. In this scheme, a character is represented by 1 or more bytes.
@@ -31129,6 +31132,8 @@ var require$$6 = ( cp950$1 && cp950 ) || cp950$1;
 
 var require$$7 = ( big5Added$1 && big5Added ) || big5Added$1;
 
+"use strict";
+
 // Description of supported double byte encodings and aliases.
 // Tables are not require()-d until they are needed to speed up library load.
 // require()-s are direct to support Browserify.
@@ -31328,6 +31333,8 @@ for (var i = 0; i < modules.length; i++) {
             exports[enc] = module[enc];
 }
 });
+
+'use strict';
 
 var domain;
 
@@ -32417,6 +32424,9 @@ BufferList$1.prototype.concat = function (n) {
   }
   return ret;
 };
+
+'use strict';
+
 
 Readable$1.ReadableState = ReadableState;
 var debug = debuglog('stream');
@@ -34114,6 +34124,8 @@ var stream = Object.freeze({
 
 var require$$1$4 = ( stream && Stream$1 ) || stream;
 
+"use strict";
+
 var Buffer$6 = require$$0$2.Buffer;
 var Transform = require$$1$4.Transform;
 
@@ -34233,6 +34245,7 @@ IconvLiteDecoderStream.prototype.collect = function(cb) {
     return this;
 };
 
+"use strict";
 var Buffer$7 = require$$0$2.Buffer;
 
 // == Extend Node primitives to use iconv-lite =================================
@@ -34932,8 +34945,6 @@ var DefaultTheme = {
   extends: null,
 
   colors: function colors(_super, chartType, name) {
-    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
     var ordinal = void 0,
         linear = void 0;
 
@@ -34970,8 +34981,6 @@ var DefaultTheme = {
   },
 
   card: function card(_super, chartType, name) {
-    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
     return {
       defaultCaption: '',
       captionHeight: 42,
@@ -35139,7 +35148,118 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 
 
+var asyncGenerator = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
 
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function (fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function (value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
 
 
 
@@ -35351,8 +35471,7 @@ var DashboardStore = function () {
     value: function unregisterDimension(name, _ref) {
       // TODO: implement
 
-      var _ref$dataset = _ref.dataset,
-          dataset = _ref$dataset === undefined ? 'default' : _ref$dataset;
+      
     }
   }, {
     key: 'getCf',
@@ -35604,6 +35723,8 @@ var Store = new DashboardStore();
  * Licensed under the MIT License.
  */
 
+'use strict';
+
 // see http://jsperf.com/testing-value-is-primitive/7
 var isPrimitive$1 = function isPrimitive(value) {
   return value == null || (typeof value !== 'function' && typeof value !== 'object');
@@ -35615,6 +35736,8 @@ var isPrimitive$1 = function isPrimitive(value) {
  * Copyright (c) 2015, Jon Schlinkert.
  * Licensed under the MIT License.
  */
+
+'use strict';
 
 var assignSymbols = function(receiver, objects) {
   if (receiver === null || typeof receiver === 'undefined') {
@@ -35785,6 +35908,19 @@ var kindOf = function kindOf(val) {
   // must be a plain object
   return 'object';
 };
+
+/*!
+ * assign-deep <https://github.com/jonschlinkert/assign-deep>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+
+
+
 
 function assign(target/*, objects*/) {
   target = target || {};
@@ -36221,6 +36357,11 @@ var Base = {
       type: String
     },
 
+    // order
+    ordering: {
+      type: String
+    },
+
     // cap mixin
     cap: {
       type: Number,
@@ -36409,8 +36550,7 @@ var Base = {
     tooltipFormatter: function tooltipFormatter() {
       var key = void 0,
           extraKey = void 0,
-          val = void 0,
-          _val = void 0;
+          val = void 0;
       key = this.dimensionScale.format || function (k) {
         return k;
       };
@@ -36566,8 +36706,7 @@ var Base = {
     isTimeChart: function isTimeChart() {
       var _ref = this.scale ? this.scale.split('.') : [],
           _ref2 = slicedToArray(_ref, 2),
-          scale = _ref2[0],
-          unit = _ref2[1];
+          scale = _ref2[0];
 
       if (scale == 'time' || this.dateKey || this.timeScale) return true;
       return false;
@@ -36720,8 +36859,6 @@ var Base = {
     applyStyles: function applyStyles() {
       if (!this.containerInnerSize || !this.layoutSettings || !this.chart) return;
       var chart = this.chart;
-      var legend = this.legend;
-
       var _containerInnerSize2 = this.containerInnerSize,
           defaultWidth = _containerInnerSize2.width,
           defaultHeight = _containerInnerSize2.height;
@@ -36730,8 +36867,7 @@ var Base = {
           width = _layoutSettings$width === undefined ? defaultWidth : _layoutSettings$width,
           _layoutSettings$heigh = _layoutSettings.height,
           height = _layoutSettings$heigh === undefined ? defaultHeight : _layoutSettings$heigh,
-          margins = _layoutSettings.margins,
-          legendOptions = _layoutSettings.legend;
+          margins = _layoutSettings.margins;
 
 
       chart.width(width).height(height);
@@ -36833,6 +36969,18 @@ var Base = {
       chart.keyAccessor(function (d) {
         return d.key[0];
       });
+    }
+    if (this.ordering) {
+      var ordering = this.ordering.toLowerCase();
+      if (ordering.startsWith('asc')) {
+        chart.ordering(function (d) {
+          return d.value;
+        });
+      } else if (ordering.startsWith('desc')) {
+        chart.ordering(function (d) {
+          return -d.value;
+        });
+      }
     }
 
     chart.renderLabel(this.renderLabel).renderTitle(this.renderTitle).transitionDuration(this.transitionDuration).label(function (d) {
@@ -36948,8 +37096,7 @@ var coordinateGridBase = {
 
       var _scale$split = this.scale.split('.'),
           _scale$split2 = slicedToArray(_scale$split, 2),
-          scale = _scale$split2[0],
-          unit = _scale$split2[1];
+          scale = _scale$split2[0];
 
       if (scale !== 'ordinal') return true;
       return this.reducerAll && this.reducerAll.length < axis.xLabel.limit;
@@ -48758,284 +48905,9 @@ function object(topology, o) {
   return geometry(o);
 }
 
-var bisect = function(a, x) {
-  var lo = 0, hi = a.length;
-  while (lo < hi) {
-    var mid = lo + hi >>> 1;
-    if (a[mid] < x) lo = mid + 1;
-    else hi = mid;
-  }
-  return lo;
-};
-
 // Computes the bounding box of the specified hash of GeoJSON objects.
 
-var hashset = function(size, hash, equal, type, empty) {
-  if (arguments.length === 3) {
-    type = Array;
-    empty = null;
-  }
-
-  var store = new type(size = 1 << Math.max(4, Math.ceil(Math.log(size) / Math.LN2))),
-      mask = size - 1;
-
-  for (var i = 0; i < size; ++i) {
-    store[i] = empty;
-  }
-
-  function add(value) {
-    var index = hash(value) & mask,
-        match = store[index],
-        collisions = 0;
-    while (match != empty) {
-      if (equal(match, value)) return true;
-      if (++collisions >= size) throw new Error("full hashset");
-      match = store[index = (index + 1) & mask];
-    }
-    store[index] = value;
-    return true;
-  }
-
-  function has(value) {
-    var index = hash(value) & mask,
-        match = store[index],
-        collisions = 0;
-    while (match != empty) {
-      if (equal(match, value)) return true;
-      if (++collisions >= size) break;
-      match = store[index = (index + 1) & mask];
-    }
-    return false;
-  }
-
-  function values() {
-    var values = [];
-    for (var i = 0, n = store.length; i < n; ++i) {
-      var match = store[i];
-      if (match != empty) values.push(match);
-    }
-    return values;
-  }
-
-  return {
-    add: add,
-    has: has,
-    values: values
-  };
-};
-
-var hashmap = function(size, hash, equal, keyType, keyEmpty, valueType) {
-  if (arguments.length === 3) {
-    keyType = valueType = Array;
-    keyEmpty = null;
-  }
-
-  var keystore = new keyType(size = 1 << Math.max(4, Math.ceil(Math.log(size) / Math.LN2))),
-      valstore = new valueType(size),
-      mask = size - 1;
-
-  for (var i = 0; i < size; ++i) {
-    keystore[i] = keyEmpty;
-  }
-
-  function set(key, value) {
-    var index = hash(key) & mask,
-        matchKey = keystore[index],
-        collisions = 0;
-    while (matchKey != keyEmpty) {
-      if (equal(matchKey, key)) return valstore[index] = value;
-      if (++collisions >= size) throw new Error("full hashmap");
-      matchKey = keystore[index = (index + 1) & mask];
-    }
-    keystore[index] = key;
-    valstore[index] = value;
-    return value;
-  }
-
-  function maybeSet(key, value) {
-    var index = hash(key) & mask,
-        matchKey = keystore[index],
-        collisions = 0;
-    while (matchKey != keyEmpty) {
-      if (equal(matchKey, key)) return valstore[index];
-      if (++collisions >= size) throw new Error("full hashmap");
-      matchKey = keystore[index = (index + 1) & mask];
-    }
-    keystore[index] = key;
-    valstore[index] = value;
-    return value;
-  }
-
-  function get(key, missingValue) {
-    var index = hash(key) & mask,
-        matchKey = keystore[index],
-        collisions = 0;
-    while (matchKey != keyEmpty) {
-      if (equal(matchKey, key)) return valstore[index];
-      if (++collisions >= size) break;
-      matchKey = keystore[index = (index + 1) & mask];
-    }
-    return missingValue;
-  }
-
-  function keys() {
-    var keys = [];
-    for (var i = 0, n = keystore.length; i < n; ++i) {
-      var matchKey = keystore[i];
-      if (matchKey != keyEmpty) keys.push(matchKey);
-    }
-    return keys;
-  }
-
-  return {
-    set: set,
-    maybeSet: maybeSet, // set if unset
-    get: get,
-    keys: keys
-  };
-};
-
-var equalPoint = function(pointA, pointB) {
-  return pointA[0] === pointB[0] && pointA[1] === pointB[1];
-};
-
 // TODO if quantized, use simpler Int32 hashing?
-
-var buffer = new ArrayBuffer(16);
-var floats = new Float64Array(buffer);
-var uints = new Uint32Array(buffer);
-
-var hashPoint = function(point) {
-  floats[0] = point[0];
-  floats[1] = point[1];
-  var hash = uints[0] ^ uints[1];
-  hash = hash << 5 ^ hash >> 7 ^ uints[2] ^ uints[3];
-  return hash & 0x7fffffff;
-};
-
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
-var join = function(topology) {
-  var coordinates = topology.coordinates,
-      lines = topology.lines,
-      rings = topology.rings,
-      indexes = index(),
-      visitedByIndex = new Int32Array(coordinates.length),
-      leftByIndex = new Int32Array(coordinates.length),
-      rightByIndex = new Int32Array(coordinates.length),
-      junctionByIndex = new Int8Array(coordinates.length),
-      junctionCount = 0, // upper bound on number of junctions
-      i, n,
-      previousIndex,
-      currentIndex,
-      nextIndex;
-
-  for (i = 0, n = coordinates.length; i < n; ++i) {
-    visitedByIndex[i] = leftByIndex[i] = rightByIndex[i] = -1;
-  }
-
-  for (i = 0, n = lines.length; i < n; ++i) {
-    var line = lines[i],
-        lineStart = line[0],
-        lineEnd = line[1];
-    currentIndex = indexes[lineStart];
-    nextIndex = indexes[++lineStart];
-    ++junctionCount, junctionByIndex[currentIndex] = 1; // start
-    while (++lineStart <= lineEnd) {
-      sequence(i, previousIndex = currentIndex, currentIndex = nextIndex, nextIndex = indexes[lineStart]);
-    }
-    ++junctionCount, junctionByIndex[nextIndex] = 1; // end
-  }
-
-  for (i = 0, n = coordinates.length; i < n; ++i) {
-    visitedByIndex[i] = -1;
-  }
-
-  for (i = 0, n = rings.length; i < n; ++i) {
-    var ring = rings[i],
-        ringStart = ring[0] + 1,
-        ringEnd = ring[1];
-    previousIndex = indexes[ringEnd - 1];
-    currentIndex = indexes[ringStart - 1];
-    nextIndex = indexes[ringStart];
-    sequence(i, previousIndex, currentIndex, nextIndex);
-    while (++ringStart <= ringEnd) {
-      sequence(i, previousIndex = currentIndex, currentIndex = nextIndex, nextIndex = indexes[ringStart]);
-    }
-  }
-
-  function sequence(i, previousIndex, currentIndex, nextIndex) {
-    if (visitedByIndex[currentIndex] === i) return; // ignore self-intersection
-    visitedByIndex[currentIndex] = i;
-    var leftIndex = leftByIndex[currentIndex];
-    if (leftIndex >= 0) {
-      var rightIndex = rightByIndex[currentIndex];
-      if ((leftIndex !== previousIndex || rightIndex !== nextIndex)
-        && (leftIndex !== nextIndex || rightIndex !== previousIndex)) {
-        ++junctionCount, junctionByIndex[currentIndex] = 1;
-      }
-    } else {
-      leftByIndex[currentIndex] = previousIndex;
-      rightByIndex[currentIndex] = nextIndex;
-    }
-  }
-
-  function index() {
-    var indexByPoint = hashmap(coordinates.length * 1.4, hashIndex, equalIndex, Int32Array, -1, Int32Array),
-        indexes = new Int32Array(coordinates.length);
-
-    for (var i = 0, n = coordinates.length; i < n; ++i) {
-      indexes[i] = indexByPoint.maybeSet(i, i);
-    }
-
-    return indexes;
-  }
-
-  function hashIndex(i) {
-    return hashPoint(coordinates[i]);
-  }
-
-  function equalIndex(i, j) {
-    return equalPoint(coordinates[i], coordinates[j]);
-  }
-
-  visitedByIndex = leftByIndex = rightByIndex = null;
-
-  var junctionByPoint = hashset(junctionCount * 1.4, hashPoint, equalPoint), j;
-
-  // Convert back to a standard hashset by point for caller convenience.
-  for (i = 0, n = coordinates.length; i < n; ++i) {
-    if (junctionByIndex[j = indexes[i]]) {
-      junctionByPoint.add(coordinates[j]);
-    }
-  }
-
-  return junctionByPoint;
-};
-
-function rotateArray(array, start, end, offset) {
-  reverse$1(array, start, end);
-  reverse$1(array, start, start + offset);
-  reverse$1(array, start + offset, end);
-}
-
-function reverse$1(array, start, end) {
-  for (var mid = start + ((end-- - start) >> 1), t; start < mid; ++start, --end) {
-    t = array[start], array[start] = array[end], array[end] = t;
-  }
-}
 
 // Given an array of arcs in absolute (but already quantized!) coordinates,
 // converts to fixed-point delta encoding.
