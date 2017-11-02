@@ -146,6 +146,11 @@ export default {
       type: String
     },
 
+    // order
+    ordering: {
+      type: String
+    },
+
     // cap mixin
     cap: {
       type: Number,
@@ -718,6 +723,16 @@ export default {
         return d.key[0]
       })
     }
+    if (this.ordering) {
+      const ordering = this.ordering.toLowerCase();
+      if (ordering.startsWith('asc')) {
+        chart.ordering((d) => d.value)
+      }
+      else if (ordering.startsWith('desc')) {
+        chart.ordering((d) => -d.value)
+      }
+    }
+
 
     chart
       .renderLabel(this.renderLabel)
