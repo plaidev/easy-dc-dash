@@ -23,7 +23,7 @@ export default {
       default: 'numberDisplay'
     },
     width: {
-      default: 160
+      default: 'auto'
     },
     height: {
       type: Number,
@@ -31,7 +31,7 @@ export default {
     },
     themeColor: {
       type: String,
-      default:'#2AAB9F'
+      default:'#FFFFFF'
     },
     fillBoxColor: {
       type: Boolean,
@@ -39,7 +39,7 @@ export default {
     },
     fontSize: {
       type: Number,
-      default: 48
+      default: 40
     },
     title: {
       type: String
@@ -47,14 +47,6 @@ export default {
     numberFormat: {
       type: String,
       default: '.2s'
-    },
-    useLegend: {
-      type: Boolean,
-      default: false
-    },
-    renderTooltip: {
-      type: Boolean,
-      default: false
     },
     unitPrefix: {
       type: String,
@@ -117,7 +109,7 @@ export default {
       }
       if (this.width === 'auto') {
         styles.width = '100%'
-      } 
+      }
       if (!this.fillBoxColor) {
         styles.color = this.themeColor
         styles.borderColor = this.themeColor
