@@ -1,3 +1,6 @@
+@import './font-awesome.scss';
+@import '../../node_modules/bootstrap/dist/css/bootstrap.css';
+
 // ----- * ----- * -----
 // Start Bootstrap Override
 // ----- * ----- * -----
@@ -39,7 +42,7 @@
 // ----- * ----- * -----
 
 body {
-	background-color: #F7F9F7 !important;
+	background-color: #F7F9F7;
 	font-family: "Century Gothic", "CenturyGothic", "Graphik", "游ゴシック", "メイリオ", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Noto Sans Japanese, sans-serif;
 }
 
