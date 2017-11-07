@@ -10,6 +10,7 @@ import css          from 'rollup-plugin-css-only'
 import json         from 'rollup-plugin-json'
 import nodeBuiltins from 'rollup-plugin-node-builtins'
 import nodeGlobals  from 'rollup-plugin-node-globals'
+import analyze      from 'rollup-analyzer-plugin'
 
 export default {
 
@@ -71,7 +72,9 @@ export default {
         '**/*.scss',
         'node_modules/**' // only transpile our source code
       ]
-    })
+    }),
+
+    // analyze()
   ],
 
   // d3 v3系が動かないので。
