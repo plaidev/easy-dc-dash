@@ -13,20 +13,9 @@ export default {
       type: String,
       default: 'barChart'
     },
-    width: {
-      type: Number,
-      default: 240 * 4
-    },
-    height: {
-      type: Number,
-      default: 90
-    },
     scale: {
       default: 'time.day'
     },
-    useLegend: {
-      default: false
-    }
   },
   computed: {
     dimensionRange: function() {
@@ -39,14 +28,6 @@ export default {
       const settings = Base.computed.layoutSettings.apply(this)
       settings.legend = null;
       return settings;
-    }
-  },
-  methods: {
-    removeFilterAndRedrawChart: function() {
-      const focusChart = this.chart.focusChart()
-      if(focusChart) focusChart.filterAll();
-      this.chart.filterAll();
-      dc.redrawAll();
     }
   },
   mounted: function() {
