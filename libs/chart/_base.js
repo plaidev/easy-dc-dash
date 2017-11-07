@@ -553,6 +553,8 @@ export default {
       }
     },
     removeFilterAndRedrawChart: function() {
+      const focusChart = this.chart.focusChart()
+      if (focusChart) focusChart.filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     },
