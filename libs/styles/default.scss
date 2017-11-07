@@ -37,6 +37,18 @@
 // ----- * ----- * -----
 // Start Default Styles
 // ----- * ----- * -----
+
+body {
+	background-color: #F7F9F7 !important;
+	font-family: "Century Gothic", "CenturyGothic", "Graphik", "游ゴシック", "メイリオ", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Noto Sans Japanese, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+	font-family: "Century Gothic", "CenturyGothic", "Graphik", "游ゴシック", "メイリオ", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Noto Sans Japanese, sans-serif;
+	font-weight: normal;
+}
+
 .section-row {
 	margin-bottom: 8px;
 	margin-right: -4px;
