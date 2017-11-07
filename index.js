@@ -3,7 +3,10 @@ import Chart from './libs/chart'
 import {init, run} from './libs/autorun'
 import Vue from 'vue'
 
-// import './libs/styles/default.scss'
+import './libs/styles/default.scss'
+import './libs/styles/font-awesome-variables.scss'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'font-awesome/scss/font-awesome.scss'
 
 init()
 
