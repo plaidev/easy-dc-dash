@@ -46,7 +46,7 @@ export default {
     },
     numberFormat: {
       type: String,
-      default: '.2s'
+      default: ',.0f'
     },
     unitPrefix: {
       type: String,
@@ -169,10 +169,16 @@ export default {
     justify-content: center;
     flex-direction: column;
   }
+  .title, .number-display {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .title {
     border-bottom: 1px solid rgba(0,0,0,.08);
     padding: 12px 24px;
     width: 100%;
+    line-height: 1.1;
   }
   .number-display {
     display: block;
@@ -181,10 +187,11 @@ export default {
   }
   .number-threshold,
   .number-unit {
-    font-weight: bold;
+    font-weight: normal;
   }
   .nd-box .number-unit {
-    font-size: 0.4em;
+    font-size: 24px;
+    margin-left: 8px;
   }
 }
 </style>
