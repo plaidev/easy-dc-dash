@@ -67,7 +67,11 @@ export default {
 
     // ES5に変換。.babelrcは別途用意済み
     babel({
-      exclude: 'node_modules/**' // only transpile our source code
+      exclude: [
+        '**/*.json',
+        '**/*.scss',
+        'node_modules/**' // only transpile our source code
+      ]
     })
   ],
 
