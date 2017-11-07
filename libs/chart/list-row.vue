@@ -76,7 +76,7 @@ export default {
       })
 
     // v0.4移行時に消す
-    if (!this.ordering && this.descending) {
+    if (!this.ordering && this.descending !== undefined) {
       chart.ordering((d) => this.descending ? -d.value : d.value)
     }
 
