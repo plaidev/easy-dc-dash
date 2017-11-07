@@ -22,6 +22,7 @@ export default {
       default: true
     },
     // order by
+    // v0.4移行時に消す
     descending: {
       type: Boolean,
       default: true
@@ -64,7 +65,6 @@ export default {
       .labelOffsetX(this.labelOffsetX)
       .labelOffsetY(this.labeloffsetY)
       .ordinalColors(['#bd3122', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb', '#d66b6e'])
-      .ordering((d) => this.descending ? -d.value : d.value)
       .on('pretransition', () => {
           chart.selectAll('g.row text')
             .text((d) => this.keyTextPostProcess(d.key))
@@ -74,7 +74,13 @@ export default {
               .attr('transform', 'translate(-5, 5) rotate(330)')
           }
       })
-    if(this.cap && this.cap > 0) chart.rowsCap(this.cap)
+
+    // v0.4移行時に消す
+    if (!this.ordering && this.descending) {
+      chart.ordering((d) => this.descending ? -d.value : d.value)
+    }
+
+    if (this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart
   }
 }
