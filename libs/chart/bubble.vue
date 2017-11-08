@@ -43,10 +43,12 @@ export default {
       type: Number,
       default: 0.3
     },
+    // v0.4移行時に消す(coordinateGridBaseに移動)
     xAxisLabel:{
       type: String,
       default: 'x'
     },
+    // v0.4移行時に消す(coordinateGridBaseに移動)
     yAxisLabel: {
       type: String,
       default: 'y'
@@ -170,11 +172,11 @@ export default {
       .sortBubbleSize(this.sortBubbleSize)
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
       // .label((p) => this.formatKey(p.key))
-      .keyAccessor((p) => this.extractValue(p.value[this.xAxisLabel]))
-      .valueAccessor((p) => this.extractValue(p.value[this.yAxisLabel]))
+      .keyAccessor((p) => this.extractValue(p.value[this._xAxisLabel]))
+      .valueAccessor((p) => this.extractValue(p.value[this._yAxisLabel]))
       .radiusValueAccessor((p) => this.extractValue(p.value[this.radiusLabel]))
-      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.xAxisLabel]))))
-      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.yAxisLabel]))))
+      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this._xAxisLabel]))))
+      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this._yAxisLabel]))))
       .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radiusLabel]))))
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)

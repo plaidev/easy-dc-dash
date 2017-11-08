@@ -9,11 +9,11 @@ export default {
   extends: Base,
   props: {
     xAxisLabel: {
-      type: String,
+      type: [String, Boolean],
       default: ''
     },
     yAxisLabel: {
-      type: String,
+      type: [String, Boolean],
       default: ''
     },
     xAxisFormat: {
@@ -24,10 +24,12 @@ export default {
       type: String,
       default: ''
     },
+    // v0.4移行時に消す
     showXAxisLabel: {
       type: Boolean,
       default: null
     },
+    // v0.4移行時に消す
     showYAxisLabel: {
       type: Boolean,
       default: true
@@ -57,10 +59,27 @@ export default {
     isShowXAxisLabels: function() {
       const {axis} = this.layoutSettings
 
-      if(this.showXAxisLabel != null) return this.showXAxisLabel
+      // v0.4移行時にshowXAxisLabelは消す
+      if(this.showXAxisLabel != null || this.xAxisLabel) return true
       let [scale, unit] = this.scale.split('.')
       if(scale !== 'ordinal') return true
       return this.reducerAll && this.reducerAll.length < axis.xLabel.limit
+    },
+    isShowYAxisLabels: function() {
+      // v0.4移行時にshowYAxisLabelは消す
+      if (this.showYAxisLabel) return true
+      if (this.yAxisLabel) return true
+      return false
+    },
+    _xAxisLabel: function() {
+      if (!this.isShowXAxisLabel || !this.xAxisLabel) return ''
+      if (this.xAxisLabel === true) return 'x'
+      return this.xAxisLabel
+    },
+    _yAxisLabel: function() {
+      if (!this.isShowYAxisLabel || !this.yAxisLabel) return ''
+      if (this.yAxisLabel === true) return 'y'
+      return this.yAxisLabel
     },
     colors: function() {
       return this.colorSettings.ordinal
@@ -89,7 +108,7 @@ export default {
         chart.xAxis().tickValues(null)
       }
 
-      if(!this.showYAxisLabel && chart.yAxis instanceof Function) {
+      if(!this.isShowYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([])
       }
       else if(chart.yAxis instanceof Function){
@@ -116,7 +135,7 @@ export default {
 
     chart.on('pretransition', () => {
       // TODO: layout system
-      if(!this.hideXAxisLabel && this.rotateXAxisLabel) {
+      if(this.isShowXAxisLabels && this.rotateXAxisLabel) {
         chart.selectAll(`#${this.id} g.x text`)
           .attr('transform', 'translate(-10,5) rotate(330)')
       }
