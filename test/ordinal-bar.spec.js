@@ -1,50 +1,61 @@
 import Vue from 'vue'
-import Store from '../libs/store'
-import Chart from '../libs/chart'
-import {init, run} from '../libs/autorun'
 import { mount, createLocalVue } from 'vue-test-utils'
 
-
-import Base from '@/_coordinateGridBase.js'
+import Store from '../libs/store'
 import OrdinalBar from '@/ordinal-bar.vue'
 
+import DataTable from '@/data-table.vue'
+
+import CssModuleTestHelperMixin from './helpers/css-modules-test-hepler-mixin'
+
 const localVue = createLocalVue()
-localVue.use(Base)
+localVue.use(CssModuleTestHelperMixin)
 
-beforeAll(() => {
-  init()
-  Chart.install(Vue)
-
+describe('ordinal-bar.vue', () => {
   Store.registerData([
     {d1: 'a', d2: true, v: 1},
     {d1: 'a', d2: false, v: 2},
     {d1: 'b', d2: false, v: 3},
     {d1: 'b', d2: true, v: 5},
   ])
-  run()
-})
 
-describe('ordinal-bar', () => {
-  const wrapper = mount(OrdinalBar, {
+  const wrapper = mount(localVue.extend(OrdinalBar), {
     localVue,
-    attachToDocument: true,
     propsData: {
       dimension: 'd1',
       reduce: 'v'
-    }
+    },
+    attachToDocument: true
   })
 
-  // console.log(wrapper.vm)
-  const div = wrapper.findAll('div')
-  console.log(div);
-  const svg = wrapper.findAll('svg')
-  console.log(svg);
-  const g = wrapper.findAll('g')
-  console.log(g);
+  console.log(wrapper.html());
 
-  it('renders the correct bar', () => {
-    expect(wrapper.hasProp('chartType', 'barChart')).toBe(true)
-    expect(wrapper.hasProp('dimension', 'd1')).toBe(true)
-    expect(wrapper.hasProp('reduce', 'v')).toBe(true)
+  it('render ordinal-bar', () => {
+    expect(wrapper.html()).toMatchSnapshot()
   })
+})
+
+describe('data-table.vue', () => {
+  Store.registerData([
+    {d1: 'a', d2: true, v: 1},
+    {d1: 'a', d2: false, v: 2},
+    {d1: 'b', d2: false, v: 3},
+    {d1: 'b', d2: true, v: 5},
+  ])
+
+  const wrapper = mount(localVue.extend(DataTable), {
+    localVue,
+    propsData: {
+      // dimension: 'd1',
+      // reduce: 'v'
+    },
+    attachToDocument: true
+  })
+
+  console.log(wrapper.html());
+
+  it('render ordinal-bar', () => {
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+
 })
