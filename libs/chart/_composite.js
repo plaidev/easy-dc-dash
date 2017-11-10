@@ -15,7 +15,7 @@ function _getReduceKeySuper(Component) {
 
 export function compose(Left, Right) {
 
-  _instances = []
+  let _instances = []
 
   const ComponentObject = {
     extends: coordinateGridBase,

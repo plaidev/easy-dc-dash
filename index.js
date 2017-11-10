@@ -3,7 +3,7 @@ import Chart from './libs/chart'
 import {init, run} from './libs/autorun'
 import Vue from 'vue'
 
-// import './libs/styles/default.scss'
+import './libs/styles/default.scss'
 
 init()
 

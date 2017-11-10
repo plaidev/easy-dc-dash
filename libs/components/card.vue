@@ -104,7 +104,7 @@ export default {
       return style
     },
     screenModeClass: function() {
-      classes = []
+      const classes = []
       if (this.isFullscreen) {
         classes.push(this.$options.cssModules['fullscreen'])
       }

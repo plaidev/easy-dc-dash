@@ -28,8 +28,6 @@ import Store from '../store'
 import {generateExtractor} from '../utils'
 
 import 'bootstrap/dist/css/bootstrap.css'
-import '../styles/font-awesome-variables.scss'
-import 'font-awesome/scss/font-awesome.scss'
 
 function _isDescendantOf(el, klass) {
   if (!el) return false;
@@ -477,6 +475,7 @@ export default {
     align-items: flex-start;
     width: 94%;
     padding-top: 42px;
+    margin-bottom: 24px;
     font-size: 14px;
   }
 
@@ -518,6 +517,7 @@ export default {
 
   th.dc-table-head {
     cursor: pointer;
+    font-weight: normal;
   }
   th.dc-table-head.asc,
   th.dc-table-head.desc {
@@ -528,6 +528,11 @@ export default {
   }
   th.dc-table-head.desc .fa-sort:before {
     content: '\f0de';
+  }
+
+  .table tbody > tr > th,
+  .table tbody > tr > td {
+    padding: 2px 8px;
   }
 }
 </style>
