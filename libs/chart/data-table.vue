@@ -27,6 +27,10 @@ import Base from './_base'
 import Store from '../store'
 import {generateExtractor} from '../utils'
 
+import 'bootstrap/dist/css/bootstrap.css'
+import '../styles/font-awesome-variables.scss'
+import 'font-awesome/scss/font-awesome.scss'
+
 function _isDescendantOf(el, klass) {
   if (!el) return false;
   if (el.classList.contains(klass)) return el;
