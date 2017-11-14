@@ -333,7 +333,7 @@ export default {
       this.chart
         .group((d) => null)
         .size(Infinity)
-        .sortBy((d) => this._valueAccessor(d, this.sortKey))
+        .sortBy((d) => this._sortValueAccessor(d, this.sortKey))
         .order(d3[this.sortOrder])
       this.render()
     },
@@ -366,6 +366,14 @@ export default {
       else if (schema === 'date') {
         return val
       }
+    },
+    _sortValueAccessor: function(d, k) {
+      let val = this._valueAccessor(d, k)
+      const schema = this.schema[k]
+      if (schema === 'date') {
+        val = val[0] && val[0].getTime()
+      }
+      return val
     },
     getInitialValues: function() {
       const vals = {}
@@ -438,7 +446,7 @@ export default {
       .size(Infinity)
       .showGroups(false)
       .columns(this.columnSettings)
-      .sortBy((d) => this._valueAccessor(d, sortKey))
+      .sortBy((d) => this._sortValueAccessor(d, sortKey))
       .order(d3[this.order])
       .on('renderlet', () => {
         const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
