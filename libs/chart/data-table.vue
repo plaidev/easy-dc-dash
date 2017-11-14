@@ -252,9 +252,8 @@ export default {
             }
             else if (schema === 'string') {
               if (val === null || val === undefined) return;
-              const words = p[k].split(', ').filter((w) => w && w != vals[k])
-              words.push(vals[k])
-              p[k] = words.join(', ')
+              if (!p[k][val]) p[k][val] = 0;
+              p[k][val]++;
             }
             else if (schema === 'boolean') {
               if (val === null || val === undefined) return;
@@ -288,8 +287,7 @@ export default {
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
             else if (schema === 'string') {
-              const words = p[k].split(', ').filter((w) => w && w != vals[k])
-              p[k] = words.join(', ')
+              p[k][val]--;
             }
             else if (schema === 'boolean') {
               if (val === null || val === undefined) return;
@@ -370,7 +368,7 @@ export default {
         let schema = this.schema[k];
 
         if (schema === 'string') {
-          vals[k] = '';
+          vals[k] = {};
         } else if (schema === 'number') {
           vals[k] = 0;
         } else if (schema === 'date') {
@@ -391,7 +389,10 @@ export default {
         if (!repName) return
       }
       const repFunc = Store.getRepresentation(repName)
-      return (d) => repFunc(d.value[key], d.value, d.key)
+      return (d) => {
+        const value = this._valueAccessor(d, key)
+        return repFunc(value, d.value, d.key)
+      }
     },
     applyColumnSettings: function() {
       this.colsKeys.forEach((k) => {
