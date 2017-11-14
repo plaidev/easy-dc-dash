@@ -360,6 +360,12 @@ export default {
           .map(v => ({t: 'true', f: 'false'})[v])
           .join(', ')
       }
+      else if (schema === 'number') {
+        return val
+      }
+      else if (schema === 'date') {
+        return val
+      }
     },
     getInitialValues: function() {
       const vals = {}
