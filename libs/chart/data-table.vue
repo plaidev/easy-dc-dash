@@ -252,9 +252,8 @@ export default {
             }
             else if (schema === 'string') {
               if (val === null || val === undefined) return;
-              const words = p[k].split(', ').filter((w) => w && w != vals[k])
-              words.push(vals[k])
-              p[k] = words.join(', ')
+              if (!p[k][val]) p[k][val] = 0;
+              p[k][val]++;
             }
             else if (schema === 'boolean') {
               if (val === null || val === undefined) return;
@@ -288,8 +287,7 @@ export default {
               p[k].per = p[k].count === 0 ? 0 : p[k].value / p[k].count;
             }
             else if (schema === 'string') {
-              const words = p[k].split(', ').filter((w) => w && w != vals[k])
-              p[k] = words.join(', ')
+              p[k][val]--;
             }
             else if (schema === 'boolean') {
               if (val === null || val === undefined) return;
@@ -335,7 +333,7 @@ export default {
       this.chart
         .group((d) => null)
         .size(Infinity)
-        .sortBy((d) => this._valueAccessor(d, this.sortKey))
+        .sortBy((d) => this._sortValueAccessor(d, this.sortKey))
         .order(d3[this.sortOrder])
       this.render()
     },
@@ -362,6 +360,20 @@ export default {
           .map(v => ({t: 'true', f: 'false'})[v])
           .join(', ')
       }
+      else if (schema === 'number') {
+        return val
+      }
+      else if (schema === 'date') {
+        return val
+      }
+    },
+    _sortValueAccessor: function(d, k) {
+      let val = this._valueAccessor(d, k)
+      const schema = this.schema[k]
+      if (schema === 'date') {
+        val = val[0] && val[0].getTime()
+      }
+      return val
     },
     getInitialValues: function() {
       const vals = {}
@@ -370,7 +382,7 @@ export default {
         let schema = this.schema[k];
 
         if (schema === 'string') {
-          vals[k] = '';
+          vals[k] = {};
         } else if (schema === 'number') {
           vals[k] = 0;
         } else if (schema === 'date') {
@@ -391,7 +403,10 @@ export default {
         if (!repName) return
       }
       const repFunc = Store.getRepresentation(repName)
-      return (d) => repFunc(d.value[key], d.value, d.key)
+      return (d) => {
+        const value = this._valueAccessor(d, key)
+        return repFunc(value, d.value, d.key)
+      }
     },
     applyColumnSettings: function() {
       this.colsKeys.forEach((k) => {
@@ -431,7 +446,7 @@ export default {
       .size(Infinity)
       .showGroups(false)
       .columns(this.columnSettings)
-      .sortBy((d) => this._valueAccessor(d, sortKey))
+      .sortBy((d) => this._sortValueAccessor(d, sortKey))
       .order(d3[this.order])
       .on('renderlet', () => {
         const dim = Store.getDimension(this.dimensionName, {dataset: this.dataset})
