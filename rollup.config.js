@@ -6,7 +6,6 @@ import vue          from 'rollup-plugin-vue'
 import replace      from 'rollup-plugin-replace'
 import sourcemaps   from 'rollup-plugin-sourcemaps'
 import scss         from 'rollup-plugin-scss'
-import css          from 'rollup-plugin-css-only'
 import json         from 'rollup-plugin-json'
 import nodeBuiltins from 'rollup-plugin-node-builtins'
 import nodeGlobals  from 'rollup-plugin-node-globals'
@@ -58,9 +57,7 @@ export default {
       css: true // dynamically inject
     }),
 
-    scss(),
-
-    css({
+    scss({
       output: 'dist/bundle.css'
     }),
 
