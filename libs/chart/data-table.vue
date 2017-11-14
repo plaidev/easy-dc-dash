@@ -491,7 +491,9 @@ export default {
     flex-direction: column;
     align-items: flex-start;
     width: 94%;
+    height: 100%;
     padding-top: 42px;
+    margin-bottom: 24px;
     font-size: 14px;
   }
 
@@ -533,6 +535,7 @@ export default {
 
   th.dc-table-head {
     cursor: pointer;
+    font-weight: normal;
   }
   th.dc-table-head.asc,
   th.dc-table-head.desc {
@@ -543,6 +546,11 @@ export default {
   }
   th.dc-table-head.desc .fa-sort:before {
     content: '\f0de';
+  }
+
+  .table tbody > tr > th,
+  .table tbody > tr > td {
+    padding: 2px 8px;
   }
 }
 </style>
