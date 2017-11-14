@@ -36663,6 +36663,7 @@ var Base = {
       }
     },
     removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
+      if (typeof this.chart.focusChart === 'function') this.chart.focusChart().filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     },
@@ -47748,7 +47749,7 @@ function compose(Left, Right) {
   if (typeof document !== 'undefined') {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".number-display__chart-root .card__render-area { justify-content: flex-start; } .number-display__chart-root .krt-dc-number-display { color: #354341; display: flex; align-items: center; justify-content: center; flex-direction: column; } .number-display__chart-root .title { border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 12px 24px; width: 100%; } .number-display__chart-root .number-display { display: block; padding: 12px 24px; width: 100%; } .number-display__chart-root .number-threshold, .number-display__chart-root .number-unit { font-weight: bold; } .number-display__chart-root .nd-box .number-unit { font-size: 0.4em; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".number-display__chart-root .card__render-area { justify-content: flex-start; } .number-display__chart-root .krt-dc-number-display { color: #354341; display: flex; align-items: center; justify-content: center; flex-direction: column; } .number-display__chart-root .title, .number-display__chart-root .number-display { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .number-display__chart-root .title { border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding: 12px 24px; width: 100%; line-height: 1.1; } .number-display__chart-root .number-display { display: block; padding: 12px 24px; width: 100%; } .number-display__chart-root .number-threshold, .number-display__chart-root .number-unit { font-weight: normal; } .number-display__chart-root .nd-box .number-unit { font-size: 24px; margin-left: 8px; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
@@ -47769,7 +47770,7 @@ var NumberDisplay = { render: function render() {
       default: 'numberDisplay'
     },
     width: {
-      default: 160
+      default: 'auto'
     },
     height: {
       type: Number,
@@ -47777,7 +47778,7 @@ var NumberDisplay = { render: function render() {
     },
     themeColor: {
       type: String,
-      default: '#2AAB9F'
+      default: '#FFFFFF'
     },
     fillBoxColor: {
       type: Boolean,
@@ -47785,22 +47786,14 @@ var NumberDisplay = { render: function render() {
     },
     fontSize: {
       type: Number,
-      default: 48
+      default: 40
     },
     title: {
       type: String
     },
     numberFormat: {
       type: String,
-      default: '.2s'
-    },
-    useLegend: {
-      type: Boolean,
-      default: false
-    },
-    renderTooltip: {
-      type: Boolean,
-      default: false
+      default: ',.0f'
     },
     unitPrefix: {
       type: String,
@@ -47922,6 +47915,9 @@ var DateVolumeChart = {
       type: String,
       default: 'barChart'
     },
+    scale: {
+      default: 'time.day'
+    },
     width: {
       type: Number,
       default: 240 * 4
@@ -47929,9 +47925,6 @@ var DateVolumeChart = {
     height: {
       type: Number,
       default: 90
-    },
-    scale: {
-      default: 'time.day'
     },
     useLegend: {
       default: false
@@ -47948,14 +47941,6 @@ var DateVolumeChart = {
       var settings = Base.computed.layoutSettings.apply(this);
       settings.legend = null;
       return settings;
-    }
-  },
-  methods: {
-    removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
-      var focusChart = this.chart.focusChart();
-      if (focusChart) focusChart.filterAll();
-      this.chart.filterAll();
-      dc.redrawAll();
     }
   },
   mounted: function mounted() {
@@ -49177,7 +49162,7 @@ var _computed;
   if (typeof document !== 'undefined') {
     var head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style'),
-        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; width: 94%; padding-top: 42px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; white-space: nowrap; width: 100%; } .data-table__chart-root .table-paging { display: flex; align-items: center; flex-direction: row-reverse; margin: 32px auto; width: 100%; } .data-table__chart-root .table-record-row { position: absolute; } .data-table__chart-root .table-btns { margin: 0 auto; } .data-table__chart-root .table-paging .btn-secondary { border-color: #45AB9F; color: #45AB9F; font-size: 12px; font-weight: bold; margin-left: 8px; } .data-table__chart-root .table-paging .btn-secondary.disabled, .data-table__chart-root .table-paging .btn-secondary:disabled { border-color: #ccc; color: #ccc; } .data-table__chart-root .table-paging .btn-secondary:hover { background-color: #45AB9F; color: #FFF; } .data-table__chart-root th.dc-table-head { cursor: pointer; } .data-table__chart-root th.dc-table-head.asc, .data-table__chart-root th.dc-table-head.desc { color: #2AAB9F; } .data-table__chart-root th.dc-table-head.asc .fa-sort:before { content: '\\F0DD'; } .data-table__chart-root th.dc-table-head.desc .fa-sort:before { content: '\\F0DE'; } ";style.type = 'text/css';if (style.styleSheet) {
+        css = ".data-table__chart-root .data-table-container { display: flex; flex-direction: column; align-items: flex-start; width: 94%; height: 100%; padding-top: 42px; margin-bottom: 24px; font-size: 14px; } .data-table__chart-root .table-container { overflow-y: auto; white-space: nowrap; width: 100%; } .data-table__chart-root .table-paging { display: flex; align-items: center; flex-direction: row-reverse; margin: 32px auto; width: 100%; } .data-table__chart-root .table-record-row { position: absolute; } .data-table__chart-root .table-btns { margin: 0 auto; } .data-table__chart-root .table-paging .btn-secondary { border-color: #45AB9F; color: #45AB9F; font-size: 12px; font-weight: bold; margin-left: 8px; } .data-table__chart-root .table-paging .btn-secondary.disabled, .data-table__chart-root .table-paging .btn-secondary:disabled { border-color: #ccc; color: #ccc; } .data-table__chart-root .table-paging .btn-secondary:hover { background-color: #45AB9F; color: #FFF; } .data-table__chart-root th.dc-table-head { cursor: pointer; font-weight: normal; } .data-table__chart-root th.dc-table-head.asc, .data-table__chart-root th.dc-table-head.desc { color: #2AAB9F; } .data-table__chart-root th.dc-table-head.asc .fa-sort:before { content: '\\F0DD'; } .data-table__chart-root th.dc-table-head.desc .fa-sort:before { content: '\\F0DE'; } .data-table__chart-root .table tbody > tr > th, .data-table__chart-root .table tbody > tr > td { padding: 2px 8px; } ";style.type = 'text/css';if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
