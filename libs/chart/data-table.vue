@@ -491,6 +491,7 @@ export default {
     flex-direction: column;
     align-items: flex-start;
     width: 94%;
+    height: 100%;
     padding-top: 42px;
     margin-bottom: 24px;
     font-size: 14px;
