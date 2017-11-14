@@ -1,6 +1,6 @@
 {
   "name": "easy-dc-dash",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "author": "Naoto Kato <naoto.kato@plaid.co.jp>",
   "license": "MIT",
   "main": "dist/bundle.js",
