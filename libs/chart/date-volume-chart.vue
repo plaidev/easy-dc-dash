@@ -16,6 +16,17 @@ export default {
     scale: {
       default: 'time.day'
     },
+    width: {
+      type: Number,
+      default: 240 * 4
+    },
+    height: {
+      type: Number,
+      default: 90
+    },
+    useLegend: {
+      default: false
+    }
   },
   computed: {
     dimensionRange: function() {
