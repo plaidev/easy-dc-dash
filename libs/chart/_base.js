@@ -553,6 +553,7 @@ export default {
       }
     },
     removeFilterAndRedrawChart: function() {
+      if (typeof this.chart.focusChart === 'function') this.chart.focusChart().filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     },

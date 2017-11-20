@@ -23,7 +23,7 @@ export default {
       default: 'numberDisplay'
     },
     width: {
-      default: 160
+      default: 'auto'
     },
     height: {
       type: Number,
@@ -31,7 +31,7 @@ export default {
     },
     themeColor: {
       type: String,
-      default:'#2AAB9F'
+      default:'#FFFFFF'
     },
     fillBoxColor: {
       type: Boolean,
@@ -39,22 +39,14 @@ export default {
     },
     fontSize: {
       type: Number,
-      default: 48
+      default: 40
     },
     title: {
       type: String
     },
     numberFormat: {
       type: String,
-      default: '.2s'
-    },
-    useLegend: {
-      type: Boolean,
-      default: false
-    },
-    renderTooltip: {
-      type: Boolean,
-      default: false
+      default: ',.0f'
     },
     unitPrefix: {
       type: String,
@@ -117,7 +109,7 @@ export default {
       }
       if (this.width === 'auto') {
         styles.width = '100%'
-      } 
+      }
       if (!this.fillBoxColor) {
         styles.color = this.themeColor
         styles.borderColor = this.themeColor
@@ -177,10 +169,16 @@ export default {
     justify-content: center;
     flex-direction: column;
   }
+  .title, .number-display {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .title {
     border-bottom: 1px solid rgba(0,0,0,.08);
     padding: 12px 24px;
     width: 100%;
+    line-height: 1.1;
   }
   .number-display {
     display: block;
@@ -189,10 +187,11 @@ export default {
   }
   .number-threshold,
   .number-unit {
-    font-weight: bold;
+    font-weight: normal;
   }
   .nd-box .number-unit {
-    font-size: 0.4em;
+    font-size: 24px;
+    margin-left: 8px;
   }
 }
 </style>
