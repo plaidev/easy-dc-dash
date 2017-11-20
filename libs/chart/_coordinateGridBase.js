@@ -79,8 +79,8 @@ export default {
       const chart = this.chart
       const {axis} = this.layoutSettings
 
-      if (chart.xAxisLabel && this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding)
-      if (chart.yAxisLabel && this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding)
+      if (chart.xAxisLabel && this._xAxisLabel) chart.xAxisLabel(this._xAxisLabel, axis.xLabel.padding)
+      if (chart.yAxisLabel && this._yAxisLabel) chart.yAxisLabel(this._yAxisLabel, axis.yLabel.padding)
 
       // FIXME: formatではなくunitになっている
       if (this.xAxisFormat)
