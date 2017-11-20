@@ -148,7 +148,6 @@ export default {
       .elasticRadius(this.elasticRadius)
       .sortBubbleSize(this.sortBubbleSize)
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
-      // .label((p) => this.formatKey(p.key))
       .keyAccessor((p) => this.extractValue(p.value['x']))
       .valueAccessor((p) => this.extractValue(p.value['y']))
       .radiusValueAccessor((p) => this.extractValue(p.value['r']))
@@ -157,10 +156,6 @@ export default {
       .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['r']))))
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
-
-    if(!this.showLabel) {
-      chart.label(d => null)
-    }
 
     if(this.timeScale) {
       chart.filterPrinter(filters => {

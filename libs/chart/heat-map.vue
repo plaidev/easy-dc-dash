@@ -23,10 +23,6 @@ export default {
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
       default: 'overlay-legend'
     },
-    renderText: {
-      type: Boolean,
-      default: false
-    },
     // labels
     // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
     xAxisLabel: {
@@ -108,7 +104,7 @@ export default {
     }
 
     chart.on('postRender', () => {
-      if(this.renderText) {
+      if (this.renderLabel) {
         const positions = [];
         chart.selectAll(`rect.heat-box`).each(function(d) {
           const rect = d3.select(this);

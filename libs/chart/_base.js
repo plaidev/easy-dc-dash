@@ -85,10 +85,6 @@ export default {
       type: Boolean,
       default: false
     },
-    showLabel: {
-      type: Boolean,
-      default: true
-    },
     // animation
     transitionDuration: {
       type: Number,
