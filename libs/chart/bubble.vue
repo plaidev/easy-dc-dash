@@ -13,18 +13,6 @@ export default {
       type: String,
       default: 'bubbleChart'
     },
-    x: {
-      type: String,
-      default: 'x'
-    },
-    y: {
-      type: String,
-      default: 'y'
-    },
-    radius: {
-      type: String,
-      default: 'radius'
-    },
     sortBubbleSize: {
       type: Boolean,
       default: false
@@ -47,19 +35,19 @@ export default {
       default: 0.3
     },
     // v0.4移行時に消す(coordinateGridBaseに移動)
-    xAxisLabel:{
-      type: String,
-      default: 'x'
-    },
+    // xAxisLabel:{
+    //   type: String,
+    //   default: 'x'
+    // },
     // v0.4移行時に消す(coordinateGridBaseに移動)
-    yAxisLabel: {
-      type: String,
-      default: 'y'
-    },
-    radiusLabel: {
-      type: String,
-      default: 'radius'
-    },
+    // yAxisLabel: {
+    //   type: String,
+    //   default: 'y'
+    // },
+    // radiusLabel: {
+    //   type: String,
+    //   default: 'radius'
+    // },
     radiusFormat: {
       type: String,
       default: ''
@@ -175,12 +163,12 @@ export default {
       .sortBubbleSize(this.sortBubbleSize)
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
       // .label((p) => this.formatKey(p.key))
-      .keyAccessor((p) => this.extractValue(p.value[this.x]))
-      .valueAccessor((p) => this.extractValue(p.value[this.y]))
-      .radiusValueAccessor((p) => this.extractValue(p.value[this.radius]))
-      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.x]))))
-      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.y]))))
-      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radius]))))
+      .keyAccessor((p) => this.extractValue(p.value['x']))
+      .valueAccessor((p) => this.extractValue(p.value['y']))
+      .radiusValueAccessor((p) => this.extractValue(p.value['r']))
+      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['x']))))
+      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['y']))))
+      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['r']))))
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
 

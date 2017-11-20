@@ -392,8 +392,7 @@ export default {
         case 'rowChart':
           return (d, i) => {
             let v = d.value
-            if (!d.data) v = d.value
-            else if (valueAccessor) v = valueAccessor(d.data)
+            if (valueAccessor) v = valueAccessor(d)
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
@@ -418,11 +417,11 @@ export default {
         case 'bubbleChart':
           return (d, i) => {
             const key = _formats.key(d.key)
-            const axes = [this.x, this.y, this.radius]
+            const axes = ['x', 'y', 'r']
             const vals = {}
             axes.forEach((axis, index) => {
               const v = d.value[axis].per || d.value[axis]
-              vals[axis] = _formats.val(v)
+              vals[this.getLabel(axis)] = _formats.val(v)
             })
             return {key, vals}
           }

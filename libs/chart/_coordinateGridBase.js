@@ -73,12 +73,12 @@ export default {
     },
     _xAxisLabel: function() {
       if (!this.isShowXAxisLabel || !this.xAxisLabel) return ''
-      if (this.xAxisLabel === true) return this.x || 'x'
+      if (this.xAxisLabel === true) return 'x'
       return this.xAxisLabel
     },
     _yAxisLabel: function() {
       if (!this.isShowYAxisLabel || !this.yAxisLabel) return ''
-      if (this.yAxisLabel === true) return this.y || 'y'
+      if (this.yAxisLabel === true) return 'y'
       return this.yAxisLabel
     },
     colors: function() {
