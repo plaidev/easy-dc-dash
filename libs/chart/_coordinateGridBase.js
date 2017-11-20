@@ -61,12 +61,12 @@ export default {
     _xAxisLabel: function() {
       if (!this.isShowXAxisLabel || !this.xAxisLabel) return ''
       if (this.xAxisLabel === true) return 'x'
-      return this.xAxisLabel
+      return this.getLabel(this.xAxisLabel)
     },
     _yAxisLabel: function() {
       if (!this.isShowYAxisLabel || !this.yAxisLabel) return ''
       if (this.yAxisLabel === true) return 'y'
-      return this.yAxisLabel
+      return this.getLabel(this.yAxisLabel)
     },
     colors: function() {
       return this.colorSettings.ordinal
