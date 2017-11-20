@@ -13,14 +13,17 @@ export default {
       type: String,
       default: 'bubbleChart'
     },
-    // labels, formats
+    x: {
+      type: String,
+      default: 'x'
+    },
+    y: {
+      type: String,
+      default: 'y'
+    },
     radius: {
       type: String,
       default: 'radius'
-    },
-    radiusFormat: {
-      type: String,
-      default: ''
     },
     sortBubbleSize: {
       type: Boolean,
@@ -172,12 +175,12 @@ export default {
       .sortBubbleSize(this.sortBubbleSize)
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
       // .label((p) => this.formatKey(p.key))
-      .keyAccessor((p) => this.extractValue(p.value[this._xAxisLabel]))
-      .valueAccessor((p) => this.extractValue(p.value[this._yAxisLabel]))
-      .radiusValueAccessor((p) => this.extractValue(p.value[this.radiusLabel]))
-      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this._xAxisLabel]))))
-      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this._yAxisLabel]))))
-      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radiusLabel]))))
+      .keyAccessor((p) => this.extractValue(p.value[this.x]))
+      .valueAccessor((p) => this.extractValue(p.value[this.y]))
+      .radiusValueAccessor((p) => this.extractValue(p.value[this.radius]))
+      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.x]))))
+      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.y]))))
+      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radius]))))
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
 

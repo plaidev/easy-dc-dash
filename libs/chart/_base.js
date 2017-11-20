@@ -418,11 +418,11 @@ export default {
         case 'bubbleChart':
           return (d, i) => {
             const key = _formats.key(d.key)
-            const labels = [this.xAxisLabel, this.yAxisLabel, this.radiusLabel]
+            const axes = [this.x, this.y, this.radius]
             const vals = {}
-            labels.forEach((label) => {
-              const v = d.value[label].per || d.value[label]
-              vals[label] = _formats.val(v)
+            axes.forEach((axis, index) => {
+              const v = d.value[axis].per || d.value[axis]
+              vals[axis] = _formats.val(v)
             })
             return {key, vals}
           }

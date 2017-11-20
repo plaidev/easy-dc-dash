@@ -56,7 +56,7 @@ export default {
     },
   },
   computed: {
-    isShowXAxisLabels: function() {
+    isShowXAxisLabel: function() {
       const {axis} = this.layoutSettings
 
       // v0.4移行時にshowXAxisLabelは消す
@@ -65,7 +65,7 @@ export default {
       if(scale !== 'ordinal') return true
       return this.reducerAll && this.reducerAll.length < axis.xLabel.limit
     },
-    isShowYAxisLabels: function() {
+    isShowYAxisLabel: function() {
       // v0.4移行時にshowYAxisLabelは消す
       if (this.showYAxisLabel) return true
       if (this.yAxisLabel) return true
@@ -73,12 +73,12 @@ export default {
     },
     _xAxisLabel: function() {
       if (!this.isShowXAxisLabel || !this.xAxisLabel) return ''
-      if (this.xAxisLabel === true) return 'x'
+      if (this.xAxisLabel === true) return this.x || 'x'
       return this.xAxisLabel
     },
     _yAxisLabel: function() {
       if (!this.isShowYAxisLabel || !this.yAxisLabel) return ''
-      if (this.yAxisLabel === true) return 'y'
+      if (this.yAxisLabel === true) return this.y || 'y'
       return this.yAxisLabel
     },
     colors: function() {
@@ -101,7 +101,7 @@ export default {
       if (this.yAxisFormat)
         chart.yAxis().tickFormat((d) => d + `${this.yAxisFormat}`)
 
-      if(!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
+      if(!this.isShowXAxisLabel && chart.xAxis instanceof Function) {
         chart.xAxis().tickValues([])
       }
       else if(chart.xAxis instanceof Function){

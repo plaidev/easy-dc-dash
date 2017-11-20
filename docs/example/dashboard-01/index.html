@@ -191,12 +191,14 @@
   <bubble
     date-key='d.session_end_date'
     dimension='ymd'
-    reduce="{x: d.pv, y: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
+    reduce="{pv: d.pv, bounce: d.bounce_cnt, radius: {count: d.session_cnt, value: d.bounce_cnt}}"
     :width=990
     :height=250
-    radius-format='%'
     :max-bubble-relative-size=0.1
-    :show-label='false'
+    x="pv"
+    y="bounce"
+    :x-axis-label=true
+    :y-axis-label=true
   ></bubble>
 
   <data-table
