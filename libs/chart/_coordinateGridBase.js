@@ -24,16 +24,6 @@ export default {
       type: String,
       default: ''
     },
-    // v0.4移行時に消す
-    showXAxisLabel: {
-      type: Boolean,
-      default: null
-    },
-    // v0.4移行時に消す
-    showYAxisLabel: {
-      type: Boolean,
-      default: true
-    },
     rotateXAxisLabel: {
       type: Boolean,
       default: true
@@ -59,15 +49,12 @@ export default {
     isShowXAxisLabel: function() {
       const {axis} = this.layoutSettings
 
-      // v0.4移行時にshowXAxisLabelは消す
-      if(this.showXAxisLabel != null || this.xAxisLabel) return true
+      if(this.xAxisLabel) return true
       let [scale, unit] = this.scale.split('.')
       if(scale !== 'ordinal') return true
       return this.reducerAll && this.reducerAll.length < axis.xLabel.limit
     },
     isShowYAxisLabel: function() {
-      // v0.4移行時にshowYAxisLabelは消す
-      if (this.showYAxisLabel) return true
       if (this.yAxisLabel) return true
       return false
     },

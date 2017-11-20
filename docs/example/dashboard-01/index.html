@@ -97,7 +97,7 @@
     title='list-row'
     dimension='d.name'
     reduce='d.pv'
-    :descending=true
+    ordering='desc'
     :cap=5>
   </list-row>
 
@@ -106,6 +106,7 @@
     title='morley'
     dimension='d.Expt'
     reduce='d.Run'
+    ordering="asc"
   ></list-row>
 
   <ordinal-bar

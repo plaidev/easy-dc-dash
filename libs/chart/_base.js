@@ -419,7 +419,7 @@ export default {
             const key = _formats.key(d.key)
             const axes = ['x', 'y', 'r']
             const vals = {}
-            axes.forEach((axis, index) => {
+            axes.forEach((axis) => {
               const v = d.value[axis].per || d.value[axis]
               vals[this.getLabel(axis)] = _formats.val(v)
             })

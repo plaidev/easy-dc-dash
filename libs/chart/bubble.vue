@@ -34,20 +34,6 @@ export default {
       type: Number,
       default: 0.3
     },
-    // v0.4移行時に消す(coordinateGridBaseに移動)
-    // xAxisLabel:{
-    //   type: String,
-    //   default: 'x'
-    // },
-    // v0.4移行時に消す(coordinateGridBaseに移動)
-    // yAxisLabel: {
-    //   type: String,
-    //   default: 'y'
-    // },
-    // radiusLabel: {
-    //   type: String,
-    //   default: 'radius'
-    // },
     radiusFormat: {
       type: String,
       default: ''
