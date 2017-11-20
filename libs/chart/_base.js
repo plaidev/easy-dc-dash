@@ -392,8 +392,7 @@ export default {
         case 'rowChart':
           return (d, i) => {
             let v = d.value
-            if (!d.data) v = d.value
-            else if (valueAccessor) v = valueAccessor(d.data)
+            if (valueAccessor) v = valueAccessor(d)
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
