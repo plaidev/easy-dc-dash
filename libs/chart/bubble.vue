@@ -13,15 +13,6 @@ export default {
       type: String,
       default: 'bubbleChart'
     },
-    // labels, formats
-    radius: {
-      type: String,
-      default: 'radius'
-    },
-    radiusFormat: {
-      type: String,
-      default: ''
-    },
     sortBubbleSize: {
       type: Boolean,
       default: false
@@ -42,18 +33,6 @@ export default {
     maxBubbleRelativeSize: {
       type: Number,
       default: 0.3
-    },
-    xAxisLabel:{
-      type: String,
-      default: 'x'
-    },
-    yAxisLabel: {
-      type: String,
-      default: 'y'
-    },
-    radiusLabel: {
-      type: String,
-      default: 'radius'
     },
     radiusFormat: {
       type: String,
@@ -169,19 +148,14 @@ export default {
       .elasticRadius(this.elasticRadius)
       .sortBubbleSize(this.sortBubbleSize)
       .maxBubbleRelativeSize(this.maxBubbleRelativeSize)
-      // .label((p) => this.formatKey(p.key))
-      .keyAccessor((p) => this.extractValue(p.value[this.xAxisLabel]))
-      .valueAccessor((p) => this.extractValue(p.value[this.yAxisLabel]))
-      .radiusValueAccessor((p) => this.extractValue(p.value[this.radiusLabel]))
-      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.xAxisLabel]))))
-      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.yAxisLabel]))))
-      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value[this.radiusLabel]))))
+      .keyAccessor((p) => this.extractValue(p.value['x']))
+      .valueAccessor((p) => this.extractValue(p.value['y']))
+      .radiusValueAccessor((p) => this.extractValue(p.value['r']))
+      .x(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['x']))))
+      .y(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['y']))))
+      .r(d3.scale.linear().domain(d3.extent(this.reducerAll, (d) => this.extractValue(d.value['r']))))
       .xAxisPadding(this.xAxisPadding)
       .yAxisPadding(this.yAxisPadding)
-
-    if(!this.showLabel) {
-      chart.label(d => null)
-    }
 
     if(this.timeScale) {
       chart.filterPrinter(filters => {

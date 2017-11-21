@@ -21,12 +21,6 @@ export default {
     removeEmptyRows: {
       default: true
     },
-    // order by
-    // v0.4移行時に消す
-    descending: {
-      type: Boolean,
-      default: true
-    },
     // vertical gap space between rows
     gap: {
       type: Number,
@@ -74,11 +68,6 @@ export default {
               .attr('transform', 'translate(-5, 5) rotate(330)')
           }
       })
-
-    // v0.4移行時に消す
-    if (!this.ordering && this.descending !== undefined) {
-      chart.ordering((d) => this.descending ? -d.value : d.value)
-    }
 
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap)
     return chart

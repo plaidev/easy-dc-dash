@@ -85,10 +85,6 @@ export default {
       type: Boolean,
       default: false
     },
-    showLabel: {
-      type: Boolean,
-      default: true
-    },
     // animation
     transitionDuration: {
       type: Number,
@@ -392,8 +388,7 @@ export default {
         case 'rowChart':
           return (d, i) => {
             let v = d.value
-            if (!d.data) v = d.value
-            else if (valueAccessor) v = valueAccessor(d.data)
+            if (valueAccessor) v = valueAccessor(d)
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
@@ -418,11 +413,11 @@ export default {
         case 'bubbleChart':
           return (d, i) => {
             const key = _formats.key(d.key)
-            const labels = [this.xAxisLabel, this.yAxisLabel, this.radiusLabel]
+            const axes = ['x', 'y', 'r']
             const vals = {}
-            labels.forEach((label) => {
-              const v = d.value[label].per || d.value[label]
-              vals[label] = _formats.val(v)
+            axes.forEach((axis) => {
+              const v = d.value[axis].per || d.value[axis]
+              vals[this.getLabel(axis)] = _formats.val(v)
             })
             return {key, vals}
           }

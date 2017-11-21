@@ -23,10 +23,6 @@ export default {
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
       default: 'overlay-legend'
     },
-    renderText: {
-      type: Boolean,
-      default: false
-    },
     // labels
     // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
     xAxisLabel: {
@@ -108,7 +104,7 @@ export default {
     }
 
     chart.on('postRender', () => {
-      if(this.renderText) {
+      if (this.renderLabel) {
         const positions = [];
         chart.selectAll(`rect.heat-box`).each(function(d) {
           const rect = d3.select(this);
@@ -138,7 +134,7 @@ export default {
       // TODO: layoutSettingsに入れる
       const {width, height} = this.containerInnerSize;
 
-      if (this.xAxisLabel) {
+      if (this._xAxisLabel) {
         chart.select('svg')
           .append("g")
             .attr("transform", `translate(${width / 2}, ${height - 5})`)
@@ -147,9 +143,9 @@ export default {
               .classed("x-axis-label", true)
               .attr("text-anchor", "middle")
               .style("font-size", "12px")
-              .text(this.xAxisLabel === true ? 'x' : this.xAxisLabel)
+              .text(this._xAxisLabel)
       }
-      if (this.yAxisLabel) {
+      if (this._yAxisLabel) {
         chart.select(`svg`)
           .append("g")
             .attr("transform", `translate(10, ${height / 2})`)
@@ -159,7 +155,7 @@ export default {
               .attr("text-anchor", "middle")
               .attr("transform", "rotate(-90)")
               .style("font-size", "12px")
-              .text(this.yAxisLabel === true ? 'y' : this.yAxisLabel)
+              .text(this._yAxisLabel)
       }
     })
     return chart

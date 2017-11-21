@@ -74,7 +74,7 @@ export default {
 
   mounted: function() {
     const chart = this.chart;
-    const _label = this.showLabel ? (d => this.getLabel(d.key)) : d => null
+    const _label = this.renderLabel ? (d => this.getLabel(d.key)) : d => null
 
     chart
       .othersLabel(this.othersLabel)
