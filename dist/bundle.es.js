@@ -36488,7 +36488,7 @@ var Base = {
         case 'rowChart':
           return function (d, i) {
             var v = d.value;
-            if (!d.data) v = d.value;else if (valueAccessor) v = valueAccessor(d.data);
+            if (valueAccessor) v = valueAccessor(d);
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
@@ -36662,7 +36662,7 @@ var Base = {
       }
     },
     removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
-      if (typeof this.chart.focusChart === 'function') this.chart.focusChart().filterAll();
+      if (typeof this.chart.focusChart === 'function' && this.chart.focusChart()) this.chart.focusChart().filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     },
