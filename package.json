@@ -71,7 +71,7 @@
     ],
     "modulePathIgnorePatterns": ["<rootDir>/libs"],
     "snapshotSerializers": ["<rootDir>/node_modules/jest-serializer-vue"],
-    "collectCoverage": false,
+    "collectCoverage": true,
     "collectCoverageFrom": ["libs/**/*.js", "libs/**/*.vue"],
     "mapCoverage": true
   }
