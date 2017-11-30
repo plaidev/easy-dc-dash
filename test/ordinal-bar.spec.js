@@ -8,13 +8,6 @@ import OrdinalBar from '@/ordinal-bar.vue';
 const localVue = createLocalVue();
 localVue.use(CssModuleTestHelperMixin);
 
-beforeAll(() => {
-  init();
-  Chart.install(Vue);
-
-  run();
-});
-
 describe('ordinal-bar', () => {
   Store.registerData([
     { d1: 'a', d2: true, v: 1 },
@@ -26,6 +19,7 @@ describe('ordinal-bar', () => {
   const wrapper = mount(localVue.extend(OrdinalBar), {
     localVue,
     propsData: {
+      id: 'test-ordinal-bar',
       dimension: 'd1',
       reduce: 'v',
     },

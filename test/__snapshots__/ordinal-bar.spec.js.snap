@@ -12,7 +12,7 @@ exports[`ordinal-bar renders the correct bar 1`] = `
                 <!---->
             </div>
             <div class="render-area">
-                <div id="id-d7ee879e-483a-4d29-b90a-c21fe50d495d" class="krt-dc-component dc-chart" style="display: flex; position: relative; width: 100%; height: 100%;">
+                <div id="test-ordinal-bar" class="krt-dc-component dc-chart" style="display: flex; position: relative; width: 100%; height: 100%;">
                     <!---->
                     <div class="reset-button">
                         <a class="reset" style="display: none;">
@@ -22,7 +22,7 @@ exports[`ordinal-bar renders the correct bar 1`] = `
                     <svg width="200" height="200">
                         <g>
                             <g class="grid-line horizontal" transform="translate(40,20)"></g>
-                            <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#id-d7ee879e-483a-4d29-b90a-c21fe50d495d-clip)">
+                            <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#test-ordinal-bar-clip)">
                                 <g class="stack _0">
                                     <rect class="bar" fill="#1f77b4" y="150" height="0"></rect>
                                     <rect class="bar" fill="#1f77b4" y="150" height="0"></rect>
@@ -46,7 +46,7 @@ exports[`ordinal-bar renders the correct bar 1`] = `
                             </g>
                         </g>
                         <defs>
-                            <clippath id="id-d7ee879e-483a-4d29-b90a-c21fe50d495d-clip">
+                            <clippath id="test-ordinal-bar-clip">
                                 <rect width="120" height="150" transform="translate(-0, -0)"></rect>
                             </clippath>
                         </defs>
