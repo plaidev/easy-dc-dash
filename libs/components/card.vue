@@ -18,53 +18,52 @@
 </template>
 
 <script lang="js">
-
 export default {
   props: {
     title: {
-      type: String
+      type: String,
     },
     width: {
-      default: 377
+      default: 377,
     },
     height: {
-      default: 233
+      default: 233,
     },
     captionHeight: {
-      default: 0
+      default: 0,
     },
     fullscreen: {
       type: Boolean,
-      default: false
+      default: false,
     },
     hideLegend: {
       type: Boolean,
-      default: false
+      default: false,
     },
     selfMargined: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   data: function() {
     return {
       isFullscreen: false,
       updating: false,
-      mounted: false
-    }
+      mounted: false,
+    };
   },
   computed: {
     $style: function() {
-      return this.$options.cssModules
+      return this.$options.cssModules;
     },
     renderAreaStyle: function() {
       if (this.captionHeight && this.title) {
         return {
           'margin-top': this.captionHeight + 'px',
-          height: 'calc(100% - ' + this.captionHeight + 'px)'
-        }
+          height: 'calc(100% - ' + this.captionHeight + 'px)',
+        };
       }
-      return {}
+      return {};
     },
     computedWidth: function() {
       let width = this.width;
@@ -72,81 +71,78 @@ export default {
         const style = window.getComputedStyle(this.$el);
         // 設定値と計測した値が異なる時、autoで再計算（flexの場合など）
         if (style.width !== this.width + 'px') {
-          width = 'auto'
+          width = 'auto';
         }
       }
-      return width
+      return width;
     },
     outerSizeStyle: function() {
-      const style = {}
+      const style = {};
       if (this.computedWidth === 'auto') {
-        style.width = '100%'
+        style.width = '100%';
+      } else if (this.computedWidth) {
+        style.width = this.computedWidth + 'px';
       }
-      else if (this.computedWidth) {
-        style.width = this.computedWidth+'px';
-      }
-      if (this.height) style.height = this.height+'px';
-      return style
+      if (this.height) style.height = this.height + 'px';
+      return style;
     },
     sizeStyle: function() {
       const style = {};
       if (this.isFullscreen) {
-        style.width = 90+'vw';
-        style.height = 90+'vh';
-      }
-      else {
+        style.width = 90 + 'vw';
+        style.height = 90 + 'vh';
+      } else {
         if (this.computedWidth === 'auto') {
-          style.width = '100%'
-        }
-        else if (this.computedWidth) style.width = this.computedWidth+'px';
-        if (this.height) style.height = this.height+'px';
+          style.width = '100%';
+        } else if (this.computedWidth) style.width = this.computedWidth + 'px';
+        if (this.height) style.height = this.height + 'px';
       }
-      return style
+      return style;
     },
     screenModeClass: function() {
-      classes = []
+      const classes = [];
       if (this.isFullscreen) {
-        classes.push(this.$options.cssModules['fullscreen'])
+        classes.push(this.$options.cssModules['fullscreen']);
       }
       if (this.hideLegend) {
-        classes.push(this.$options.cssModules['hide-legend'])
+        classes.push(this.$options.cssModules['hide-legend']);
       }
-      return classes.join(' ')
+      return classes.join(' ');
     },
     fullscreenIconClass: function() {
-      return this.isFullscreen? 'fa-window-minimize': 'fa-window-maximize'
-    }
+      return this.isFullscreen ? 'fa-window-minimize' : 'fa-window-maximize';
+    },
   },
   watch: {
     fullscreen: function(v) {
-      this.isFullscreen = v
+      this.isFullscreen = v;
     },
     sizeStyle: function() {
-      this.updateRenderAreaSize()
+      this.updateRenderAreaSize();
     },
     captionHeight: function() {
-      this.updateRenderAreaSize()
-    }
+      this.updateRenderAreaSize();
+    },
   },
   methods: {
     toggleFullscreen: function() {
       if (this.updating) return;
-      this.isFullscreen = !this.isFullscreen
+      this.isFullscreen = !this.isFullscreen;
     },
     updateRenderAreaSize: function() {
       if (this.updating) return;
-      this.updating = true
+      this.updating = true;
       // 設定変更後、レンダリングの完了を待つ
       this.$nextTick(() => {
-        this.updating = false
-        this.$emit('resized', {isFullscreen: this.isFullscreen})
-      })
-    }
+        this.updating = false;
+        this.$emit('resized', { isFullscreen: this.isFullscreen });
+      });
+    },
   },
   mounted: function() {
-    this.mounted = true
-  }
-}
+    this.mounted = true;
+  },
+};
 </script>
 
 <style module>

@@ -69,7 +69,8 @@ export default {
         '**/*.json',
         '**/*.scss',
         'node_modules/**' // only transpile our source code
-      ]
+      ],
+      plugins: ['external-helpers']
     }),
 
     // analyze()
