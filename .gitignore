@@ -2,3 +2,5 @@ node_modules
 !.gitkeep
 dist/bundle.browser.css
 
+# for test
+/coverage

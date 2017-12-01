@@ -50,8 +50,8 @@ export default {
     return {
       isFullscreen: false,
       updating: false,
-      mounted: false
-    }
+      mounted: false,
+    };
   },
   computed: {
     $style: function() {
@@ -80,10 +80,9 @@ export default {
     outerSizeStyle: function() {
       const style = {}
       if (this.computedWidth === 'auto') {
-        style.width = '100%'
-      }
-      else if (this.computedWidth) {
-        style.width = this.computedWidth+'px';
+        style.width = '100%';
+      } else if (this.computedWidth) {
+        style.width = this.computedWidth + 'px';
       }
       if (this.height) style.height = this.height+'px';
       return style
@@ -104,7 +103,7 @@ export default {
       return style
     },
     screenModeClass: function() {
-      classes = []
+      const classes = []
       if (this.isFullscreen) {
         classes.push(this.$options.cssModules['fullscreen'])
       }
@@ -114,7 +113,7 @@ export default {
       return classes.join(' ')
     },
     fullscreenIconClass: function() {
-      return this.isFullscreen? 'fa-window-minimize': 'fa-window-maximize'
+      return this.isFullscreen ? 'fa-window-minimize' : 'fa-window-maximize'
     }
   },
   watch: {
@@ -126,7 +125,7 @@ export default {
     },
     captionHeight: function() {
       this.updateRenderAreaSize()
-    }
+    },
   },
   methods: {
     toggleFullscreen: function() {
@@ -139,14 +138,14 @@ export default {
       // 設定変更後、レンダリングの完了を待つ
       this.$nextTick(() => {
         this.updating = false
-        this.$emit('resized', {isFullscreen: this.isFullscreen})
+        this.$emit('resized', { isFullscreen: this.isFullscreen })
       })
     }
   },
   mounted: function() {
     this.mounted = true
   }
-}
+};
 </script>
 
 <style module>
