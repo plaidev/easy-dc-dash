@@ -31,6 +31,10 @@ export default {
       ordinal = ['#bd0022', '#d10026', '#e40029', '#f8002d', '#ff2048', '#ff3458', '#ff4768', '#ff5b78', '#ff6f89', '#ff8299', '#ff96a9'] 
     }
 
+    if (name == 'karte_color_palette') {
+      ordinal = ['#66B8A1', '#D0E8D1', '#91B7B8', '#97E9DF', '#91B7B0', '#BDE3D1']
+    }
+
     return {
       linear,
       ordinal

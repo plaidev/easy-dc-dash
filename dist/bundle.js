@@ -3308,6 +3308,9 @@ class Manager {
   }
 }
 
+
+//# sourceMappingURL=index.mjs.map
+
 var commonjsGlobal$1 = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 
@@ -25430,10 +25433,8 @@ return dc;}
 }
 )();
 
-
+//# sourceMappingURL=dc.js.map
 });
-
-// Import DC and dependencies
 
 d3 = d3$1;
 crossfilter = crossfilter2;
@@ -25442,9 +25443,6 @@ var dc = dc$2;
 var global$1 = typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :
             typeof window !== "undefined" ? window : {};
-
-// shim for using process in browser
-// based off https://github.com/defunctzombie/node-process/blob/master/browser.js
 
 function defaultSetTimout() {
     throw new Error('setTimeout has not been defined');
@@ -25866,15 +25864,6 @@ var toString = {}.toString;
 var isArray = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
 
 var INSPECT_MAX_BYTES = 50;
 
@@ -27719,231 +27708,339 @@ var bomHandling = {
 	StripBOM: StripBOM
 };
 
-var string_decoder = createCommonjsModule$1(function (module, exports) {
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
+var safeBuffer = createCommonjsModule$1(function (module, exports) {
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = require$$0$2;
+} else {
+  // Copy properties from require('buffer')
+  Object.keys(require$$0$2).forEach(function (prop) {
+    exports[prop] = require$$0$2[prop];
+  });
+  exports.Buffer = SafeBuffer;
+}
 
-var Buffer = require$$0$2.Buffer;
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
 
-var isBufferEncoding = Buffer.isEncoding
-  || function(encoding) {
-       switch (encoding && encoding.toLowerCase()) {
-         case 'hex': case 'utf8': case 'utf-8': case 'ascii': case 'binary': case 'base64': case 'ucs2': case 'ucs-2': case 'utf16le': case 'utf-16le': case 'raw': return true;
-         default: return false;
-       }
-     };
+// Copy static methods from Buffer
+Object.keys(Buffer).forEach(function (prop) {
+  SafeBuffer[prop] = Buffer[prop];
+});
 
-
-function assertEncoding(encoding) {
-  if (encoding && !isBufferEncoding(encoding)) {
-    throw new Error('Unknown encoding: ' + encoding);
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
   }
+  return Buffer(arg, encodingOrOffset, length)
+};
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size);
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding);
+    } else {
+      buf.fill(fill);
+    }
+  } else {
+    buf.fill(0);
+  }
+  return buf
+};
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+};
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return require$$0$2.SlowBuffer(size)
+};
+});
+
+var Buffer$2 = safeBuffer.Buffer;
+
+var isEncoding = Buffer$2.isEncoding || function (encoding) {
+  encoding = '' + encoding;
+  switch (encoding && encoding.toLowerCase()) {
+    case 'hex':case 'utf8':case 'utf-8':case 'ascii':case 'binary':case 'base64':case 'ucs2':case 'ucs-2':case 'utf16le':case 'utf-16le':case 'raw':
+      return true;
+    default:
+      return false;
+  }
+};
+
+function _normalizeEncoding(enc) {
+  if (!enc) return 'utf8';
+  var retried;
+  while (true) {
+    switch (enc) {
+      case 'utf8':
+      case 'utf-8':
+        return 'utf8';
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return 'utf16le';
+      case 'latin1':
+      case 'binary':
+        return 'latin1';
+      case 'base64':
+      case 'ascii':
+      case 'hex':
+        return enc;
+      default:
+        if (retried) return; // undefined
+        enc = ('' + enc).toLowerCase();
+        retried = true;
+    }
+  }
+}
+
+// Do not cache `Buffer.isEncoding` when checking encoding names as some
+// modules monkey-patch it to support additional encodings
+function normalizeEncoding(enc) {
+  var nenc = _normalizeEncoding(enc);
+  if (typeof nenc !== 'string' && (Buffer$2.isEncoding === isEncoding || !isEncoding(enc))) throw new Error('Unknown encoding: ' + enc);
+  return nenc || enc;
 }
 
 // StringDecoder provides an interface for efficiently splitting a series of
 // buffers into a series of JS strings without breaking apart multi-byte
-// characters. CESU-8 is handled as part of the UTF-8 encoding.
-//
-// @TODO Handling all encodings inside a single object makes it very difficult
-// to reason about this code, so it should be split up in the future.
-// @TODO There should be a utf8-strict encoding that rejects invalid UTF-8 code
-// points as used by CESU-8.
-var StringDecoder = exports.StringDecoder = function(encoding) {
-  this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
-  assertEncoding(encoding);
+// characters.
+var StringDecoder_1 = StringDecoder$1;
+function StringDecoder$1(encoding) {
+  this.encoding = normalizeEncoding(encoding);
+  var nb;
   switch (this.encoding) {
-    case 'utf8':
-      // CESU-8 represents each of Surrogate Pair by 3-bytes
-      this.surrogateSize = 3;
-      break;
-    case 'ucs2':
     case 'utf16le':
-      // UTF-16 represents each of Surrogate Pair by 2-bytes
-      this.surrogateSize = 2;
-      this.detectIncompleteChar = utf16DetectIncompleteChar;
+      this.text = utf16Text;
+      this.end = utf16End;
+      nb = 4;
+      break;
+    case 'utf8':
+      this.fillLast = utf8FillLast;
+      nb = 4;
       break;
     case 'base64':
-      // Base-64 stores 3 bytes in 4 chars, and pads the remainder.
-      this.surrogateSize = 3;
-      this.detectIncompleteChar = base64DetectIncompleteChar;
+      this.text = base64Text;
+      this.end = base64End;
+      nb = 3;
       break;
     default:
-      this.write = passThroughWrite;
+      this.write = simpleWrite;
+      this.end = simpleEnd;
       return;
   }
-
-  // Enough space to store all bytes of a single character. UTF-8 needs 4
-  // bytes, but CESU-8 may require up to 6 (3 bytes per surrogate).
-  this.charBuffer = new Buffer(6);
-  // Number of bytes received for the current incomplete multi-byte character.
-  this.charReceived = 0;
-  // Number of bytes expected for the current incomplete multi-byte character.
-  this.charLength = 0;
-};
-
-
-// write decodes the given buffer and returns it as JS string that is
-// guaranteed to not contain any partial multi-byte characters. Any partial
-// character found at the end of the buffer is buffered up, and will be
-// returned when calling write again with the remaining bytes.
-//
-// Note: Converting a Buffer containing an orphan surrogate to a String
-// currently works, but converting a String to a Buffer (via `new Buffer`, or
-// Buffer#write) will replace incomplete surrogates with the unicode
-// replacement character. See https://codereview.chromium.org/121173009/ .
-StringDecoder.prototype.write = function(buffer) {
-  var charStr = '';
-  // if our last write ended with an incomplete multibyte character
-  while (this.charLength) {
-    // determine how many remaining bytes this buffer has to offer for this char
-    var available = (buffer.length >= this.charLength - this.charReceived) ?
-        this.charLength - this.charReceived :
-        buffer.length;
-
-    // add the new bytes to the char buffer
-    buffer.copy(this.charBuffer, this.charReceived, 0, available);
-    this.charReceived += available;
-
-    if (this.charReceived < this.charLength) {
-      // still not enough chars in this buffer? wait for more ...
-      return '';
-    }
-
-    // remove bytes belonging to the current character from the buffer
-    buffer = buffer.slice(available, buffer.length);
-
-    // get the character that was split
-    charStr = this.charBuffer.slice(0, this.charLength).toString(this.encoding);
-
-    // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
-    var charCode = charStr.charCodeAt(charStr.length - 1);
-    if (charCode >= 0xD800 && charCode <= 0xDBFF) {
-      this.charLength += this.surrogateSize;
-      charStr = '';
-      continue;
-    }
-    this.charReceived = this.charLength = 0;
-
-    // if there are no more bytes in this buffer, just emit our char
-    if (buffer.length === 0) {
-      return charStr;
-    }
-    break;
-  }
-
-  // determine and set charLength / charReceived
-  this.detectIncompleteChar(buffer);
-
-  var end = buffer.length;
-  if (this.charLength) {
-    // buffer the incomplete character bytes we got
-    buffer.copy(this.charBuffer, 0, buffer.length - this.charReceived, end);
-    end -= this.charReceived;
-  }
-
-  charStr += buffer.toString(this.encoding, 0, end);
-
-  var end = charStr.length - 1;
-  var charCode = charStr.charCodeAt(end);
-  // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
-  if (charCode >= 0xD800 && charCode <= 0xDBFF) {
-    var size = this.surrogateSize;
-    this.charLength += size;
-    this.charReceived += size;
-    this.charBuffer.copy(this.charBuffer, size, 0, size);
-    buffer.copy(this.charBuffer, 0, 0, size);
-    return charStr.substring(0, end);
-  }
-
-  // or just emit the charStr
-  return charStr;
-};
-
-// detectIncompleteChar determines if there is an incomplete UTF-8 character at
-// the end of the given buffer. If so, it sets this.charLength to the byte
-// length that character, and sets this.charReceived to the number of bytes
-// that are available for this character.
-StringDecoder.prototype.detectIncompleteChar = function(buffer) {
-  // determine how many bytes we have to check at the end of this buffer
-  var i = (buffer.length >= 3) ? 3 : buffer.length;
-
-  // Figure out if one of the last i bytes of our buffer announces an
-  // incomplete char.
-  for (; i > 0; i--) {
-    var c = buffer[buffer.length - i];
-
-    // See http://en.wikipedia.org/wiki/UTF-8#Description
-
-    // 110XXXXX
-    if (i == 1 && c >> 5 == 0x06) {
-      this.charLength = 2;
-      break;
-    }
-
-    // 1110XXXX
-    if (i <= 2 && c >> 4 == 0x0E) {
-      this.charLength = 3;
-      break;
-    }
-
-    // 11110XXX
-    if (i <= 3 && c >> 3 == 0x1E) {
-      this.charLength = 4;
-      break;
-    }
-  }
-  this.charReceived = i;
-};
-
-StringDecoder.prototype.end = function(buffer) {
-  var res = '';
-  if (buffer && buffer.length)
-    res = this.write(buffer);
-
-  if (this.charReceived) {
-    var cr = this.charReceived;
-    var buf = this.charBuffer;
-    var enc = this.encoding;
-    res += buf.slice(0, cr).toString(enc);
-  }
-
-  return res;
-};
-
-function passThroughWrite(buffer) {
-  return buffer.toString(this.encoding);
+  this.lastNeed = 0;
+  this.lastTotal = 0;
+  this.lastChar = Buffer$2.allocUnsafe(nb);
 }
 
-function utf16DetectIncompleteChar(buffer) {
-  this.charReceived = buffer.length % 2;
-  this.charLength = this.charReceived ? 2 : 0;
+StringDecoder$1.prototype.write = function (buf) {
+  if (buf.length === 0) return '';
+  var r;
+  var i;
+  if (this.lastNeed) {
+    r = this.fillLast(buf);
+    if (r === undefined) return '';
+    i = this.lastNeed;
+    this.lastNeed = 0;
+  } else {
+    i = 0;
+  }
+  if (i < buf.length) return r ? r + this.text(buf, i) : this.text(buf, i);
+  return r || '';
+};
+
+StringDecoder$1.prototype.end = utf8End;
+
+// Returns only complete characters in a Buffer
+StringDecoder$1.prototype.text = utf8Text;
+
+// Attempts to complete a partial non-UTF-8 character using bytes from a Buffer
+StringDecoder$1.prototype.fillLast = function (buf) {
+  if (this.lastNeed <= buf.length) {
+    buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, this.lastNeed);
+    return this.lastChar.toString(this.encoding, 0, this.lastTotal);
+  }
+  buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, buf.length);
+  this.lastNeed -= buf.length;
+};
+
+// Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
+// continuation byte.
+function utf8CheckByte(byte) {
+  if (byte <= 0x7F) return 0;else if (byte >> 5 === 0x06) return 2;else if (byte >> 4 === 0x0E) return 3;else if (byte >> 3 === 0x1E) return 4;
+  return -1;
 }
 
-function base64DetectIncompleteChar(buffer) {
-  this.charReceived = buffer.length % 3;
-  this.charLength = this.charReceived ? 3 : 0;
+// Checks at most 3 bytes at the end of a Buffer in order to detect an
+// incomplete multi-byte UTF-8 character. The total number of bytes (2, 3, or 4)
+// needed to complete the UTF-8 character (if applicable) are returned.
+function utf8CheckIncomplete(self, buf, i) {
+  var j = buf.length - 1;
+  if (j < i) return 0;
+  var nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) self.lastNeed = nb - 1;
+    return nb;
+  }
+  if (--j < i) return 0;
+  nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) self.lastNeed = nb - 2;
+    return nb;
+  }
+  if (--j < i) return 0;
+  nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) {
+      if (nb === 2) nb = 0;else self.lastNeed = nb - 3;
+    }
+    return nb;
+  }
+  return 0;
 }
-});
 
-var string_decoder_1 = string_decoder.StringDecoder;
+// Validates as many continuation bytes for a multi-byte UTF-8 character as
+// needed or are available. If we see a non-continuation byte where we expect
+// one, we "replace" the validated continuation bytes we've seen so far with
+// UTF-8 replacement characters ('\ufffd'), to match v8's UTF-8 decoding
+// behavior. The continuation byte check is included three times in the case
+// where all of the continuation bytes for a character exist in the same buffer.
+// It is also done this way as a slight performance increase instead of using a
+// loop.
+function utf8CheckExtraBytes(self, buf, p) {
+  if ((buf[0] & 0xC0) !== 0x80) {
+    self.lastNeed = 0;
+    return '\ufffd'.repeat(p);
+  }
+  if (self.lastNeed > 1 && buf.length > 1) {
+    if ((buf[1] & 0xC0) !== 0x80) {
+      self.lastNeed = 1;
+      return '\ufffd'.repeat(p + 1);
+    }
+    if (self.lastNeed > 2 && buf.length > 2) {
+      if ((buf[2] & 0xC0) !== 0x80) {
+        self.lastNeed = 2;
+        return '\ufffd'.repeat(p + 2);
+      }
+    }
+  }
+}
+
+// Attempts to complete a multi-byte UTF-8 character using bytes from a Buffer.
+function utf8FillLast(buf) {
+  var p = this.lastTotal - this.lastNeed;
+  var r = utf8CheckExtraBytes(this, buf, p);
+  if (r !== undefined) return r;
+  if (this.lastNeed <= buf.length) {
+    buf.copy(this.lastChar, p, 0, this.lastNeed);
+    return this.lastChar.toString(this.encoding, 0, this.lastTotal);
+  }
+  buf.copy(this.lastChar, p, 0, buf.length);
+  this.lastNeed -= buf.length;
+}
+
+// Returns all complete UTF-8 characters in a Buffer. If the Buffer ended on a
+// partial character, the character's bytes are buffered until the required
+// number of bytes are available.
+function utf8Text(buf, i) {
+  var total = utf8CheckIncomplete(this, buf, i);
+  if (!this.lastNeed) return buf.toString('utf8', i);
+  this.lastTotal = total;
+  var end = buf.length - (total - this.lastNeed);
+  buf.copy(this.lastChar, 0, end);
+  return buf.toString('utf8', i, end);
+}
+
+// For UTF-8, a replacement character for each buffered byte of a (partial)
+// character needs to be added to the output.
+function utf8End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) return r + '\ufffd'.repeat(this.lastTotal - this.lastNeed);
+  return r;
+}
+
+// UTF-16LE typically needs two bytes per character, but even if we have an even
+// number of bytes available, we need to check if we end on a leading/high
+// surrogate. In that case, we need to wait for the next two bytes in order to
+// decode the last character properly.
+function utf16Text(buf, i) {
+  if ((buf.length - i) % 2 === 0) {
+    var r = buf.toString('utf16le', i);
+    if (r) {
+      var c = r.charCodeAt(r.length - 1);
+      if (c >= 0xD800 && c <= 0xDBFF) {
+        this.lastNeed = 2;
+        this.lastTotal = 4;
+        this.lastChar[0] = buf[buf.length - 2];
+        this.lastChar[1] = buf[buf.length - 1];
+        return r.slice(0, -1);
+      }
+    }
+    return r;
+  }
+  this.lastNeed = 1;
+  this.lastTotal = 2;
+  this.lastChar[0] = buf[buf.length - 1];
+  return buf.toString('utf16le', i, buf.length - 1);
+}
+
+// For UTF-16LE we do not explicitly append special replacement characters if we
+// end on a partial character, we simply let v8 handle that.
+function utf16End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) {
+    var end = this.lastTotal - this.lastNeed;
+    return r + this.lastChar.toString('utf16le', 0, end);
+  }
+  return r;
+}
+
+function base64Text(buf, i) {
+  var n = (buf.length - i) % 3;
+  if (n === 0) return buf.toString('base64', i);
+  this.lastNeed = 3 - n;
+  this.lastTotal = 3;
+  if (n === 1) {
+    this.lastChar[0] = buf[buf.length - 1];
+  } else {
+    this.lastChar[0] = buf[buf.length - 2];
+    this.lastChar[1] = buf[buf.length - 1];
+  }
+  return buf.toString('base64', i, buf.length - n);
+}
+
+function base64End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) return r + this.lastChar.toString('base64', 0, 3 - this.lastNeed);
+  return r;
+}
+
+// Pass bytes on through for single-byte encodings (e.g. ascii, latin1, hex)
+function simpleWrite(buf) {
+  return buf.toString(this.encoding);
+}
+
+function simpleEnd(buf) {
+  return buf && buf.length ? this.write(buf) : '';
+}
+
+var string_decoder = {
+	StringDecoder: StringDecoder_1
+};
 
 var Buffer$1 = require$$0$2.Buffer;
 
@@ -28133,7 +28230,7 @@ InternalDecoderCesu8.prototype.end = function() {
     return res;
 };
 
-var Buffer$2 = require$$0$2.Buffer;
+var Buffer$3 = require$$0$2.Buffer;
 
 // Note: UTF16-LE (or UCS2) codec is Node.js native. See encodings/internal.js
 
@@ -28154,7 +28251,7 @@ function Utf16BEEncoder() {
 }
 
 Utf16BEEncoder.prototype.write = function(str) {
-    var buf = new Buffer$2(str, 'ucs2');
+    var buf = new Buffer$3(str, 'ucs2');
     for (var i = 0; i < buf.length; i += 2) {
         var tmp = buf[i]; buf[i] = buf[i+1]; buf[i+1] = tmp;
     }
@@ -28175,7 +28272,7 @@ Utf16BEDecoder.prototype.write = function(buf) {
     if (buf.length == 0)
         return '';
 
-    var buf2 = new Buffer$2(buf.length + 1),
+    var buf2 = new Buffer$3(buf.length + 1),
         i = 0, j = 0;
 
     if (this.overflowByte !== -1) {
@@ -28254,7 +28351,7 @@ Utf16Decoder.prototype.write = function(buf) {
             return '';
 
         // We have enough bytes -> detect endianness.
-        var buf = Buffer$2.concat(this.initialBytes),
+        var buf = Buffer$3.concat(this.initialBytes),
             encoding = detectEncoding(buf, this.options.defaultEncoding);
         this.decoder = this.iconv.getDecoder(encoding, this.options);
         this.initialBytes.length = this.initialBytesLen = 0;
@@ -28265,7 +28362,7 @@ Utf16Decoder.prototype.write = function(buf) {
 
 Utf16Decoder.prototype.end = function() {
     if (!this.decoder) {
-        var buf = Buffer$2.concat(this.initialBytes),
+        var buf = Buffer$3.concat(this.initialBytes),
             encoding = detectEncoding(buf, this.options.defaultEncoding);
         this.decoder = this.iconv.getDecoder(encoding, this.options);
 
@@ -28313,7 +28410,7 @@ var utf16 = {
 	utf16: utf16_1
 };
 
-var Buffer$3 = require$$0$2.Buffer;
+var Buffer$4 = require$$0$2.Buffer;
 
 // UTF-7 codec, according to https://tools.ietf.org/html/rfc2152
 // See also below a UTF-7-IMAP codec, according to http://tools.ietf.org/html/rfc3501#section-5.1.3
@@ -28340,7 +28437,7 @@ function Utf7Encoder(options, codec) {
 Utf7Encoder.prototype.write = function(str) {
     // Naive implementation.
     // Non-direct chars are encoded as "+<base64>-"; single "+" char is encoded as "+-".
-    return new Buffer$3(str.replace(nonDirectChars, function(chunk) {
+    return new Buffer$4(str.replace(nonDirectChars, function(chunk) {
         return "+" + (chunk === '+' ? '' : 
             this.iconv.encode(chunk, 'utf16-be').toString('base64').replace(/=+$/, '')) 
             + "-";
@@ -28389,7 +28486,7 @@ Utf7Decoder.prototype.write = function(buf) {
                     res += "+";
                 } else {
                     var b64str = base64Accum + buf.slice(lastI, i).toString();
-                    res += this.iconv.decode(new Buffer$3(b64str, 'base64'), "utf16-be");
+                    res += this.iconv.decode(new Buffer$4(b64str, 'base64'), "utf16-be");
                 }
 
                 if (buf[i] != minusChar) // Minus is absorbed after base64.
@@ -28411,7 +28508,7 @@ Utf7Decoder.prototype.write = function(buf) {
         base64Accum = b64str.slice(canBeDecoded); // The rest will be decoded in future.
         b64str = b64str.slice(0, canBeDecoded);
 
-        res += this.iconv.decode(new Buffer$3(b64str, 'base64'), "utf16-be");
+        res += this.iconv.decode(new Buffer$4(b64str, 'base64'), "utf16-be");
     }
 
     this.inBase64 = inBase64;
@@ -28423,7 +28520,7 @@ Utf7Decoder.prototype.write = function(buf) {
 Utf7Decoder.prototype.end = function() {
     var res = "";
     if (this.inBase64 && this.base64Accum.length > 0)
-        res = this.iconv.decode(new Buffer$3(this.base64Accum, 'base64'), "utf16-be");
+        res = this.iconv.decode(new Buffer$4(this.base64Accum, 'base64'), "utf16-be");
 
     this.inBase64 = false;
     this.base64Accum = '';
@@ -28458,7 +28555,7 @@ Utf7IMAPCodec.prototype.bomAware = true;
 function Utf7IMAPEncoder(options, codec) {
     this.iconv = codec.iconv;
     this.inBase64 = false;
-    this.base64Accum = new Buffer$3(6);
+    this.base64Accum = new Buffer$4(6);
     this.base64AccumIdx = 0;
 }
 
@@ -28466,7 +28563,7 @@ Utf7IMAPEncoder.prototype.write = function(str) {
     var inBase64 = this.inBase64,
         base64Accum = this.base64Accum,
         base64AccumIdx = this.base64AccumIdx,
-        buf = new Buffer$3(str.length*5 + 10), bufIdx = 0;
+        buf = new Buffer$4(str.length*5 + 10), bufIdx = 0;
 
     for (var i = 0; i < str.length; i++) {
         var uChar = str.charCodeAt(i);
@@ -28512,7 +28609,7 @@ Utf7IMAPEncoder.prototype.write = function(str) {
 };
 
 Utf7IMAPEncoder.prototype.end = function() {
-    var buf = new Buffer$3(10), bufIdx = 0;
+    var buf = new Buffer$4(10), bufIdx = 0;
     if (this.inBase64) {
         if (this.base64AccumIdx > 0) {
             bufIdx += buf.write(this.base64Accum.slice(0, this.base64AccumIdx).toString('base64').replace(/\//g, ',').replace(/=+$/, ''), bufIdx);
@@ -28560,7 +28657,7 @@ Utf7IMAPDecoder.prototype.write = function(buf) {
                     res += "&";
                 } else {
                     var b64str = base64Accum + buf.slice(lastI, i).toString().replace(/,/g, '/');
-                    res += this.iconv.decode(new Buffer$3(b64str, 'base64'), "utf16-be");
+                    res += this.iconv.decode(new Buffer$4(b64str, 'base64'), "utf16-be");
                 }
 
                 if (buf[i] != minusChar) // Minus may be absorbed after base64.
@@ -28582,7 +28679,7 @@ Utf7IMAPDecoder.prototype.write = function(buf) {
         base64Accum = b64str.slice(canBeDecoded); // The rest will be decoded in future.
         b64str = b64str.slice(0, canBeDecoded);
 
-        res += this.iconv.decode(new Buffer$3(b64str, 'base64'), "utf16-be");
+        res += this.iconv.decode(new Buffer$4(b64str, 'base64'), "utf16-be");
     }
 
     this.inBase64 = inBase64;
@@ -28594,7 +28691,7 @@ Utf7IMAPDecoder.prototype.write = function(buf) {
 Utf7IMAPDecoder.prototype.end = function() {
     var res = "";
     if (this.inBase64 && this.base64Accum.length > 0)
-        res = this.iconv.decode(new Buffer$3(this.base64Accum, 'base64'), "utf16-be");
+        res = this.iconv.decode(new Buffer$4(this.base64Accum, 'base64'), "utf16-be");
 
     this.inBase64 = false;
     this.base64Accum = '';
@@ -28607,7 +28704,7 @@ var utf7 = {
 	utf7imap: utf7imap
 };
 
-var Buffer$4 = require$$0$2.Buffer;
+var Buffer$5 = require$$0$2.Buffer;
 
 // Single-byte codec. Needs a 'chars' string parameter that contains 256 or 128 chars that
 // correspond to encoded bytes (if 128 - then lower half is ASCII). 
@@ -28628,10 +28725,10 @@ function SBCSCodec(codecOptions, iconv) {
         codecOptions.chars = asciiString + codecOptions.chars;
     }
 
-    this.decodeBuf = new Buffer$4(codecOptions.chars, 'ucs2');
+    this.decodeBuf = new Buffer$5(codecOptions.chars, 'ucs2');
     
     // Encoding buffer.
-    var encodeBuf = new Buffer$4(65536);
+    var encodeBuf = new Buffer$5(65536);
     encodeBuf.fill(iconv.defaultCharSingleByte.charCodeAt(0));
 
     for (var i = 0; i < codecOptions.chars.length; i++)
@@ -28649,7 +28746,7 @@ function SBCSEncoder(options, codec) {
 }
 
 SBCSEncoder.prototype.write = function(str) {
-    var buf = new Buffer$4(str.length);
+    var buf = new Buffer$5(str.length);
     for (var i = 0; i < str.length; i++)
         buf[i] = this.encodeBuf[str.charCodeAt(i)];
     
@@ -28667,7 +28764,7 @@ function SBCSDecoder(options, codec) {
 SBCSDecoder.prototype.write = function(buf) {
     // Strings are immutable in JS -> we use ucs2 buffer to speed up computations.
     var decodeBuf = this.decodeBuf;
-    var newBuf = new Buffer$4(buf.length*2);
+    var newBuf = new Buffer$5(buf.length*2);
     var idx1 = 0, idx2 = 0;
     for (var i = 0; i < buf.length; i++) {
         idx1 = buf[i]*2; idx2 = i*2;
@@ -28683,8 +28780,6 @@ SBCSDecoder.prototype.end = function() {
 var sbcsCodec = {
 	_sbcs: _sbcs
 };
-
-// Manually added data to be used by sbcs codec in addition to generated one.
 
 var sbcsData = {
     // Not supported by iconv, not sure why.
@@ -28851,7 +28946,6 @@ var sbcsData = {
     "csmacintosh": "macintosh",
 };
 
-// Generated data for sbcs codec. Don't edit manually. Regenerate using generation/gen-sbcs.js script.
 var sbcsDataGenerated = {
   "437": "cp437",
   "737": "cp737",
@@ -29301,7 +29395,7 @@ var sbcsDataGenerated = {
   }
 };
 
-var Buffer$5 = require$$0$2.Buffer;
+var Buffer$6 = require$$0$2.Buffer;
 
 // Multibyte codec. In this scheme, a character is represented by 1 or more bytes.
 // Our codec supports UTF-16 surrogates, extensions for GB18030 and unicode sequences.
@@ -29583,7 +29677,7 @@ function DBCSEncoder(options, codec) {
 }
 
 DBCSEncoder.prototype.write = function(str) {
-    var newBuf = new Buffer$5(str.length * (this.gb18030 ? 4 : 3)), 
+    var newBuf = new Buffer$6(str.length * (this.gb18030 ? 4 : 3)), 
         leadSurrogate = this.leadSurrogate,
         seqObj = this.seqObj, nextChar = -1,
         i = 0, j = 0;
@@ -29706,7 +29800,7 @@ DBCSEncoder.prototype.end = function() {
     if (this.leadSurrogate === -1 && this.seqObj === undefined)
         return; // All clean. Most often case.
 
-    var newBuf = new Buffer$5(10), j = 0;
+    var newBuf = new Buffer$6(10), j = 0;
 
     if (this.seqObj) { // We're in the sequence.
         var dbcsCode = this.seqObj[DEF_CHAR];
@@ -29742,7 +29836,7 @@ DBCSEncoder.prototype.findIdx = findIdx;
 function DBCSDecoder(options, codec) {
     // Decoder state
     this.nodeIdx = 0;
-    this.prevBuf = new Buffer$5(0);
+    this.prevBuf = new Buffer$6(0);
 
     // Static data
     this.decodeTables = codec.decodeTables;
@@ -29752,14 +29846,14 @@ function DBCSDecoder(options, codec) {
 }
 
 DBCSDecoder.prototype.write = function(buf) {
-    var newBuf = new Buffer$5(buf.length*2),
+    var newBuf = new Buffer$6(buf.length*2),
         nodeIdx = this.nodeIdx, 
         prevBuf = this.prevBuf, prevBufOffset = this.prevBuf.length,
         seqStart = -this.prevBuf.length, // idx of the start of current parsed sequence.
         uCode;
 
     if (prevBufOffset > 0) // Make prev buf overlap a little to make it easier to slice later.
-        prevBuf = Buffer$5.concat([prevBuf, buf.slice(0, 10)]);
+        prevBuf = Buffer$6.concat([prevBuf, buf.slice(0, 10)]);
     
     for (var i = 0, j = 0; i < buf.length; i++) {
         var curByte = (i >= 0) ? buf[i] : prevBuf[i + prevBufOffset];
@@ -29829,7 +29923,7 @@ DBCSDecoder.prototype.end = function() {
         var buf = this.prevBuf.slice(1);
 
         // Parse remaining as usual.
-        this.prevBuf = new Buffer$5(0);
+        this.prevBuf = new Buffer$6(0);
         this.nodeIdx = 0;
         if (buf.length > 0)
             ret += this.write(buf);
@@ -31112,7 +31206,7 @@ var big5Added$1 = Object.freeze({
 	default: big5Added
 });
 
-var require$$0$4 = ( shiftjis$1 && shiftjis ) || shiftjis$1;
+var require$$0$5 = ( shiftjis$1 && shiftjis ) || shiftjis$1;
 
 var require$$1$2 = ( eucjp$1 && eucjp ) || eucjp$1;
 
@@ -31127,10 +31221,6 @@ var require$$5 = ( cp949$1 && cp949 ) || cp949$1;
 var require$$6 = ( cp950$1 && cp950 ) || cp950$1;
 
 var require$$7 = ( big5Added$1 && big5Added ) || big5Added$1;
-
-// Description of supported double byte encodings and aliases.
-// Tables are not require()-d until they are needed to speed up library load.
-// require()-s are direct to support Browserify.
 
 var dbcsData = {
     
@@ -31168,7 +31258,7 @@ var dbcsData = {
 
     'shiftjis': {
         type: '_dbcs',
-        table: function() { return require$$0$4 },
+        table: function() { return require$$0$5 },
         encodeAdd: {'\u00a5': 0x5C, '\u203E': 0x7E},
         encodeSkipVals: [{from: 0xED40, to: 0xF940}],
     },
@@ -31339,8 +31429,6 @@ EventHandlers.prototype = Object.create(null);
 function EventEmitter() {
   EventEmitter.init.call(this);
 }
-// nodejs oddity
-// require('events') === require('events').EventEmitter
 EventEmitter.EventEmitter = EventEmitter;
 
 EventEmitter.usingDomains = false;
@@ -31824,26 +31912,6 @@ if (typeof Object.create === 'function'){
 }
 var inherits$1 = inherits;
 
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
 var formatRegExp = /%[sdj%]/g;
 function format(f) {
   if (!isString(f)) {
@@ -32328,7 +32396,6 @@ function objectToString(o) {
 }
 
 
-// log is just a thin wrapper to console.log that prepends a timestamp
 
 
 
@@ -32504,7 +32571,7 @@ function ReadableState(options, stream) {
   this.decoder = null;
   this.encoding = null;
   if (options.encoding) {
-    this.decoder = new string_decoder_1(options.encoding);
+    this.decoder = new StringDecoder_1(options.encoding);
     this.encoding = options.encoding;
   }
 }
@@ -32611,7 +32678,7 @@ function needMoreData(state) {
 
 // backwards compatibility.
 Readable$1.prototype.setEncoding = function (enc) {
-  this._readableState.decoder = new string_decoder_1(enc);
+  this._readableState.decoder = new StringDecoder_1(enc);
   this._readableState.encoding = enc;
   return this;
 };
@@ -34010,9 +34077,6 @@ Stream$1.PassThrough = PassThrough$1;
 // Backwards-compat with node 0.4.x
 Stream$1.Stream = Stream$1;
 
-// old-style streams.  Note that the pipe method (the only relevant
-// part of this class) is overridden in the Readable class.
-
 function Stream$1() {
   EventEmitter.call(this);
 }
@@ -34113,7 +34177,7 @@ var stream = Object.freeze({
 
 var require$$1$4 = ( stream && Stream$1 ) || stream;
 
-var Buffer$6 = require$$0$2.Buffer;
+var Buffer$7 = require$$0$2.Buffer;
 var Transform = require$$1$4.Transform;
 
 
@@ -34180,7 +34244,7 @@ IconvLiteEncoderStream.prototype.collect = function(cb) {
     this.on('error', cb);
     this.on('data', function(chunk) { chunks.push(chunk); });
     this.on('end', function() {
-        cb(null, Buffer$6.concat(chunks));
+        cb(null, Buffer$7.concat(chunks));
     });
     return this;
 };
@@ -34199,7 +34263,7 @@ IconvLiteDecoderStream.prototype = Object.create(Transform.prototype, {
 });
 
 IconvLiteDecoderStream.prototype._transform = function(chunk, encoding, done) {
-    if (!Buffer$6.isBuffer(chunk))
+    if (!Buffer$7.isBuffer(chunk))
         return done(new Error("Iconv decoding stream needs buffers as its input."));
     try {
         var res = this.conv.write(chunk);
@@ -34232,7 +34296,7 @@ IconvLiteDecoderStream.prototype.collect = function(cb) {
     return this;
 };
 
-var Buffer$7 = require$$0$2.Buffer;
+var Buffer$8 = require$$0$2.Buffer;
 
 // == Extend Node primitives to use iconv-lite =================================
 
@@ -34241,7 +34305,7 @@ var extendNode = function (iconv) {
 
     // Node authors rewrote Buffer internals to make it compatible with
     // Uint8Array and we cannot patch key functions since then.
-    iconv.supportsNodeEncodingsExtension = !(new Buffer$7(0) instanceof Uint8Array);
+    iconv.supportsNodeEncodingsExtension = !(new Buffer$8(0) instanceof Uint8Array);
 
     iconv.extendNodeEncodings = function extendNodeEncodings() {
         if (original) return;
@@ -34258,7 +34322,7 @@ var extendNode = function (iconv) {
             'base64': true, 'ucs2': true, 'ucs-2': true, 'utf16le': true, 'utf-16le': true,
         };
 
-        Buffer$7.isNativeEncoding = function(enc) {
+        Buffer$8.isNativeEncoding = function(enc) {
             return enc && nodeNativeEncodings[enc.toLowerCase()];
         };
 
@@ -34270,7 +34334,7 @@ var extendNode = function (iconv) {
             encoding = String(encoding || 'utf8').toLowerCase();
 
             // Use native conversion when possible
-            if (Buffer$7.isNativeEncoding(encoding))
+            if (Buffer$8.isNativeEncoding(encoding))
                 return original.SlowBufferToString.call(this, encoding, start, end);
 
             // Otherwise, use our decoding method.
@@ -34308,7 +34372,7 @@ var extendNode = function (iconv) {
             encoding = String(encoding || 'utf8').toLowerCase();
 
             // Use native conversion when possible
-            if (Buffer$7.isNativeEncoding(encoding))
+            if (Buffer$8.isNativeEncoding(encoding))
                 return original.SlowBufferWrite.call(this, string, offset, length, encoding);
 
             if (string.length > 0 && (length < 0 || offset < 0))
@@ -34323,29 +34387,29 @@ var extendNode = function (iconv) {
 
         // -- Buffer ---------------------------------------------------------------
 
-        original.BufferIsEncoding = Buffer$7.isEncoding;
-        Buffer$7.isEncoding = function(encoding) {
-            return Buffer$7.isNativeEncoding(encoding) || iconv.encodingExists(encoding);
+        original.BufferIsEncoding = Buffer$8.isEncoding;
+        Buffer$8.isEncoding = function(encoding) {
+            return Buffer$8.isNativeEncoding(encoding) || iconv.encodingExists(encoding);
         };
 
-        original.BufferByteLength = Buffer$7.byteLength;
-        Buffer$7.byteLength = SlowBuffer.byteLength = function(str, encoding) {
+        original.BufferByteLength = Buffer$8.byteLength;
+        Buffer$8.byteLength = SlowBuffer.byteLength = function(str, encoding) {
             encoding = String(encoding || 'utf8').toLowerCase();
 
             // Use native conversion when possible
-            if (Buffer$7.isNativeEncoding(encoding))
+            if (Buffer$8.isNativeEncoding(encoding))
                 return original.BufferByteLength.call(this, str, encoding);
 
             // Slow, I know, but we don't have a better way yet.
             return iconv.encode(str, encoding).length;
         };
 
-        original.BufferToString = Buffer$7.prototype.toString;
-        Buffer$7.prototype.toString = function(encoding, start, end) {
+        original.BufferToString = Buffer$8.prototype.toString;
+        Buffer$8.prototype.toString = function(encoding, start, end) {
             encoding = String(encoding || 'utf8').toLowerCase();
 
             // Use native conversion when possible
-            if (Buffer$7.isNativeEncoding(encoding))
+            if (Buffer$8.isNativeEncoding(encoding))
                 return original.BufferToString.call(this, encoding, start, end);
 
             // Otherwise, use our decoding method.
@@ -34354,8 +34418,8 @@ var extendNode = function (iconv) {
             return iconv.decode(this.slice(start, end), encoding);
         };
 
-        original.BufferWrite = Buffer$7.prototype.write;
-        Buffer$7.prototype.write = function(string, offset, length, encoding) {
+        original.BufferWrite = Buffer$8.prototype.write;
+        Buffer$8.prototype.write = function(string, offset, length, encoding) {
             var _offset = offset, _length = length, _encoding = encoding;
             // Support both (string, offset, length, encoding)
             // and the legacy (string, encoding, offset, length)
@@ -34374,7 +34438,7 @@ var extendNode = function (iconv) {
             encoding = String(encoding || 'utf8').toLowerCase();
 
             // Use native conversion when possible
-            if (Buffer$7.isNativeEncoding(encoding))
+            if (Buffer$8.isNativeEncoding(encoding))
                 return original.BufferWrite.call(this, string, _offset, _length, _encoding);
 
             offset = +offset || 0;
@@ -34424,17 +34488,17 @@ var extendNode = function (iconv) {
         if (!original)
             throw new Error("require('iconv-lite').undoExtendNodeEncodings(): Nothing to undo; extendNodeEncodings() is not called.")
 
-        delete Buffer$7.isNativeEncoding;
+        delete Buffer$8.isNativeEncoding;
 
         var SlowBuffer = require$$0$2.SlowBuffer;
 
         SlowBuffer.prototype.toString = original.SlowBufferToString;
         SlowBuffer.prototype.write = original.SlowBufferWrite;
 
-        Buffer$7.isEncoding = original.BufferIsEncoding;
-        Buffer$7.byteLength = original.BufferByteLength;
-        Buffer$7.prototype.toString = original.BufferToString;
-        Buffer$7.prototype.write = original.BufferWrite;
+        Buffer$8.isEncoding = original.BufferIsEncoding;
+        Buffer$8.byteLength = original.BufferByteLength;
+        Buffer$8.prototype.toString = original.BufferToString;
+        Buffer$8.prototype.write = original.BufferWrite;
 
         if (iconv.supportsStreams) {
             var Readable = require$$1$4.Readable;
@@ -34962,6 +35026,10 @@ var DefaultTheme = {
       ordinal = ['#bd0022', '#d10026', '#e40029', '#f8002d', '#ff2048', '#ff3458', '#ff4768', '#ff5b78', '#ff6f89', '#ff8299', '#ff96a9'];
     }
 
+    if (name == 'karte_color_palette') {
+      ordinal = ['#66B8A1', '#D0E8D1', '#91B7B8', '#97E9DF', '#91B7B0', '#BDE3D1'];
+    }
+
     return {
       linear: linear,
       ordinal: ordinal
@@ -35244,8 +35312,6 @@ var slicedToArray = function () {
     }
   };
 }();
-
-//-------------------------------------
 
 function _defaultRepresentation(v, d, key) {
   if (v instanceof Array || typeof v == 'array') {
@@ -35603,7 +35669,6 @@ var Store = new DashboardStore();
  * Licensed under the MIT License.
  */
 
-// see http://jsperf.com/testing-value-is-primitive/7
 var isPrimitive$1 = function isPrimitive(value) {
   return value == null || (typeof value !== 'function' && typeof value !== 'object');
 };
@@ -35968,7 +36033,7 @@ var CardContainer = { render: function render() {
       return style;
     },
     screenModeClass: function screenModeClass() {
-      classes = [];
+      var classes = [];
       if (this.isFullscreen) {
         classes.push(this.$options.cssModules['fullscreen']);
       }
@@ -36098,10 +36163,6 @@ var ChartLink = { render: function render() {
   }
 };
 
-// TODO:
-// データの処理、レイアウト関係の処理、汎用のパーツの組み込みが混ざっているので分離
-
-
 var Base = {
 
   template: '\n    <card :title="title || cardSettings.defaultCaption" :width="width" :height="height" @resized="updateContainerInnerSize" :hide-legend="hideLegend" :class="$style[\'chart-root\']" :caption-height="cardSettings.captionHeight" :self-margined="cardSettings.selfMargined">\n      <div class="krt-dc-component" :id="id" style="display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%">\n        <krt-dc-tooltip ref=\'tooltip\'></krt-dc-tooltip>\n        <reset-button v-on:reset="removeFilterAndRedrawChart()"></reset-button>\n        <chart-link ref=\'chartLink\'></chart-link>\n      </div>\n    </card>\n  ',
@@ -36161,10 +36222,6 @@ var Base = {
     renderTitle: {
       type: Boolean,
       default: false
-    },
-    showLabel: {
-      type: Boolean,
-      default: true
     },
     // animation
     transitionDuration: {
@@ -36488,7 +36545,7 @@ var Base = {
         case 'rowChart':
           return function (d, i) {
             var v = d.value;
-            if (!d.data) v = d.value;else if (valueAccessor) v = valueAccessor(d.data);
+            if (valueAccessor) v = valueAccessor(d);
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
@@ -36512,11 +36569,11 @@ var Base = {
         case 'bubbleChart':
           return function (d, i) {
             var key = _formats.key(d.key);
-            var labels = [_this3.xAxisLabel, _this3.yAxisLabel, _this3.radiusLabel];
+            var axes = ['x', 'y', 'r'];
             var vals = {};
-            labels.forEach(function (label) {
-              var v = d.value[label].per || d.value[label];
-              vals[label] = _formats.val(v);
+            axes.forEach(function (axis) {
+              var v = d.value[axis].per || d.value[axis];
+              vals[_this3.getLabel(axis)] = _formats.val(v);
             });
             return { key: key, vals: vals };
           };
@@ -36662,7 +36719,7 @@ var Base = {
       }
     },
     removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
-      if (typeof this.chart.focusChart === 'function') this.chart.focusChart().filterAll();
+      if (typeof this.chart.focusChart === 'function' && this.chart.focusChart()) this.chart.focusChart().filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     },
@@ -36912,11 +36969,11 @@ var coordinateGridBase = {
   extends: Base,
   props: {
     xAxisLabel: {
-      type: String,
+      type: [String, Boolean],
       default: ''
     },
     yAxisLabel: {
-      type: String,
+      type: [String, Boolean],
       default: ''
     },
     xAxisFormat: {
@@ -36926,14 +36983,6 @@ var coordinateGridBase = {
     yAxisFormat: {
       type: String,
       default: ''
-    },
-    showXAxisLabel: {
-      type: Boolean,
-      default: null
-    },
-    showYAxisLabel: {
-      type: Boolean,
-      default: true
     },
     rotateXAxisLabel: {
       type: Boolean,
@@ -36957,11 +37006,11 @@ var coordinateGridBase = {
     }
   },
   computed: {
-    isShowXAxisLabels: function isShowXAxisLabels() {
+    isShowXAxisLabel: function isShowXAxisLabel() {
       var axis = this.layoutSettings.axis;
 
 
-      if (this.showXAxisLabel != null) return this.showXAxisLabel;
+      if (this.xAxisLabel) return true;
 
       var _scale$split = this.scale.split('.'),
           _scale$split2 = slicedToArray(_scale$split, 2),
@@ -36970,6 +37019,20 @@ var coordinateGridBase = {
 
       if (scale !== 'ordinal') return true;
       return this.reducerAll && this.reducerAll.length < axis.xLabel.limit;
+    },
+    isShowYAxisLabel: function isShowYAxisLabel() {
+      if (this.yAxisLabel) return true;
+      return false;
+    },
+    _xAxisLabel: function _xAxisLabel() {
+      if (!this.isShowXAxisLabel || !this.xAxisLabel) return '';
+      if (this.xAxisLabel === true) return 'x';
+      return this.getLabel(this.xAxisLabel);
+    },
+    _yAxisLabel: function _yAxisLabel() {
+      if (!this.isShowYAxisLabel || !this.yAxisLabel) return '';
+      if (this.yAxisLabel === true) return 'y';
+      return this.getLabel(this.yAxisLabel);
     },
     colors: function colors() {
       return this.colorSettings.ordinal;
@@ -36985,8 +37048,8 @@ var coordinateGridBase = {
       var axis = this.layoutSettings.axis;
 
 
-      if (chart.xAxisLabel && this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding);
-      if (chart.yAxisLabel && this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding);
+      if (chart.xAxisLabel && this._xAxisLabel) chart.xAxisLabel(this._xAxisLabel, axis.xLabel.padding);
+      if (chart.yAxisLabel && this._yAxisLabel) chart.yAxisLabel(this._yAxisLabel, axis.yLabel.padding);
 
       // FIXME: formatではなくunitになっている
       if (this.xAxisFormat) chart.xAxis().tickFormat(function (d) {
@@ -36996,13 +37059,13 @@ var coordinateGridBase = {
         return d + ('' + _this.yAxisFormat);
       });
 
-      if (!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
+      if (!this.isShowXAxisLabel && chart.xAxis instanceof Function) {
         chart.xAxis().tickValues([]);
       } else if (chart.xAxis instanceof Function) {
         chart.xAxis().tickValues(null);
       }
 
-      if (!this.showYAxisLabel && chart.yAxis instanceof Function) {
+      if (!this.isShowYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([]);
       } else if (chart.yAxis instanceof Function) {
         chart.yAxis().tickValues(null);
@@ -37025,7 +37088,7 @@ var coordinateGridBase = {
 
     chart.on('pretransition', function () {
       // TODO: layout system
-      if (!_this2.hideXAxisLabel && _this2.rotateXAxisLabel) {
+      if (_this2.isShowXAxisLabels && _this2.rotateXAxisLabel) {
         chart.selectAll('#' + _this2.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
     });
@@ -48035,7 +48098,7 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
     var _this = this;
 
     var chart = this.chart;
-    var _label = this.showLabel ? function (d) {
+    var _label = this.renderLabel ? function (d) {
       return _this.getLabel(d.key);
     } : function (d) {
       return null;
@@ -48100,11 +48163,6 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
     var chart = this.chart;
     chart.othersLabel(this.othersLabel);
 
-    if (!this.showLabel) {
-      chart.label(function (d) {
-        return null;
-      });
-    }
     // TODO: このあたりもlayoutとして調整するか？
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart;
@@ -48314,12 +48372,6 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     removeEmptyRows: {
       default: true
     },
-    // order by
-    // v0.4移行時に消す
-    descending: {
-      type: Boolean,
-      default: true
-    },
     // vertical gap space between rows
     gap: {
       type: Number,
@@ -48361,13 +48413,6 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
         chart.selectAll('#' + _this.id + ' g.axis text').attr('transform', 'translate(-5, 5) rotate(330)');
       }
     });
-
-    // v0.4移行時に消す
-    if (!this.ordering && this.descending !== undefined) {
-      chart.ordering(function (d) {
-        return _this.descending ? -d.value : d.value;
-      });
-    }
 
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
     return chart;
@@ -48921,20 +48966,6 @@ var hashPoint = function(point) {
   return hash & 0x7fffffff;
 };
 
-// Given an extracted (pre-)topology, identifies all of the junctions. These are
-// the points at which arcs (lines or rings) will need to be cut so that each
-// arc is represented uniquely.
-//
-// A junction is a point where at least one arc deviates from another arc going
-// through the same point. For example, consider the point B. If there is a arc
-// through ABC and another arc through CBA, then B is not a junction because in
-// both cases the adjacent point pairs are {A,C}. However, if there is an
-// additional arc ABD, then {A,D} != {A,C}, and thus B becomes a junction.
-//
-// For a closed ring ABCA, the first point A’s adjacent points are the second
-// and last point {B,C}. For a line, the first and last point are always
-// considered junctions, even if the line is closed; this ensures that a closed
-// line is never rotated.
 var join = function(topology) {
   var coordinates = topology.coordinates,
       lines = topology.lines,
@@ -49693,10 +49724,6 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
       default: 'overlay-legend'
     },
-    renderText: {
-      type: Boolean,
-      default: false
-    },
     // labels
     // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
     xAxisLabel: {
@@ -49790,7 +49817,7 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
     }
 
     chart.on('postRender', function () {
-      if (_this.renderText) {
+      if (_this.renderLabel) {
         var positions = [];
         chart.selectAll('rect.heat-box').each(function (d) {
           var rect = d3$1.select(this);
@@ -49828,11 +49855,11 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
           height = _containerInnerSize.height;
 
 
-      if (_this.xAxisLabel) {
-        chart.select('svg').append("g").attr("transform", 'translate(' + width / 2 + ', ' + (height - 5) + ')').classed("axis x", true).append("text").classed("x-axis-label", true).attr("text-anchor", "middle").style("font-size", "12px").text(_this.xAxisLabel === true ? 'x' : _this.xAxisLabel);
+      if (_this._xAxisLabel) {
+        chart.select('svg').append("g").attr("transform", 'translate(' + width / 2 + ', ' + (height - 5) + ')').classed("axis x", true).append("text").classed("x-axis-label", true).attr("text-anchor", "middle").style("font-size", "12px").text(_this._xAxisLabel);
       }
-      if (_this.yAxisLabel) {
-        chart.select('svg').append("g").attr("transform", 'translate(10, ' + height / 2 + ')').classed("axis y", true).append("text").classed("y-axis-label", true).attr("text-anchor", "middle").attr("transform", "rotate(-90)").style("font-size", "12px").text(_this.yAxisLabel === true ? 'y' : _this.yAxisLabel);
+      if (_this._yAxisLabel) {
+        chart.select('svg').append("g").attr("transform", 'translate(10, ' + height / 2 + ')').classed("axis y", true).append("text").classed("y-axis-label", true).attr("text-anchor", "middle").attr("transform", "rotate(-90)").style("font-size", "12px").text(_this._yAxisLabel);
       }
     });
     return chart;
@@ -49930,8 +49957,6 @@ var Series = {
   }
 };
 
-var _props;
-
 (function () {
   if (typeof document !== 'undefined') {
     var head = document.head || document.getElementsByTagName('head')[0],
@@ -49947,19 +49972,10 @@ var _props;
 var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "bubble__chart-root" },
   extends: coordinateGridBase,
 
-  props: (_props = {
+  props: {
     chartType: {
       type: String,
       default: 'bubbleChart'
-    },
-    // labels, formats
-    radius: {
-      type: String,
-      default: 'radius'
-    },
-    radiusFormat: {
-      type: String,
-      default: ''
     },
     sortBubbleSize: {
       type: Boolean,
@@ -49982,32 +49998,25 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
       type: Number,
       default: 0.3
     },
-    xAxisLabel: {
+    radiusFormat: {
       type: String,
-      default: 'x'
+      default: ''
     },
-    yAxisLabel: {
-      type: String,
-      default: 'y'
+    xAxisPadding: {
+      type: [String, Number],
+      default: '20%'
     },
-    radiusLabel: {
-      type: String,
-      default: 'radius'
+    yAxisPadding: {
+      type: [String, Number],
+      default: '20%'
+    },
+    useLegend: {
+      default: false
+    },
+    color: {
+      default: 'analogous'
     }
-  }, defineProperty(_props, 'radiusFormat', {
-    type: String,
-    default: ''
-  }), defineProperty(_props, 'xAxisPadding', {
-    type: [String, Number],
-    default: '20%'
-  }), defineProperty(_props, 'yAxisPadding', {
-    type: [String, Number],
-    default: '20%'
-  }), defineProperty(_props, 'useLegend', {
-    default: false
-  }), defineProperty(_props, 'color', {
-    default: 'analogous'
-  }), _props),
+  },
   computed: {
     firstRow: function firstRow() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
@@ -50094,27 +50103,19 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     var _this3 = this;
 
     var chart = this.chart;
-    chart.elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
-    // .label((p) => this.formatKey(p.key))
-    .keyAccessor(function (p) {
-      return _this3.extractValue(p.value[_this3.xAxisLabel]);
+    chart.elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize).keyAccessor(function (p) {
+      return _this3.extractValue(p.value['x']);
     }).valueAccessor(function (p) {
-      return _this3.extractValue(p.value[_this3.yAxisLabel]);
+      return _this3.extractValue(p.value['y']);
     }).radiusValueAccessor(function (p) {
-      return _this3.extractValue(p.value[_this3.radiusLabel]);
+      return _this3.extractValue(p.value['r']);
     }).x(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
-      return _this3.extractValue(d.value[_this3.xAxisLabel]);
+      return _this3.extractValue(d.value['x']);
     }))).y(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
-      return _this3.extractValue(d.value[_this3.yAxisLabel]);
+      return _this3.extractValue(d.value['y']);
     }))).r(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
-      return _this3.extractValue(d.value[_this3.radiusLabel]);
+      return _this3.extractValue(d.value['r']);
     }))).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding);
-
-    if (!this.showLabel) {
-      chart.label(function (d) {
-        return null;
-      });
-    }
 
     if (this.timeScale) {
       chart.filterPrinter(function (filters) {
@@ -50639,15 +50640,6 @@ function run() {
   if (cb) p = p.then(cb);
 }
 
-/*!
- * Vue.js v2.5.2
- * (c) 2014-2017 Evan You
- * Released under the MIT License.
- */
-/*  */
-
-// these helpers produces better vm code in JS engines due to their
-// explicitness and function inlining
 function isUndef (v) {
   return v === undefined || v === null
 }
@@ -58380,7 +58372,7 @@ Vue$3.nextTick(function () {
   }
 }, 0);
 
-// import './libs/styles/default.scss'
+/*  */
 
 init$1();
 
