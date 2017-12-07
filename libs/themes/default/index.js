@@ -8,7 +8,7 @@ export default {
     linear = ['red', '#f7fcfd', '#00441b']
 
     if (chartType == 'heatMap') {
-      linear = ['red', "#e5e5e5", "green"]
+      linear = ['red', "#e5e5e5", "#66B8A1"]
     }
 
     if (name == 'week') {
