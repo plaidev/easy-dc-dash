@@ -34940,7 +34940,7 @@ var DefaultTheme = {
     linear = ['red', '#f7fcfd', '#00441b'];
 
     if (chartType == 'heatMap') {
-      linear = ['red', "#e5e5e5", "green"];
+      linear = ['red', "#e5e5e5", "#66B8A1"];
     }
 
     if (name == 'week') {
@@ -34961,6 +34961,10 @@ var DefaultTheme = {
 
     if (name == 'tint_complement') {
       ordinal = ['#bd0022', '#d10026', '#e40029', '#f8002d', '#ff2048', '#ff3458', '#ff4768', '#ff5b78', '#ff6f89', '#ff8299', '#ff96a9'];
+    }
+
+    if (name == 'karte_color_palette') {
+      ordinal = ['#66B8A1', '#D0E8D1', '#91B7B8', '#97E9DF', '#91B7B0', '#BDE3D1'];
     }
 
     return {
@@ -35969,7 +35973,7 @@ var CardContainer = { render: function render() {
       return style;
     },
     screenModeClass: function screenModeClass() {
-      classes = [];
+      var classes = [];
       if (this.isFullscreen) {
         classes.push(this.$options.cssModules['fullscreen']);
       }
@@ -36162,10 +36166,6 @@ var Base = {
     renderTitle: {
       type: Boolean,
       default: false
-    },
-    showLabel: {
-      type: Boolean,
-      default: true
     },
     // animation
     transitionDuration: {
@@ -36489,7 +36489,7 @@ var Base = {
         case 'rowChart':
           return function (d, i) {
             var v = d.value;
-            if (!d.data) v = d.value;else if (valueAccessor) v = valueAccessor(d.data);
+            if (valueAccessor) v = valueAccessor(d);
             return {
               key: _formats.key(d.key),
               val: _formats.val(v)
@@ -36513,11 +36513,11 @@ var Base = {
         case 'bubbleChart':
           return function (d, i) {
             var key = _formats.key(d.key);
-            var labels = [_this3.xAxisLabel, _this3.yAxisLabel, _this3.radiusLabel];
+            var axes = ['x', 'y', 'r'];
             var vals = {};
-            labels.forEach(function (label) {
-              var v = d.value[label].per || d.value[label];
-              vals[label] = _formats.val(v);
+            axes.forEach(function (axis) {
+              var v = d.value[axis].per || d.value[axis];
+              vals[_this3.getLabel(axis)] = _formats.val(v);
             });
             return { key: key, vals: vals };
           };
@@ -36663,7 +36663,7 @@ var Base = {
       }
     },
     removeFilterAndRedrawChart: function removeFilterAndRedrawChart() {
-      if (typeof this.chart.focusChart === 'function') this.chart.focusChart().filterAll();
+      if (typeof this.chart.focusChart === 'function' && this.chart.focusChart()) this.chart.focusChart().filterAll();
       this.chart.filterAll();
       dc.redrawAll();
     },
@@ -36913,11 +36913,11 @@ var coordinateGridBase = {
   extends: Base,
   props: {
     xAxisLabel: {
-      type: String,
+      type: [String, Boolean],
       default: ''
     },
     yAxisLabel: {
-      type: String,
+      type: [String, Boolean],
       default: ''
     },
     xAxisFormat: {
@@ -36927,14 +36927,6 @@ var coordinateGridBase = {
     yAxisFormat: {
       type: String,
       default: ''
-    },
-    showXAxisLabel: {
-      type: Boolean,
-      default: null
-    },
-    showYAxisLabel: {
-      type: Boolean,
-      default: true
     },
     rotateXAxisLabel: {
       type: Boolean,
@@ -36958,11 +36950,11 @@ var coordinateGridBase = {
     }
   },
   computed: {
-    isShowXAxisLabels: function isShowXAxisLabels() {
+    isShowXAxisLabel: function isShowXAxisLabel() {
       var axis = this.layoutSettings.axis;
 
 
-      if (this.showXAxisLabel != null) return this.showXAxisLabel;
+      if (this.xAxisLabel) return true;
 
       var _scale$split = this.scale.split('.'),
           _scale$split2 = slicedToArray(_scale$split, 2),
@@ -36971,6 +36963,20 @@ var coordinateGridBase = {
 
       if (scale !== 'ordinal') return true;
       return this.reducerAll && this.reducerAll.length < axis.xLabel.limit;
+    },
+    isShowYAxisLabel: function isShowYAxisLabel() {
+      if (this.yAxisLabel) return true;
+      return false;
+    },
+    _xAxisLabel: function _xAxisLabel() {
+      if (!this.isShowXAxisLabel || !this.xAxisLabel) return '';
+      if (this.xAxisLabel === true) return 'x';
+      return this.getLabel(this.xAxisLabel);
+    },
+    _yAxisLabel: function _yAxisLabel() {
+      if (!this.isShowYAxisLabel || !this.yAxisLabel) return '';
+      if (this.yAxisLabel === true) return 'y';
+      return this.getLabel(this.yAxisLabel);
     },
     colors: function colors() {
       return this.colorSettings.ordinal;
@@ -36986,8 +36992,8 @@ var coordinateGridBase = {
       var axis = this.layoutSettings.axis;
 
 
-      if (chart.xAxisLabel && this.xAxisLabel) chart.xAxisLabel(this.xAxisLabel, axis.xLabel.padding);
-      if (chart.yAxisLabel && this.yAxisLabel) chart.yAxisLabel(this.yAxisLabel, axis.yLabel.padding);
+      if (chart.xAxisLabel && this._xAxisLabel) chart.xAxisLabel(this._xAxisLabel, axis.xLabel.padding);
+      if (chart.yAxisLabel && this._yAxisLabel) chart.yAxisLabel(this._yAxisLabel, axis.yLabel.padding);
 
       // FIXME: formatではなくunitになっている
       if (this.xAxisFormat) chart.xAxis().tickFormat(function (d) {
@@ -36997,13 +37003,13 @@ var coordinateGridBase = {
         return d + ('' + _this.yAxisFormat);
       });
 
-      if (!this.isShowXAxisLabels && chart.xAxis instanceof Function) {
+      if (!this.isShowXAxisLabel && chart.xAxis instanceof Function) {
         chart.xAxis().tickValues([]);
       } else if (chart.xAxis instanceof Function) {
         chart.xAxis().tickValues(null);
       }
 
-      if (!this.showYAxisLabel && chart.yAxis instanceof Function) {
+      if (!this.isShowYAxisLabel && chart.yAxis instanceof Function) {
         chart.yAxis().tickValues([]);
       } else if (chart.yAxis instanceof Function) {
         chart.yAxis().tickValues(null);
@@ -37026,7 +37032,7 @@ var coordinateGridBase = {
 
     chart.on('pretransition', function () {
       // TODO: layout system
-      if (!_this2.hideXAxisLabel && _this2.rotateXAxisLabel) {
+      if (_this2.isShowXAxisLabels && _this2.rotateXAxisLabel) {
         chart.selectAll('#' + _this2.id + ' g.x text').attr('transform', 'translate(-10,5) rotate(330)');
       }
     });
@@ -48036,7 +48042,7 @@ var SegmentPie = { cssModules: { "chartRoot": "segment-pie__chart-root", "chart-
     var _this = this;
 
     var chart = this.chart;
-    var _label = this.showLabel ? function (d) {
+    var _label = this.renderLabel ? function (d) {
       return _this.getLabel(d.key);
     } : function (d) {
       return null;
@@ -48101,11 +48107,6 @@ var MultiDimensionPie = { cssModules: { "chartRoot": "multi-dimension-pie__chart
     var chart = this.chart;
     chart.othersLabel(this.othersLabel);
 
-    if (!this.showLabel) {
-      chart.label(function (d) {
-        return null;
-      });
-    }
     // TODO: このあたりもlayoutとして調整するか？
     if (this.cap && this.cap > 0) chart.slicesCap(this.cap);
     return chart;
@@ -48315,12 +48316,6 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
     removeEmptyRows: {
       default: true
     },
-    // order by
-    // v0.4移行時に消す
-    descending: {
-      type: Boolean,
-      default: true
-    },
     // vertical gap space between rows
     gap: {
       type: Number,
@@ -48362,13 +48357,6 @@ var ListRow = { cssModules: { "chartRoot": "list-row__chart-root", "chart-root":
         chart.selectAll('#' + _this.id + ' g.axis text').attr('transform', 'translate(-5, 5) rotate(330)');
       }
     });
-
-    // v0.4移行時に消す
-    if (!this.ordering && this.descending !== undefined) {
-      chart.ordering(function (d) {
-        return _this.descending ? -d.value : d.value;
-      });
-    }
 
     if (this.cap && this.cap > 0) chart.rowsCap(this.cap);
     return chart;
@@ -49694,10 +49682,6 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
       // TODO: legendとしてcolorパターンがないと不便だが、いったん無しで
       default: 'overlay-legend'
     },
-    renderText: {
-      type: Boolean,
-      default: false
-    },
     // labels
     // cordinationGridとして扱われていないため、軸なしの扱いになっているが、対応する
     xAxisLabel: {
@@ -49791,7 +49775,7 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
     }
 
     chart.on('postRender', function () {
-      if (_this.renderText) {
+      if (_this.renderLabel) {
         var positions = [];
         chart.selectAll('rect.heat-box').each(function (d) {
           var rect = d3$1.select(this);
@@ -49829,11 +49813,11 @@ var HeatMap = { cssModules: { "chartRoot": "heat-map__chart-root", "chart-root":
           height = _containerInnerSize.height;
 
 
-      if (_this.xAxisLabel) {
-        chart.select('svg').append("g").attr("transform", 'translate(' + width / 2 + ', ' + (height - 5) + ')').classed("axis x", true).append("text").classed("x-axis-label", true).attr("text-anchor", "middle").style("font-size", "12px").text(_this.xAxisLabel === true ? 'x' : _this.xAxisLabel);
+      if (_this._xAxisLabel) {
+        chart.select('svg').append("g").attr("transform", 'translate(' + width / 2 + ', ' + (height - 5) + ')').classed("axis x", true).append("text").classed("x-axis-label", true).attr("text-anchor", "middle").style("font-size", "12px").text(_this._xAxisLabel);
       }
-      if (_this.yAxisLabel) {
-        chart.select('svg').append("g").attr("transform", 'translate(10, ' + height / 2 + ')').classed("axis y", true).append("text").classed("y-axis-label", true).attr("text-anchor", "middle").attr("transform", "rotate(-90)").style("font-size", "12px").text(_this.yAxisLabel === true ? 'y' : _this.yAxisLabel);
+      if (_this._yAxisLabel) {
+        chart.select('svg').append("g").attr("transform", 'translate(10, ' + height / 2 + ')').classed("axis y", true).append("text").classed("y-axis-label", true).attr("text-anchor", "middle").attr("transform", "rotate(-90)").style("font-size", "12px").text(_this._yAxisLabel);
       }
     });
     return chart;
@@ -49931,8 +49915,6 @@ var Series = {
   }
 };
 
-var _props;
-
 (function () {
   if (typeof document !== 'undefined') {
     var head = document.head || document.getElementsByTagName('head')[0],
@@ -49948,19 +49930,10 @@ var _props;
 var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "bubble__chart-root" },
   extends: coordinateGridBase,
 
-  props: (_props = {
+  props: {
     chartType: {
       type: String,
       default: 'bubbleChart'
-    },
-    // labels, formats
-    radius: {
-      type: String,
-      default: 'radius'
-    },
-    radiusFormat: {
-      type: String,
-      default: ''
     },
     sortBubbleSize: {
       type: Boolean,
@@ -49983,32 +49956,25 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
       type: Number,
       default: 0.3
     },
-    xAxisLabel: {
+    radiusFormat: {
       type: String,
-      default: 'x'
+      default: ''
     },
-    yAxisLabel: {
-      type: String,
-      default: 'y'
+    xAxisPadding: {
+      type: [String, Number],
+      default: '20%'
     },
-    radiusLabel: {
-      type: String,
-      default: 'radius'
+    yAxisPadding: {
+      type: [String, Number],
+      default: '20%'
+    },
+    useLegend: {
+      default: false
+    },
+    color: {
+      default: 'analogous'
     }
-  }, defineProperty(_props, 'radiusFormat', {
-    type: String,
-    default: ''
-  }), defineProperty(_props, 'xAxisPadding', {
-    type: [String, Number],
-    default: '20%'
-  }), defineProperty(_props, 'yAxisPadding', {
-    type: [String, Number],
-    default: '20%'
-  }), defineProperty(_props, 'useLegend', {
-    default: false
-  }), defineProperty(_props, 'color', {
-    default: 'analogous'
-  }), _props),
+  },
   computed: {
     firstRow: function firstRow() {
       var dim = Store.getDimension(this.dimensionName, { dataset: this.dataset });
@@ -50095,27 +50061,19 @@ var Bubble = { cssModules: { "chartRoot": "bubble__chart-root", "chart-root": "b
     var _this3 = this;
 
     var chart = this.chart;
-    chart.elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize)
-    // .label((p) => this.formatKey(p.key))
-    .keyAccessor(function (p) {
-      return _this3.extractValue(p.value[_this3.xAxisLabel]);
+    chart.elasticX(this.elasticX).elasticY(this.elasticY).elasticRadius(this.elasticRadius).sortBubbleSize(this.sortBubbleSize).maxBubbleRelativeSize(this.maxBubbleRelativeSize).keyAccessor(function (p) {
+      return _this3.extractValue(p.value['x']);
     }).valueAccessor(function (p) {
-      return _this3.extractValue(p.value[_this3.yAxisLabel]);
+      return _this3.extractValue(p.value['y']);
     }).radiusValueAccessor(function (p) {
-      return _this3.extractValue(p.value[_this3.radiusLabel]);
+      return _this3.extractValue(p.value['r']);
     }).x(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
-      return _this3.extractValue(d.value[_this3.xAxisLabel]);
+      return _this3.extractValue(d.value['x']);
     }))).y(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
-      return _this3.extractValue(d.value[_this3.yAxisLabel]);
+      return _this3.extractValue(d.value['y']);
     }))).r(d3$1.scale.linear().domain(d3$1.extent(this.reducerAll, function (d) {
-      return _this3.extractValue(d.value[_this3.radiusLabel]);
+      return _this3.extractValue(d.value['r']);
     }))).xAxisPadding(this.xAxisPadding).yAxisPadding(this.yAxisPadding);
-
-    if (!this.showLabel) {
-      chart.label(function (d) {
-        return null;
-      });
-    }
 
     if (this.timeScale) {
       chart.filterPrinter(function (filters) {
