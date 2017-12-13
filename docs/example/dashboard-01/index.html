@@ -157,6 +157,14 @@
     labels='直帰,非直帰,直帰率'
   ></stack-and-rate>
 
+  <bar-and-rate
+    title='bar-and-rate'
+    scale='time.day'
+    dimension='d.session_end_date'
+    reduce='[[d.bounce_cnt], {count: d.session_cnt, value: d.bounce_cnt}]'
+    labels='直帰,直帰率'
+  ></bar-and-rate>
+
   <rate-line
     dimension='d.session_end_date'
     reduce='{count: d.session_cnt, value: d.bounce_cnt}'
