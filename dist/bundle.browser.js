@@ -50364,6 +50364,7 @@ var components = {
   'area-line': AreaLine,
   'multi-lines': MultiLines,
   'stack-and-rate': compose(StackedLines, RateLine),
+  'bar-and-rate': compose(OrdinalBar, RateLine),
   'reset-all-button': resetAllButton,
   'csv-download-button': csvDownloadButton
 };
