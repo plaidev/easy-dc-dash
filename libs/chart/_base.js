@@ -750,6 +750,10 @@ export default {
           .join(', ')
       })
 
+    if(!this.renderLabel) {
+      chart.label(d => null)
+    }
+
     if(this.renderTooltip) {
       chart.on('renderlet', () => {
         chart.selectAll(this.tooltipSelector)
