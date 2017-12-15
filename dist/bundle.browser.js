@@ -36866,6 +36866,12 @@ var Base = {
       }).join(', ');
     });
 
+    if (!this.renderLabel) {
+      chart.label(function (d) {
+        return null;
+      });
+    }
+
     if (this.renderTooltip) {
       chart.on('renderlet', function () {
         chart.selectAll(_this7.tooltipSelector).on("mouseover", _this7.showTooltip).on("mousemove", _this7.moveTooltip).on("mouseout", _this7.removeTooltip);
