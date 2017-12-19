@@ -47,9 +47,18 @@ export default {
     },
     move: function(left, top) {
       if(!this.data) return
+      const winW = window.innerWidth;
       const el = this.$el;
-      el.style.left = (left + 50) + "px";
-      el.style.top = (top - 10) + "px";
+      
+      el.style = "";
+
+      if (left > winW/2) {
+        el.style.right = (winW - left + 10) + "px";
+        el.style.top = (top - 10) + "px";
+      } else {
+        el.style.left = (left + 50) + "px";
+        el.style.top = (top - 10) + "px";
+      }
     },
     remove: function() {
       this.data = null;
