@@ -34939,7 +34939,7 @@ var DefaultTheme = {
     linear = ['red', '#f7fcfd', '#00441b'];
 
     if (chartType == 'heatMap') {
-      linear = ['red', "#e5e5e5", "green"];
+      linear = ['red', "#e5e5e5", "#66B8A1"];
     }
 
     if (name == 'week') {
@@ -34960,6 +34960,10 @@ var DefaultTheme = {
 
     if (name == 'tint_complement') {
       ordinal = ['#bd0022', '#d10026', '#e40029', '#f8002d', '#ff2048', '#ff3458', '#ff4768', '#ff5b78', '#ff6f89', '#ff8299', '#ff96a9'];
+    }
+
+    if (name == 'karte_color_palette') {
+      ordinal = ['#66B8A1', '#D0E8D1', '#91B7B8', '#97E9DF', '#91B7B0', '#BDE3D1'];
     }
 
     return {
@@ -36049,9 +36053,18 @@ var KrtDcTooltip = { render: function render() {
     },
     move: function move(left, top) {
       if (!this.data) return;
+      var winW = window.innerWidth;
       var el = this.$el;
-      el.style.left = left + 50 + "px";
-      el.style.top = top - 10 + "px";
+
+      el.style = "";
+
+      if (left > winW / 2) {
+        el.style.right = winW - left + 10 + "px";
+        el.style.top = top - 10 + "px";
+      } else {
+        el.style.left = left + 50 + "px";
+        el.style.top = top - 10 + "px";
+      }
     },
     remove: function remove() {
       this.data = null;
@@ -50405,6 +50418,7 @@ var components = {
   'area-line': AreaLine,
   'multi-lines': MultiLines,
   'stack-and-rate': compose(StackedLines, RateLine),
+  'bar-and-rate': compose(OrdinalBar, RateLine),
   'reset-all-button': resetAllButton,
   'csv-download-button': csvDownloadButton
 };
