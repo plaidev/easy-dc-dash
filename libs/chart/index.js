@@ -21,6 +21,7 @@ import AreaLine from './area-line.vue'
 import MultiLines from './multi-lines.vue'
 import resetAllButton from './reset-all-button.vue'
 import csvDownloadButton from './csv-download-button.vue'
+import filterCommonDimensions from '../components/filter-common-dimensions.vue'
 
 const components = {
   'bar': coordinateGridBase,
@@ -45,7 +46,8 @@ const components = {
   'stack-and-rate': compose(StackedLines, RateLine),
   'bar-and-rate': compose(OrdinalBar, RateLine),
   'reset-all-button': resetAllButton,
-  'csv-download-button': csvDownloadButton
+  'csv-download-button': csvDownloadButton,
+  'filter-common-dimensions': filterCommonDimensions
 }
 
 function install(Vue, options) {
@@ -78,5 +80,6 @@ export default {
   resetAllButton: resetAllButton,
   csvDownloadButton: csvDownloadButton,
   install: install,
-  installedComponents: components
+  installedComponents: components,
+  filterCommonDimensions: filterCommonDimensions
 }
