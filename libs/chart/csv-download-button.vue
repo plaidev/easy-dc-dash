@@ -1,7 +1,9 @@
 <template>
   <div class="download-csv-button">
     <a class="btn btn-outline-primary" @click="downloadCSV()">
-      <i class="fa fa-cloud-download" aria-hidden="true"></i> CSV ダウンロード
+      <i class="fa fa-cloud-download" aria-hidden="true">
+        {{buttonText}}
+      </i>
     </a>
   </div>
 </template>
@@ -11,6 +13,10 @@ import Store from '../store';
 
 export default {
   props: {
+    buttonText: {
+      type: String,
+      default: 'CSV ダウンロード'
+    },
     fileName: {
       type: String,
       default: 'data',
