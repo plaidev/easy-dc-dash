@@ -43,7 +43,11 @@
   <div class="container" style="display: flex; flex-direction:row; align-items:center; justify-content:space-around">
 
     <div class="buttons">
-      <csv-download-button button-text="CSV download" :file-name="defaultCsvFileName"></csv-download-button>
+      <csv-download-button
+        button-text="CSV download"
+        :file-name="defaultCsvFileName"
+        columns='segments,pv,bounce_cnt,name,meta'
+      ></csv-download-button>
       <csv-download-button dataset="morley"></csv-download-button>
       <reset-all-button></reset-all-button>
     </div>

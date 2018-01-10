@@ -271,7 +271,8 @@ class DashboardStore {
       dataset = 'default',
       labels = this._labels[dataset][''] || {},
       common = false,
-      encoding = null
+      encoding = null,
+      columns = []
     } = options;
 
     let dim = this.manager.dimension(dataset, dimensionName)
@@ -290,7 +291,7 @@ class DashboardStore {
       dim.top(Infinity),
       filename,
       labels,
-      {encoding}
+      {encoding, columns}
     )
   }
 
