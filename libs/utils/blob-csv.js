@@ -30,6 +30,8 @@ function convertArrayOfObjectsToCSV(args) {
   result += keys.map((k) => labels[k] || k).join(columnDelimiter);
   result += lineDelimiter;
 
+  const invalidValues = ['', 'null']
+
   data.forEach(function(item) {
     ctr = 0;
     keys.forEach(function(key) {
@@ -38,7 +40,10 @@ function convertArrayOfObjectsToCSV(args) {
       if (item[key] instanceof Date) {
         v = item[key].toISOString();
       }
-      result += `"${String(v).replace('"', '\\"')}"`;
+      if (!invalidValues.includes(v)) {
+        v = `"${String(v).replace('"', '\\"')}"`;
+        result += v
+      }
       ctr++;
     });
     result += lineDelimiter;
