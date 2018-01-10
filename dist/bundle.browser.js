@@ -34614,7 +34614,9 @@ function convertArrayOfObjectsToCSV(args) {
   var _ref = args || {},
       data = _ref.data,
       _ref$labels = _ref.labels,
-      labels = _ref$labels === undefined ? {} : _ref$labels;
+      labels = _ref$labels === undefined ? {} : _ref$labels,
+      _ref$columns = _ref.columns,
+      columns = _ref$columns === undefined ? [] : _ref$columns;
 
   if (data == null || !data.length) {
     return null;
@@ -34623,6 +34625,13 @@ function convertArrayOfObjectsToCSV(args) {
   columnDelimiter = args.columnDelimiter || ',';
   lineDelimiter = args.lineDelimiter || '\n';
   keys = Object.keys(data[0]);
+
+  if (columns.length > 0) {
+    keys = keys.filter(function (k) {
+      return columns.includes(k);
+    });
+  }
+
   result = '';
   result += keys.map(function (k) {
     return labels[k] || k;
@@ -34637,7 +34646,10 @@ function convertArrayOfObjectsToCSV(args) {
       if (item[key] instanceof Date) {
         v = item[key].toISOString();
       }
-      result += '"' + String(v).replace('"', '\\"') + '"';
+      if (v !== null && v !== undefined && String(v) !== '') {
+        v = '"' + String(v).replace('"', '\\"') + '"';
+        result += v;
+      }
       ctr++;
     });
     result += lineDelimiter;
@@ -34665,7 +34677,7 @@ function downloadCSV(name_or_data, filename, labels) {
     }
   }
 
-  var csvContent = convertArrayOfObjectsToCSV({ data: data, labels: labels });
+  var csvContent = convertArrayOfObjectsToCSV({ data: data, labels: labels, columns: options.columns });
 
   if (!csvContent) {
     console.log('dataset not found', name);
@@ -35576,7 +35588,9 @@ var DashboardStore = function () {
           _options$common = options.common,
           common = _options$common === undefined ? false : _options$common,
           _options$encoding = options.encoding,
-          encoding = _options$encoding === undefined ? null : _options$encoding;
+          encoding = _options$encoding === undefined ? null : _options$encoding,
+          _options$columns = options.columns,
+          columns = _options$columns === undefined ? [] : _options$columns;
 
 
       var dim = this.manager.dimension(dataset, dimensionName);
@@ -35593,7 +35607,7 @@ var DashboardStore = function () {
         return;
       }
 
-      downloadCSV(dim.top(Infinity), filename, labels, { encoding: encoding });
+      downloadCSV(dim.top(Infinity), filename, labels, { encoding: encoding, columns: columns });
     }
   }]);
   return DashboardStore;
@@ -50364,9 +50378,13 @@ var resetAllButton = { render: function render() {
 var csvDownloadButton = { render: function render() {
     var _vm = this;var _h = _vm.$createElement;var _c = _vm._self._c || _h;return _c('div', { staticClass: "download-csv-button" }, [_c('a', { staticClass: "btn btn-outline-primary", on: { "click": function click($event) {
           _vm.downloadCSV();
-        } } }, [_c('i', { staticClass: "fa fa-cloud-download", attrs: { "aria-hidden": "true" } }), _vm._v(" CSV ダウンロード ")])]);
+        } } }, [_c('i', { staticClass: "fa fa-cloud-download", attrs: { "aria-hidden": "true" } }, [_vm._v(" " + _vm._s(_vm.buttonText) + " ")])])]);
   }, staticRenderFns: [], _scopeId: 'data-v-f6d3e728',
   props: {
+    buttonText: {
+      type: String,
+      default: 'CSV ダウンロード'
+    },
     fileName: {
       type: String,
       default: 'data'
@@ -50384,6 +50402,11 @@ var csvDownloadButton = { render: function render() {
     encoding: {
       type: String,
       default: null // utf-8, CP932, ...
+    },
+    // 指定したカラムのみダウンロードする
+    columns: {
+      type: String,
+      default: null
     }
   },
   methods: {
@@ -50391,9 +50414,10 @@ var csvDownloadButton = { render: function render() {
       var options = {
         dataset: this.dataset,
         labels: this.labels,
-        encoding: this.encoding
+        encoding: this.encoding,
+        columns: this.columns ? this.columns.split(',') : []
       };
-      return EasyDC.Store.downloadCSV(this.fileName, this.dimensionName, options);
+      Store.downloadCSV(this.fileName, this.dimensionName, options);
     }
   }
 };
