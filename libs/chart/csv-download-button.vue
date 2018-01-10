@@ -35,6 +35,7 @@ export default {
       type: String,
       default: null // utf-8, CP932, ...
     },
+    // 指定したカラムのみダウンロードする
     columns: {
       type: String,
       default: null
