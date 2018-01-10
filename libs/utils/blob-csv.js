@@ -10,7 +10,8 @@ function convertArrayOfObjectsToCSV(args) {
   let result, ctr, keys, columnDelimiter, lineDelimiter;
   const {
     data,
-    labels = {}
+    labels = {},
+    columns = []
   } = args || {};
 
   if (data == null || !data.length) {
@@ -20,6 +21,11 @@ function convertArrayOfObjectsToCSV(args) {
   columnDelimiter = args.columnDelimiter || ',';
   lineDelimiter = args.lineDelimiter || '\n';
   keys = Object.keys(data[0]);
+
+  if (columns.length > 0) {
+    keys = keys.filter((k) => columns.includes(k))
+  }
+
   result = '';
   result += keys.map((k) => labels[k] || k).join(columnDelimiter);
   result += lineDelimiter;

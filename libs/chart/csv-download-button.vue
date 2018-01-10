@@ -34,6 +34,10 @@ export default {
     encoding: {
       type: String,
       default: null // utf-8, CP932, ...
+    },
+    columns: {
+      type: String,
+      default: null
     }
   },
   methods: {
@@ -41,9 +45,10 @@ export default {
       const options = {
         dataset: this.dataset,
         labels: this.labels,
-        encoding: this.encoding
+        encoding: this.encoding,
+        columns: this.columns ? this.columns.split(',') : []
       };
-      return EasyDC.Store.downloadCSV(this.fileName, this.dimensionName, options);
+      Store.downloadCSV(this.fileName, this.dimensionName, options);
     },
   },
 };
