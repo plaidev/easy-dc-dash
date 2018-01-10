@@ -1,7 +1,9 @@
 <template>
   <div class="download-csv-button">
     <a class="btn btn-outline-primary" @click="downloadCSV()">
-      <i class="fa fa-cloud-download" aria-hidden="true"></i> CSV ダウンロード
+      <i class="fa fa-cloud-download" aria-hidden="true">
+        {{buttonText}}
+      </i>
     </a>
   </div>
 </template>
@@ -11,6 +13,10 @@ import Store from '../store';
 
 export default {
   props: {
+    buttonText: {
+      type: String,
+      default: 'CSV ダウンロード'
+    },
     fileName: {
       type: String,
       default: 'data',
@@ -28,6 +34,11 @@ export default {
     encoding: {
       type: String,
       default: null // utf-8, CP932, ...
+    },
+    // 指定したカラムのみダウンロードする
+    columns: {
+      type: String,
+      default: null
     }
   },
   methods: {
@@ -35,9 +46,10 @@ export default {
       const options = {
         dataset: this.dataset,
         labels: this.labels,
-        encoding: this.encoding
+        encoding: this.encoding,
+        columns: this.columns ? this.columns.split(',') : []
       };
-      return EasyDC.Store.downloadCSV(this.fileName, this.dimensionName, options);
+      Store.downloadCSV(this.fileName, this.dimensionName, options);
     },
   },
 };
