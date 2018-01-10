@@ -30,8 +30,6 @@ function convertArrayOfObjectsToCSV(args) {
   result += keys.map((k) => labels[k] || k).join(columnDelimiter);
   result += lineDelimiter;
 
-  const invalidValues = ['', 'null']
-
   data.forEach(function(item) {
     ctr = 0;
     keys.forEach(function(key) {
@@ -40,7 +38,7 @@ function convertArrayOfObjectsToCSV(args) {
       if (item[key] instanceof Date) {
         v = item[key].toISOString();
       }
-      if (!invalidValues.includes(v)) {
+      if (v !== null && v !== undefined && String(v) !== '') {
         v = `"${String(v).replace('"', '\\"')}"`;
         result += v
       }
@@ -70,7 +68,7 @@ export function downloadCSV(name_or_data, filename, labels, options={}) {
     }
   }
 
-  let csvContent = convertArrayOfObjectsToCSV({data, labels})
+  let csvContent = convertArrayOfObjectsToCSV({data, labels, columns: options.columns})
 
   if (!csvContent) {
     console.log('dataset not found', name);
