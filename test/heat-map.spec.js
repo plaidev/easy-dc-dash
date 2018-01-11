@@ -3,12 +3,12 @@ import { mount, createLocalVue } from 'vue-test-utils';
 import CssModuleTestHelperMixin from './helpers/css-modules-test-helper-mixin';
 
 import Store from '../libs/store';
-import OrdinalBar from '@/ordinal-bar.vue';
+import HeatMap from '@/heat-map.vue';
 
 const localVue = createLocalVue();
 localVue.use(CssModuleTestHelperMixin);
 
-describe('ordinal-bar', () => {
+describe('heat-map', () => {
   Store.registerData([
     { d1: 'a', d2: true, v: 1 },
     { d1: 'a', d2: false, v: 2 },
@@ -16,11 +16,11 @@ describe('ordinal-bar', () => {
     { d1: 'b', d2: true, v: 5 }
   ]);
 
-  const wrapper = mount(localVue.extend(OrdinalBar), {
+  const wrapper = mount(localVue.extend(HeatMap), {
     localVue,
     propsData: {
-      id: 'test-ordinal-bar',
-      dimension: 'd1',
+      id: 'test-heat-map',
+      dimension: '[d.d1, d.d2]',
       reduce: 'v'
     },
     attachToDocument: true

@@ -1,0 +1,177 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`stack-and-rate to match snapshot 1`] = `
+<div class="outer-container" style="width: 377px; height: 233px;">
+    <div class="backdrop"></div>
+    <div class="card-container">
+        <div class="inner-container" style="width: 377px; height: 233px;">
+            <div class="container-header">
+                <div class="icon-box">
+                    <i class="fa fa-window-maximize"></i>
+                </div>
+                <!---->
+            </div>
+            <div class="render-area">
+                <div id="test-stack-and-rate" class="krt-dc-component dc-chart" style="display: flex; position: relative; width: 100%; height: 100%;">
+                    <!---->
+                    <div class="reset-button">
+                        <a class="reset" style="display: none;">
+                            <i class="fa fa-ban">&nbsp;</i> <span>フィルター解除</span></a>
+                    </div>
+                    <!---->
+                    <svg width="200" height="200">
+                        <g>
+                            <g class="grid-line horizontal" transform="translate(40,20)"></g>
+                            <g class="grid-line vertical" transform="translate(40,20)">
+                                <line x1="0" y1="150" x2="0" y2="0" opacity="0"></line>
+                                <line x1="10" y1="150" x2="10" y2="0" opacity="0"></line>
+                                <line x1="20" y1="150" x2="20" y2="0" opacity="0"></line>
+                                <line x1="30" y1="150" x2="30" y2="0" opacity="0"></line>
+                                <line x1="40" y1="150" x2="40" y2="0" opacity="0"></line>
+                                <line x1="50" y1="150" x2="50" y2="0" opacity="0"></line>
+                                <line x1="60" y1="150" x2="60" y2="0" opacity="0"></line>
+                                <line x1="70" y1="150" x2="70" y2="0" opacity="0"></line>
+                                <line x1="80" y1="150" x2="80" y2="0" opacity="0"></line>
+                                <line x1="90" y1="150" x2="90" y2="0" opacity="0"></line>
+                                <line x1="100" y1="150" x2="100" y2="0" opacity="0"></line>
+                                <line x1="110" y1="150" x2="110" y2="0" opacity="0"></line>
+                                <line x1="120" y1="150" x2="120" y2="0" opacity="0"></line>
+                            </g>
+                            <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#test-stack-and-rate-clip)"></g>
+                            <g class="sub _0">
+                                <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#test-stack-and-rate-clip)">
+                                    <g class="stack-list">
+                                        <g class="stack _0">
+                                            <path class="line" stroke="#1f77b4"></path>
+                                            <path class="area" fill="#1f77b4" d="M0,147L40,144L80,141L120,135L120,150L80,150L40,150L0,150Z"></path>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                        </g>
+                                        <g class="stack _1">
+                                            <path class="line" stroke="#ff7f0e"></path>
+                                            <path class="area" fill="#ff7f0e" d="M0,120L40,90L80,60L120,0L120,135L80,141L40,144L0,147Z"></path>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                        </g>
+                                    </g>
+                                    <g class="dc-tooltip-list">
+                                        <g class="dc-tooltip _0">
+                                            <path class="yRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                            <path class="xRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#1f77b4"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#1f77b4"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#1f77b4"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#1f77b4"></circle>
+                                        </g>
+                                        <g class="dc-tooltip _1">
+                                            <path class="yRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                            <path class="xRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#ff7f0e"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#ff7f0e"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#ff7f0e"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#ff7f0e"></circle>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                            <g class="sub _1">
+                                <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#test-stack-and-rate-clip)">
+                                    <g class="stack-list">
+                                        <g class="stack _0">
+                                            <path class="line" stroke="#2ca02c"></path>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                            <text class="lineLabel" text-anchor="middle"></text>
+                                        </g>
+                                    </g>
+                                    <g class="dc-tooltip-list">
+                                        <g class="dc-tooltip _0">
+                                            <path class="yRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                            <path class="xRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#2ca02c"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#2ca02c"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#2ca02c"></circle>
+                                            <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#2ca02c"></circle>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                            <g class="axis x" transform="translate(40,170)">
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(0,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">Thu 18</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(10,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">06 AM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(20,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">12 PM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(30,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">06 PM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(40,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">Fri 19</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(50,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">06 AM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(60,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">12 PM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(70,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">06 PM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(80,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">Sat 20</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(90,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">06 AM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(100,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">12 PM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(110,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">06 PM</text>
+                                </g>
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(120,0)">
+                                    <line y2="6"></line>
+                                    <text dy=".71em" style="text-anchor: middle;" y="9">May 21</text>
+                                </g>
+                                <path class="domain"></path>
+                            </g>
+                            <g class="axis y" transform="translate(40,20)">
+                                <path class="domain"></path>
+                            </g>
+                            <g class="axis yr" transform="translate(160,20)">
+                                <path class="domain"></path>
+                            </g>
+                        </g>
+                        <defs>
+                            <clippath id="test-stack-and-rate-clip">
+                                <rect width="120" height="150" transform="translate(-0, -0)"></rect>
+                            </clippath>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;

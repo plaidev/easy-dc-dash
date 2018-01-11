@@ -50,14 +50,14 @@
     "watch-lite": "rollup -c rollup.watch.config.js -m -w",
     "http-server": "http-server -i",
     "simplify": "cd ./libs/json; sh simplify.sh",
-    "test": "jest --no-cache -i"
+    "test": "jest"
   },
   "files": ["dist", "README.md"],
   "jest": {
     "moduleFileExtensions": ["js", "vue"],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/libs/chart/$1",
-      "^.+\\.css$": "<rootDir>/test/helpers/dummy.css"
+      "^.+\\.(css|scss)$": "<rootDir>/test/helpers/dummy.css"
     },
     "transform": {
       "^.+\\.js$": "<rootDir>/node_modules/babel-jest",

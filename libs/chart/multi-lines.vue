@@ -30,7 +30,10 @@ export default {
     }
   },
   data: function() {
-    return {childCssModules: []}
+    return {
+      childCssModules: [],
+      instances: []
+    }
   },
   computed: {
     $style: function() {
@@ -54,9 +57,9 @@ export default {
     updateContainerInnerSize: function(data) {
       Base.methods.updateContainerInnerSize.apply(this, [data])
       this.$nextTick(() => {
-        for (let k in _instances) {
-          _instances[k].updateContainerInnerSize(data)
-          _instances[k].$props.layout = this.layoutSettings.name
+        for (let k in this.instances) {
+          this.instances[k].updateContainerInnerSize(data)
+          this.instances[k].$props.layout = this.layoutSettings.name
         }
         this.$nextTick(() => {
           this.render()
@@ -70,8 +73,6 @@ export default {
     const _reducer = this.reducerExtractor;
 
     const lineNum = _reducer({}).length;
-
-    this._instances = []
     const lines = []
 
     for (let i=0; i<lineNum; i++) {
@@ -123,7 +124,7 @@ export default {
         if (BaseChart === AreaLine) StackedLines.mounted.apply(chartInstance)
         if (chartInstance.mounted) chartInstance.mounted()
 
-        _instances.push(chartInstance)
+        this.instances.push(chartInstance)
         lines.push(_chart)
       }
     }

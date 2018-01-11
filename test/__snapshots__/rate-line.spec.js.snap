@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ordinal-bar to match snapshot 1`] = `
+exports[`rate-line to match snapshot 1`] = `
 <div class="outer-container" style="width: 377px; height: 233px;">
     <div class="backdrop"></div>
     <div class="card-container">
@@ -12,7 +12,7 @@ exports[`ordinal-bar to match snapshot 1`] = `
                 <!---->
             </div>
             <div class="render-area">
-                <div id="test-ordinal-bar" class="krt-dc-component dc-chart" style="display: flex; position: relative; width: 100%; height: 100%;">
+                <div id="test-rate-line" class="krt-dc-component dc-chart" style="display: flex; position: relative; width: 100%; height: 100%;">
                     <!---->
                     <div class="reset-button">
                         <a class="reset" style="display: none;">
@@ -22,20 +22,33 @@ exports[`ordinal-bar to match snapshot 1`] = `
                     <svg width="200" height="200">
                         <g>
                             <g class="grid-line horizontal" transform="translate(40,20)"></g>
-                            <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#test-ordinal-bar-clip)">
-                                <g class="stack _0">
-                                    <rect class="bar" fill="#1f77b4" y="150" height="0"></rect>
-                                    <rect class="bar" fill="#1f77b4" y="150" height="0"></rect>
-                                    <text class="barLabel" text-anchor="middle" cursor="pointer"></text>
-                                    <text class="barLabel" text-anchor="middle" cursor="pointer"></text>
+                            <g class="grid-line vertical" transform="translate(40,20)">
+                                <line x1="30" y1="150" x2="30" y2="0" opacity="0"></line>
+                                <line x1="90" y1="150" x2="90" y2="0" opacity="0"></line>
+                            </g>
+                            <g class="chart-body" transform="translate(40, 20)" clip-path="url(about:blank#test-rate-line-clip)">
+                                <g class="stack-list">
+                                    <g class="stack _0">
+                                        <path class="line" stroke="#1f77b4"></path>
+                                        <text class="lineLabel" text-anchor="middle"></text>
+                                        <text class="lineLabel" text-anchor="middle"></text>
+                                    </g>
+                                </g>
+                                <g class="dc-tooltip-list">
+                                    <g class="dc-tooltip _0">
+                                        <path class="yRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                        <path class="xRef" style="display: none;" stroke-dasharray="5,5"></path>
+                                        <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#1f77b4"></circle>
+                                        <circle class="dot" r="5" style="fill-opacity: 0.6; stroke-opacity: 0.6;" fill="#1f77b4"></circle>
+                                    </g>
                                 </g>
                             </g>
                             <g class="axis x" transform="translate(40,170)">
-                                <g class="tick" style="opacity: 0.000001;" transform="translate(39.310344827586206,0)">
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(30,0)">
                                     <line y2="6"></line>
                                     <text dy=".71em" style="text-anchor: middle;" y="9">a</text>
                                 </g>
-                                <g class="tick" style="opacity: 0.000001;" transform="translate(80.6896551724138,0)">
+                                <g class="tick" style="opacity: 0.000001;" transform="translate(90,0)">
                                     <line y2="6"></line>
                                     <text dy=".71em" style="text-anchor: middle;" y="9">b</text>
                                 </g>
@@ -46,7 +59,7 @@ exports[`ordinal-bar to match snapshot 1`] = `
                             </g>
                         </g>
                         <defs>
-                            <clippath id="test-ordinal-bar-clip">
+                            <clippath id="test-rate-line-clip">
                                 <rect width="120" height="150" transform="translate(-0, -0)"></rect>
                             </clippath>
                         </defs>

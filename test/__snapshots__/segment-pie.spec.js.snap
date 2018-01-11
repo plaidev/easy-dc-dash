@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`segment-pie to match snapshot 1`] = `
+<div class="outer-container" style="width: 377px; height: 233px;">
+    <div class="backdrop"></div>
+    <div class="card-container">
+        <div class="inner-container" style="width: 377px; height: 233px;">
+            <div class="container-header">
+                <div class="icon-box">
+                    <i class="fa fa-window-maximize"></i>
+                </div>
+                <!---->
+            </div>
+            <div class="render-area">
+                <div id="test-segment-pie" class="krt-dc-component dc-chart" style="display: flex; position: relative; width: 100%; height: 100%;">
+                    <!---->
+                    <div class="reset-button">
+                        <a class="reset" style="display: none;">
+                            <i class="fa fa-ban">&nbsp;</i> <span>フィルター解除</span></a>
+                    </div>
+                    <!---->
+                    <svg width="200" height="200">
+                        <g transform="translate(100,100)" class="">
+                            <g class="pie-slice-group">
+                                <g class="pie-slice _0">
+                                    <path fill="#3182bd" d="M0,100A100,100 0 1,1 0,-100A100,100 0 1,1 0,100Z"></path>
+                                </g>
+                            </g>
+                            <g class="pie-label-group">
+                                <text class="pie-slice pie-label _0">none</text>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;
