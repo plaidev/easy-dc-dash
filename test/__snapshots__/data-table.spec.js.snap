@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`data-table to match snapshot 1`] = `
+<div class="outer-container" style="width: 1000px; height: 400px;">
+    <div class="backdrop"></div>
+    <div class="card-container">
+        <div class="inner-container" style="width: 1000px; height: 400px;">
+            <div class="container-header">
+                <div class="icon-box">
+                    <i class="fa fa-window-maximize"></i>
+                </div>
+                <!---->
+            </div>
+            <div class="render-area">
+                <div class="data-table-container">
+                    <div class="table-paging">
+                        <div class="table-btns">
+                            <button disabled="disabled" class="btn btn-secondary">Prev</button>
+                            <button disabled="disabled" class="btn btn-secondary">Next</button>
+                        </div>
+                        <div class="table-record-row"><span>0</span>-<span>2</span> <span> / total 2 rows</span></div>
+                    </div>
+                    <div class="table-container">
+                        <table id="test-data-table" class="krt-dc-data-table table table-hover dc-chart">
+                            <thead>
+                                <tr>
+                                    <th class="dc-table-head">date
+                                        <i class="fa fa-sort" style="margin-left: 8px;"></i>
+                                    </th>
+                                    <th class="dc-table-head">d1
+                                        <i class="fa fa-sort" style="margin-left: 8px;"></i>
+                                    </th>
+                                    <th class="dc-table-head">cnt
+                                        <i class="fa fa-sort" style="margin-left: 8px;"></i>
+                                    </th>
+                                    <th class="dc-table-head">v
+                                        <i class="fa fa-sort" style="margin-left: 8px;"></i>
+                                    </th>
+                                    <th class="dc-table-head">rate
+                                        <i class="fa fa-sort" style="margin-left: 8px;"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="dc-table-row">
+                                    <td class="dc-table-column _0">2017-01-01T15:00:00.000Z, 2017-01-02T15:00:00.000Z</td>
+                                    <td class="dc-table-column _1">a</td>
+                                    <td class="dc-table-column _2">3</td>
+                                    <td class="dc-table-column _3">30</td>
+                                    <td class="dc-table-column _4">10</td>
+                                </tr>
+                                <tr class="dc-table-row">
+                                    <td class="dc-table-column _0">2017-01-03T15:00:00.000Z, 2017-01-04T15:00:00.000Z</td>
+                                    <td class="dc-table-column _1">b</td>
+                                    <td class="dc-table-column _2">8</td>
+                                    <td class="dc-table-column _3">80</td>
+                                    <td class="dc-table-column _4">10</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;

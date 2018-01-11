@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`number-display to match snapshot 1`] = `
+<div>
+    <div id="test-number-display" class="krt-dc-number-display nd-box dc-chart" style="width: 100%; height: 120px; background: rgb(255, 255, 255); font-size: 40px;"><span class="title" style="font-size: 16px;">v</span><span class="number-display"></span></div>
+</div>
+`;

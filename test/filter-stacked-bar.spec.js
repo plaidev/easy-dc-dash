@@ -3,12 +3,12 @@ import { mount, createLocalVue } from 'vue-test-utils';
 import CssModuleTestHelperMixin from './helpers/css-modules-test-helper-mixin';
 
 import Store from '../libs/store';
-import OrdinalBar from '@/ordinal-bar.vue';
+import FilterStackedBar from '@/filter-stacked-bar.vue';
 
 const localVue = createLocalVue();
 localVue.use(CssModuleTestHelperMixin);
 
-describe('ordinal-bar', () => {
+describe('filter-stacked-bar', () => {
   Store.registerData([
     { d1: 'a', d2: true, v: 1 },
     { d1: 'a', d2: false, v: 2 },
@@ -16,10 +16,10 @@ describe('ordinal-bar', () => {
     { d1: 'b', d2: true, v: 5 }
   ]);
 
-  const wrapper = mount(localVue.extend(OrdinalBar), {
+  const wrapper = mount(localVue.extend(FilterStackedBar), {
     localVue,
     propsData: {
-      id: 'test-ordinal-bar',
+      id: 'test-filter-stacked-bar',
       dimension: 'd1',
       reduce: 'v'
     },
@@ -27,6 +27,12 @@ describe('ordinal-bar', () => {
   });
 
   it('to match snapshot', () => {
+    expect(wrapper.html()).toMatchSnapshot();
+  });
+
+  it('should click rect.bar', () => {
+    const bars = document.querySelectorAll('rect.bar');
+    Array.from(bars)[0].click();
     expect(wrapper.html()).toMatchSnapshot();
   });
 });
