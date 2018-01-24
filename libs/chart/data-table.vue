@@ -395,6 +395,14 @@ export default {
       })
       return vals
     },
+    convertForRepresentation: function(d, key) {
+      const converted = {}
+      Object.keys(d.value).forEach(key => {
+        converted[key] = this._valueAccessor(d, key)
+      })
+      delete converted._count
+      return converted
+    },
     buildFormatter: function(key) {
       let repName = null
       if (this.representations && key in this.representations){
@@ -405,7 +413,8 @@ export default {
       const repFunc = Store.getRepresentation(repName)
       return (d) => {
         const value = this._valueAccessor(d, key)
-        return repFunc(value, d.value, d.key)
+        const converted = this.convertForRepresentation(d, key)
+        return repFunc(value, d.value, d.key, converted)
       }
     },
     applyColumnSettings: function() {
