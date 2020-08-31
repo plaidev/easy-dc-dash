@@ -35,7 +35,7 @@
     "vue-test-utils": "^1.0.0-beta.6"
   },
   "dependencies": {
-    "assign-deep": "0.4.5",
+    "assign-deep": "0.4.8",
     "bootstrap": "4.0.0-alpha.6",
     "crossxfilters": "git+https://github.com/plaidev/crossxfilters.git",
     "dc": "2.1.8",
